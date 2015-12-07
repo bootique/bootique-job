@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.nhl.launcher</groupId>
+		<artifactId>launcher-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<groupId>com.nhl.launcher.job</groupId>
+	<artifactId>launcher-job</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>Job framework with Launcher Integration</name>
+	<description>Provides a job expecution framework with Launcher integration</description>
+
+	<properties>
+		<launcher-core-version>1.0-SNAPSHOT</launcher-core-version>
+		<launcher-zookeeper-version>1.0-SNAPSHOT</launcher-zookeeper-version>
+		<spring-version>4.2.3.RELEASE</spring-version>
+	</properties>
+
+	<scm>
+		<developerConnection>scm:git:ssh://git.nhl.com/repos/launcher/launcher-job</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<repositories>
+		<repository>
+			<id>nhl2upstream</id>
+			<name>NHL Artifacts</name>
+			<url>http://maven.nhl.com/content/groups/nhl2upstream</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>nhl2upstream</id>
+			<name>NHL Artifacts</name>
+			<url>http://maven.nhl.com/content/groups/nhl2upstream/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.nhl.launcher.core</groupId>
+				<artifactId>launcher-core</artifactId>
+				<version>${launcher-core-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.nhl.launcher.zookeeper</groupId>
+				<artifactId>launcher-zookeeper</artifactId>
+				<version>${launcher-zookeeper-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${spring-version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+
+		<!-- Unit test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Compile dependencies -->
+		<dependency>
+			<groupId>com.nhl.launcher.core</groupId>
+			<artifactId>launcher-core</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Optional compile dependencies -->
+		<dependency>
+			<groupId>com.nhl.launcher.zookeeper</groupId>
+			<artifactId>launcher-zookeeper</artifactId>
+			<scope>compile</scope>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
+
+</project>
