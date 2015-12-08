@@ -32,35 +32,37 @@ import com.nhl.launcher.job.runnable.SimpleRunnableJobFactory;
 import com.nhl.launcher.job.scheduler.DefaultScheduler;
 import com.nhl.launcher.job.scheduler.Scheduler;
 
-public class Jobs {
+public class JobBundle {
 
 	private static final String CONFIG_PREFIX = "scheduler";
 
 	private Collection<Class<? extends Job>> jobTypes;
-	private boolean enableZookeeperLocks;
+	private boolean useZookeeperLocks;
 	private String configPrefix;
 
-	public static Jobs jobs() {
-		return new Jobs(CONFIG_PREFIX);
+	@SafeVarargs
+	public static JobBundle jobs(Class<? extends Job>... jobTypes) {
+		return new JobBundle(CONFIG_PREFIX).addJobs(jobTypes);
 	}
 
-	public static Jobs jobs(String configPrefix) {
-		return new Jobs(configPrefix);
+	@SafeVarargs
+	public static JobBundle jobs(String configPrefix, Class<? extends Job>... jobTypes) {
+		return new JobBundle(configPrefix).addJobs(jobTypes);
 	}
 
-	private Jobs(String configPrefix) {
+	private JobBundle(String configPrefix) {
 		this.jobTypes = new HashSet<>();
 		this.configPrefix = configPrefix;
 	}
 
 	@SafeVarargs
-	public final Jobs addJobs(Class<? extends Job>... jobTypes) {
+	public final JobBundle addJobs(Class<? extends Job>... jobTypes) {
 		Arrays.asList(jobTypes).forEach(jt -> this.jobTypes.add(jt));
 		return this;
 	}
 
-	public Jobs enableZookeeperLocks() {
-		this.enableZookeeperLocks = true;
+	public JobBundle useZookeeperLocks() {
+		this.useZookeeperLocks = true;
 		return this;
 	}
 
@@ -82,7 +84,7 @@ public class Jobs {
 					LockHandler.class);
 			serialJobRunners.addBinding(LockType.local).to(LocalLockHandler.class);
 
-			if (enableZookeeperLocks) {
+			if (useZookeeperLocks) {
 				serialJobRunners.addBinding(LockType.clustered).to(ZkClusterLockHandler.class);
 			}
 		}
