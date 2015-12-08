@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
 import org.springframework.scheduling.TaskScheduler;
 
 import com.nhl.launcher.job.Job;
@@ -38,7 +37,7 @@ public class DefaultScheduler implements Scheduler {
 	private Collection<Job> jobs;
 
 	public DefaultScheduler(SchedulerConfig config, TaskScheduler scheduler, Collection<Job> jobs,
-			Environment environment, RunnableJobFactory runnableJobFactory) {
+			RunnableJobFactory runnableJobFactory) {
 
 		this.config = config;
 		this.scheduler = scheduler;

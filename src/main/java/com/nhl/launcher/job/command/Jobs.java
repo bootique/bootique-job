@@ -8,6 +8,10 @@ import org.apache.cayenne.di.Module;
 
 import com.nhl.launcher.LauncherUtil;
 import com.nhl.launcher.job.Job;
+import com.nhl.launcher.job.locking.LocalSerialJobRunner;
+import com.nhl.launcher.job.locking.SerialJobRunner;
+import com.nhl.launcher.job.scheduler.DefaultScheduler;
+import com.nhl.launcher.job.scheduler.Scheduler;
 
 public class Jobs {
 
@@ -26,7 +30,8 @@ public class Jobs {
 		this.jobTypes = new HashSet<>();
 	}
 
-	public Jobs addJobs(@SuppressWarnings("unchecked") Class<? extends Job>... jobTypes) {
+	@SafeVarargs
+	public final Jobs addJobs(Class<? extends Job>... jobTypes) {
 		Arrays.asList(jobTypes).forEach(jt -> this.jobTypes.add(jt));
 		return this;
 	}
@@ -38,6 +43,9 @@ public class Jobs {
 			LauncherUtil.bindCommand(binder, ListCommand.class);
 
 			jobTypes.forEach(jt -> binder.<Job> bindList(JOBS_COLLECTION_KEY).add(jt));
+
+			binder.bind(SerialJobRunner.class).to(LocalSerialJobRunner.class);
+			binder.bind(Scheduler.class).to(DefaultScheduler.class);
 		};
 	}
 
