@@ -41,8 +41,11 @@ public class ExecCommand extends OptionTriggeredCommand {
 
 	@Override
 	public void configOptions(OptionParser parser) {
-		super.configOptions(parser);
-		parser.accepts(JOB_OPTION).withRequiredArg();
+		parser.accepts(getOption(), "Executes one or more jobs. Jobs are specified with '--job' options");
+		parser.accepts(JOB_OPTION,
+				"Specifies the name of the job to run with '--exec'. "
+						+ "Available job names can be viewed using '--list' command.")
+				.withRequiredArg().describedAs("job_name");
 	}
 
 	@Override

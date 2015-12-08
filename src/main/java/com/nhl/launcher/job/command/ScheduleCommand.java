@@ -10,6 +10,8 @@ import com.nhl.launcher.command.OptionTriggeredCommand;
 import com.nhl.launcher.job.scheduler.Scheduler;
 import com.nhl.launcher.jopt.Options;
 
+import joptsimple.OptionParser;
+
 public class ScheduleCommand extends OptionTriggeredCommand {
 
 	private static final String SCHEDULER_OPTION = "scheduler";
@@ -20,6 +22,12 @@ public class ScheduleCommand extends OptionTriggeredCommand {
 	@Inject
 	public ScheduleCommand(Provider<Scheduler> schedulerProvider) {
 		this.schedulerProvider = schedulerProvider;
+	}
+
+	@Override
+	public void configOptions(OptionParser parser) {
+		parser.accepts(getOption(),
+				"Schedules and executes jobs according to configuration. Waits indefinitely on the foreground.");
 	}
 
 	@Override

@@ -14,6 +14,8 @@ import com.nhl.launcher.command.OptionTriggeredCommand;
 import com.nhl.launcher.job.Job;
 import com.nhl.launcher.jopt.Options;
 
+import joptsimple.OptionParser;
+
 public class ListCommand extends OptionTriggeredCommand {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ListCommand.class);
@@ -25,6 +27,11 @@ public class ListCommand extends OptionTriggeredCommand {
 	@Inject
 	public ListCommand(Provider<Set<Job>> jobsProvider) {
 		this.jobsProvider = jobsProvider;
+	}
+
+	@Override
+	public void configOptions(OptionParser parser) {
+		parser.accepts(getOption(), "Lists all jobs available in the app");
 	}
 
 	@Override

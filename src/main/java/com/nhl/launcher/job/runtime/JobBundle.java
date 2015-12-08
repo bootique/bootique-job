@@ -21,13 +21,14 @@ import com.nhl.launcher.env.Environment;
 import com.nhl.launcher.job.Job;
 import com.nhl.launcher.job.command.ExecCommand;
 import com.nhl.launcher.job.command.ListCommand;
+import com.nhl.launcher.job.command.ScheduleCommand;
 import com.nhl.launcher.job.lock.LocalLockHandler;
 import com.nhl.launcher.job.lock.LockHandler;
 import com.nhl.launcher.job.lock.LockType;
 import com.nhl.launcher.job.lock.ZkClusterLockHandler;
 import com.nhl.launcher.job.runnable.ErrorHandlingRunnableJobFactory;
-import com.nhl.launcher.job.runnable.RunnableJobFactory;
 import com.nhl.launcher.job.runnable.LockAwareRunnableJobFactory;
+import com.nhl.launcher.job.runnable.RunnableJobFactory;
 import com.nhl.launcher.job.runnable.SimpleRunnableJobFactory;
 import com.nhl.launcher.job.scheduler.DefaultScheduler;
 import com.nhl.launcher.job.scheduler.Scheduler;
@@ -77,6 +78,7 @@ public class JobBundle {
 
 			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ExecCommand.class);
 			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ListCommand.class);
+			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ScheduleCommand.class);
 
 			jobTypes.forEach(jt -> Multibinder.newSetBinder(binder, Job.class).addBinding().to(jt).in(Singleton.class));
 
