@@ -1,14 +1,14 @@
 package com.nhl.launcher.job.command;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import org.apache.cayenne.di.Inject;
-import org.apache.cayenne.di.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.nhl.launcher.command.CommandOutcome;
 import com.nhl.launcher.command.OptionTriggeredCommand;
 import com.nhl.launcher.job.Job;
@@ -20,9 +20,10 @@ public class ListCommand extends OptionTriggeredCommand {
 
 	private static final String LIST_OPTION = "list";
 
-	private Provider<List> jobsProvider;
+	private Provider<Set<Job>> jobsProvider;
 
-	public ListCommand(@Inject(Jobs.JOBS_COLLECTION_KEY) Provider<List> jobsProvider) {
+	@Inject
+	public ListCommand(Provider<Set<Job>> jobsProvider) {
 		this.jobsProvider = jobsProvider;
 	}
 

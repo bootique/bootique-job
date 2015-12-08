@@ -6,12 +6,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.cayenne.di.Inject;
-import org.apache.cayenne.di.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nhl.launcher.SystemExitException;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.nhl.launcher.command.CommandOutcome;
 import com.nhl.launcher.command.OptionTriggeredCommand;
 import com.nhl.launcher.job.runnable.JobFuture;
@@ -30,7 +29,8 @@ public class ExecCommand extends OptionTriggeredCommand {
 	private Provider<Scheduler> schedulerProvider;
 
 	// using Provider for lazy init
-	public ExecCommand(@Inject Provider<Scheduler> schedulerProvider) {
+	@Inject
+	public ExecCommand(Provider<Scheduler> schedulerProvider) {
 		this.schedulerProvider = schedulerProvider;
 	}
 
@@ -50,7 +50,7 @@ public class ExecCommand extends OptionTriggeredCommand {
 
 		Collection<String> jobArgs = options.stringsFor(JOB_OPTION);
 		if (jobArgs == null || jobArgs.isEmpty()) {
-			throw new SystemExitException(1,
+			return CommandOutcome.failed(1,
 					String.format("No jobs specified. Use '--%s' option to provide job names", JOB_OPTION));
 		}
 

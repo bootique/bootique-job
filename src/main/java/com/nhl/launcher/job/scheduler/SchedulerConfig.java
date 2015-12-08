@@ -2,27 +2,13 @@ package com.nhl.launcher.job.scheduler;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-
-import com.nhl.launcher.job.Job;
-import com.nhl.launcher.job.locking.SerialJobRunner;
-import com.nhl.launcher.job.runnable.ErrorHandlingRunnableJobFactory;
-import com.nhl.launcher.job.runnable.RunnableJobFactory;
-import com.nhl.launcher.job.runnable.RunnableSerialJobFactory;
-import com.nhl.launcher.job.runnable.SimpleRunnableJobFactory;
-
-@Configuration
 public class SchedulerConfig {
 
 	private String jobPropertiesPrefix;
 	private Collection<TriggerDescriptor> triggers;
 	private int threadPoolSize;
+	private boolean clusteredLocks;
 
 	public SchedulerConfig() {
 		this.triggers = new ArrayList<>();
@@ -53,24 +39,11 @@ public class SchedulerConfig {
 		this.threadPoolSize = threadPoolSize;
 	}
 
-	@Bean
-	@Lazy
-	public DefaultScheduler createScheduler(TaskScheduler scheduler, List<Job> jobs, SerialJobRunner serialJobRunner) {
-
-		RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-		RunnableJobFactory rf2 = new RunnableSerialJobFactory(rf1, serialJobRunner);
-		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
-
-		return new DefaultScheduler(this, scheduler, jobs, rf3);
+	public boolean isClusteredLocks() {
+		return clusteredLocks;
 	}
 
-	// since we are not using @EnableScheduling annotation (as scheduler is
-	// optional), let's define TaskScheduler bean ourselves
-	@Bean
-	@Lazy
-	public TaskScheduler createTaskScheduler() {
-		ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-		taskScheduler.setPoolSize(threadPoolSize);
-		return taskScheduler;
+	public void setClusteredLocks(boolean clusteredLocks) {
+		this.clusteredLocks = clusteredLocks;
 	}
 }

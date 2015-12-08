@@ -4,23 +4,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.apache.cayenne.di.Module;
-
-import com.nhl.launcher.LauncherUtil;
+import com.google.inject.Module;
+import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
+import com.nhl.launcher.command.Command;
 import com.nhl.launcher.job.Job;
 import com.nhl.launcher.job.locking.LocalSerialJobRunner;
 import com.nhl.launcher.job.locking.SerialJobRunner;
-import com.nhl.launcher.job.scheduler.DefaultScheduler;
+import com.nhl.launcher.job.scheduler.DefaultSchedulerProvider;
 import com.nhl.launcher.job.scheduler.Scheduler;
 
 public class Jobs {
 
 	private Collection<Class<? extends Job>> jobTypes;
-
-	/**
-	 * A DI key for the collection of available jobs.
-	 */
-	public static final String JOBS_COLLECTION_KEY = "jobs";
 
 	public static Jobs jobs() {
 		return new Jobs();
@@ -39,13 +35,13 @@ public class Jobs {
 	public Module module() {
 		return binder -> {
 
-			LauncherUtil.bindCommand(binder, ExecCommand.class);
-			LauncherUtil.bindCommand(binder, ListCommand.class);
+			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ExecCommand.class);
+			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ListCommand.class);
 
-			jobTypes.forEach(jt -> binder.<Job> bindList(JOBS_COLLECTION_KEY).add(jt));
+			jobTypes.forEach(jt -> Multibinder.newSetBinder(binder, Job.class).addBinding().to(jt).in(Singleton.class));
 
-			binder.bind(SerialJobRunner.class).to(LocalSerialJobRunner.class);
-			binder.bind(Scheduler.class).to(DefaultScheduler.class);
+			binder.bind(SerialJobRunner.class).to(LocalSerialJobRunner.class).in(Singleton.class);
+			binder.bind(Scheduler.class).toProvider(DefaultSchedulerProvider.class).in(Singleton.class);
 		};
 	}
 

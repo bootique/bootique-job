@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 
+import com.nhl.launcher.env.Environment;
 import com.nhl.launcher.job.Job;
 import com.nhl.launcher.job.JobMetadata;
 import com.nhl.launcher.job.JobMetadataBuilder;
@@ -31,17 +32,22 @@ public class DefaultScheduler implements Scheduler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScheduler.class);
 
-	private TaskScheduler scheduler;
-	private SchedulerConfig config;
+	private TaskScheduler taskScheduler;
 	private RunnableJobFactory runnableJobFactory;
 	private Collection<Job> jobs;
+	private Environment environment;
+	private Collection<TriggerDescriptor> triggers;
+	private String jobPropertiesPrefix;
 
-	public DefaultScheduler(SchedulerConfig config, TaskScheduler scheduler, Collection<Job> jobs,
-			RunnableJobFactory runnableJobFactory) {
+	public DefaultScheduler(Collection<Job> jobs, Collection<TriggerDescriptor> triggers, TaskScheduler taskScheduler,
+			RunnableJobFactory runnableJobFactory, Environment environment, String jobPropertiesPrefix) {
 
-		this.config = config;
-		this.scheduler = scheduler;
 		this.jobs = jobs;
+		this.triggers = triggers;
+		this.environment = environment;
+		this.jobPropertiesPrefix = jobPropertiesPrefix;
+
+		this.taskScheduler = taskScheduler;
 		this.runnableJobFactory = runnableJobFactory;
 	}
 
@@ -62,28 +68,28 @@ public class DefaultScheduler implements Scheduler {
 		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 
 		JobResult[] result = new JobResult[1];
-		ScheduledFuture<?> jobFuture = scheduler.schedule(() -> result[0] = rj.run(), new Date());
+		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), new Date());
 		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
 	}
 
 	@Override
 	public int start() {
 
-		if (config.getTriggers().isEmpty()) {
+		if (triggers.isEmpty()) {
 			LOGGER.info("No triggers, exiting");
 			return 0;
 		}
 
 		Map<String, Job> jobs = mapJobs();
 
-		List<String> badTriggers = config.getTriggers().stream().filter(t -> !jobs.containsKey(t.getJob()))
+		List<String> badTriggers = triggers.stream().filter(t -> !jobs.containsKey(t.getJob()))
 				.map(t -> t.getJob() + ":" + t.getTrigger()).collect(Collectors.toList());
 
 		if (badTriggers.size() > 0) {
 			throw new IllegalStateException("Jobs are not found for the following triggers: " + badTriggers);
 		}
 
-		config.getTriggers().stream().forEach(tc -> {
+		triggers.stream().forEach(tc -> {
 
 			Job job = jobs.get(tc.getJob());
 			Map<String, Object> parameters = jobParams(job);
@@ -91,10 +97,10 @@ public class DefaultScheduler implements Scheduler {
 			LOGGER.info(String.format("Will schedule '%s'.. (%s)", job.getMetadata().getName(), tc.describeTrigger()));
 
 			RunnableJob rj = runnableJobFactory.runnable(job, parameters);
-			scheduler.schedule(() -> rj.run(), tc.createTrigger());
+			taskScheduler.schedule(() -> rj.run(), tc.createTrigger());
 		});
 
-		return config.getTriggers().size();
+		return triggers.size();
 	}
 
 	Map<String, Object> jobParams(Job job) {
@@ -119,7 +125,7 @@ public class DefaultScheduler implements Scheduler {
 	}
 
 	private String toPropertyName(JobMetadata jobMD, JobParameterMetadata<?> parameterMD) {
-		String prefix = config.getJobPropertiesPrefix() == null ? "" : config.getJobPropertiesPrefix() + ".";
+		String prefix = jobPropertiesPrefix == null ? "" : jobPropertiesPrefix + ".";
 		return prefix + jobMD.getName() + "." + parameterMD.getName();
 	}
 

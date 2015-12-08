@@ -1,11 +1,10 @@
 package com.nhl.launcher.job.command;
 
-import org.apache.cayenne.di.Inject;
-import org.apache.cayenne.di.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nhl.launcher.SystemExitException;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.nhl.launcher.command.CommandOutcome;
 import com.nhl.launcher.command.OptionTriggeredCommand;
 import com.nhl.launcher.job.scheduler.Scheduler;
@@ -18,7 +17,8 @@ public class ScheduleCommand extends OptionTriggeredCommand {
 
 	private Provider<Scheduler> schedulerProvider;
 
-	public ScheduleCommand(@Inject Provider<Scheduler> schedulerProvider) {
+	@Inject
+	public ScheduleCommand(Provider<Scheduler> schedulerProvider) {
 		this.schedulerProvider = schedulerProvider;
 	}
 
@@ -39,7 +39,7 @@ public class ScheduleCommand extends OptionTriggeredCommand {
 			try {
 				Thread.currentThread().join();
 			} catch (InterruptedException e) {
-				throw new SystemExitException(1, e);
+				return CommandOutcome.failed(1, e);
 			}
 		}
 
