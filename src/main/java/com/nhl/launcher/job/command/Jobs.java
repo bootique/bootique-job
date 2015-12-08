@@ -6,17 +6,21 @@ import java.util.HashSet;
 
 import com.google.inject.Module;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import com.nhl.launcher.command.Command;
 import com.nhl.launcher.job.Job;
 import com.nhl.launcher.job.locking.LocalSerialJobRunner;
+import com.nhl.launcher.job.locking.LockType;
 import com.nhl.launcher.job.locking.SerialJobRunner;
+import com.nhl.launcher.job.locking.ZkClusterSerialJobRunner;
 import com.nhl.launcher.job.scheduler.DefaultSchedulerProvider;
 import com.nhl.launcher.job.scheduler.Scheduler;
 
 public class Jobs {
 
 	private Collection<Class<? extends Job>> jobTypes;
+	private boolean enableZookeeperLocks;
 
 	public static Jobs jobs() {
 		return new Jobs();
@@ -32,6 +36,11 @@ public class Jobs {
 		return this;
 	}
 
+	public Jobs enableZookeeperLocks() {
+		this.enableZookeeperLocks = true;
+		return this;
+	}
+
 	public Module module() {
 		return binder -> {
 
@@ -40,7 +49,14 @@ public class Jobs {
 
 			jobTypes.forEach(jt -> Multibinder.newSetBinder(binder, Job.class).addBinding().to(jt).in(Singleton.class));
 
-			binder.bind(SerialJobRunner.class).to(LocalSerialJobRunner.class).in(Singleton.class);
+			MapBinder<LockType, SerialJobRunner> serialJobRunners = MapBinder.newMapBinder(binder, LockType.class,
+					SerialJobRunner.class);
+			serialJobRunners.addBinding(LockType.local).to(LocalSerialJobRunner.class);
+			
+			if(enableZookeeperLocks) {
+				serialJobRunners.addBinding(LockType.clustered).to(ZkClusterSerialJobRunner.class);
+			}
+
 			binder.bind(Scheduler.class).toProvider(DefaultSchedulerProvider.class).in(Singleton.class);
 		};
 	}

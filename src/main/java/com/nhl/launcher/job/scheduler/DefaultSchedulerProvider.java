@@ -1,6 +1,7 @@
 package com.nhl.launcher.job.scheduler;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.scheduling.TaskScheduler;
@@ -11,6 +12,7 @@ import com.google.inject.Provider;
 import com.nhl.launcher.config.ConfigurationFactory;
 import com.nhl.launcher.env.Environment;
 import com.nhl.launcher.job.Job;
+import com.nhl.launcher.job.locking.LockType;
 import com.nhl.launcher.job.locking.SerialJobRunner;
 import com.nhl.launcher.job.runnable.ErrorHandlingRunnableJobFactory;
 import com.nhl.launcher.job.runnable.RunnableJobFactory;
@@ -22,16 +24,16 @@ public class DefaultSchedulerProvider implements Provider<Scheduler> {
 	private static final String CONFIG_PREFIX = "scheduler";
 
 	private Collection<Job> jobs;
-	private SerialJobRunner serialJobRunner;
+	private Map<LockType, SerialJobRunner> jobRunners;
 	private Environment environment;
 	private ConfigurationFactory configFactory;
 
 	@Inject
-	public DefaultSchedulerProvider(Set<Job> jobs, Environment environment, SerialJobRunner serialJobRunner,
+	public DefaultSchedulerProvider(Set<Job> jobs, Environment environment, Map<LockType, SerialJobRunner> jobRunners,
 			ConfigurationFactory configFactory) {
 
 		this.jobs = jobs;
-		this.serialJobRunner = serialJobRunner;
+		this.jobRunners = jobRunners;
 		this.environment = environment;
 		this.configFactory = configFactory;
 	}
@@ -42,8 +44,15 @@ public class DefaultSchedulerProvider implements Provider<Scheduler> {
 		SchedulerConfig config = configFactory.subconfig(CONFIG_PREFIX, SchedulerConfig.class);
 		TaskScheduler taskScheduler = createTaskScheduler(config);
 
+		LockType lockType = config.isClusteredLocks() ? LockType.clustered : LockType.local;
+		SerialJobRunner serialRunner = jobRunners.get(lockType);
+
+		if (serialRunner == null) {
+			throw new IllegalStateException("No SerialJobRunner for lock type: " + lockType);
+		}
+
 		RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-		RunnableJobFactory rf2 = new RunnableSerialJobFactory(rf1, serialJobRunner);
+		RunnableJobFactory rf2 = new RunnableSerialJobFactory(rf1, serialRunner);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
 		// TODO: write a builder instead of this insane constructor

@@ -6,8 +6,9 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.nhl.launcher.job.JobMetadata;
 import com.nhl.launcher.job.runnable.JobOutcome;
 import com.nhl.launcher.job.runnable.JobResult;
@@ -22,10 +23,10 @@ public class ZkClusterSerialJobRunner implements SerialJobRunner {
 	private final static String ZK_PATH_PREFIX = "/"
 			+ ZkClusterSerialJobRunner.class.getPackage().getName().replace('.', '/') + "/";
 
-	private final CuratorFramework zkClient;
+	private final Provider<CuratorFramework> zkClient;
 
-	@Autowired
-	public ZkClusterSerialJobRunner(CuratorFramework zkClient) {
+	@Inject
+	public ZkClusterSerialJobRunner(Provider<CuratorFramework> zkClient) {
 		this.zkClient = zkClient;
 	}
 
@@ -67,7 +68,7 @@ public class ZkClusterSerialJobRunner implements SerialJobRunner {
 	private InterProcessMutex getLock(String lockName) {
 		// do not cache the locks, as this would break locking within
 		// the same VM
-		return new InterProcessMutex(zkClient, lockName);
+		return new InterProcessMutex(zkClient.get(), lockName);
 	}
 
 	private String getLockName(JobMetadata metadata) {
