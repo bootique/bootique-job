@@ -1,16 +1,21 @@
-package com.nhl.launcher.job.scheduler;
+package com.nhl.launcher.job.runtime;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class SchedulerConfig {
+import com.nhl.launcher.job.scheduler.TriggerDescriptor;
+
+/**
+ * A configuration object that is used to setup jobs runtime.
+ */
+public class JobsConfig {
 
 	private String jobPropertiesPrefix;
 	private Collection<TriggerDescriptor> triggers;
 	private int threadPoolSize;
 	private boolean clusteredLocks;
 
-	public SchedulerConfig() {
+	public JobsConfig() {
 		this.triggers = new ArrayList<>();
 		this.threadPoolSize = 3;
 	}
