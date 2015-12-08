@@ -1,4 +1,4 @@
-package com.nhl.launcher.job.locking;
+package com.nhl.launcher.job.lock;
 
 public enum LockType {
 

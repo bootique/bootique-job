@@ -4,14 +4,14 @@ import java.util.Map;
 
 import com.nhl.launcher.job.Job;
 import com.nhl.launcher.job.SerialJob;
-import com.nhl.launcher.job.locking.SerialJobRunner;
+import com.nhl.launcher.job.lock.LockHandler;
 
-public class RunnableSerialJobFactory implements RunnableJobFactory {
+public class LockAwareRunnableJobFactory implements RunnableJobFactory {
 
 	private RunnableJobFactory delegate;
-	private SerialJobRunner serialJobRunner;
+	private LockHandler serialJobRunner;
 
-	public RunnableSerialJobFactory(RunnableJobFactory delegate, SerialJobRunner serialJobRunner) {
+	public LockAwareRunnableJobFactory(RunnableJobFactory delegate, LockHandler serialJobRunner) {
 		this.delegate = delegate;
 		this.serialJobRunner = serialJobRunner;
 	}
@@ -21,10 +21,7 @@ public class RunnableSerialJobFactory implements RunnableJobFactory {
 
 		RunnableJob rj = delegate.runnable(job, parameters);
 		boolean serialConstraint = job.getClass().getAnnotation(SerialJob.class) != null;
-
-		return serialConstraint ? () -> {
-			return serialJobRunner.runSerially(rj, job.getMetadata());
-		} : rj;
+		return serialConstraint ? serialJobRunner.lockingJob(rj, job.getMetadata()) : rj;
 	}
 
 }

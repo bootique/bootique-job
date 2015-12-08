@@ -1,4 +1,4 @@
-package com.nhl.launcher.job.locking;
+package com.nhl.launcher.job.lock;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,39 +14,42 @@ import com.nhl.launcher.job.runnable.JobOutcome;
 import com.nhl.launcher.job.runnable.JobResult;
 import com.nhl.launcher.job.runnable.RunnableJob;
 
-public class ZkClusterSerialJobRunner implements SerialJobRunner {
+public class ZkClusterLockHandler implements LockHandler {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ZkClusterSerialJobRunner.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ZkClusterLockHandler.class);
 
 	// TODO: using a shared library package name for job locking can create
 	// unneeded contention between different apps
 	private final static String ZK_PATH_PREFIX = "/"
-			+ ZkClusterSerialJobRunner.class.getPackage().getName().replace('.', '/') + "/";
+			+ ZkClusterLockHandler.class.getPackage().getName().replace('.', '/') + "/";
 
 	private final Provider<CuratorFramework> zkClient;
 
 	@Inject
-	public ZkClusterSerialJobRunner(Provider<CuratorFramework> zkClient) {
+	public ZkClusterLockHandler(Provider<CuratorFramework> zkClient) {
 		this.zkClient = zkClient;
 	}
 
 	@Override
-	public JobResult runSerially(RunnableJob runnable, JobMetadata metadata) {
-		String lockName = getLockName(metadata);
-		InterProcessMutex lock = getLock(lockName);
+	public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
 
-		LOGGER.info("Attempting to lock '{}'", lockName);
-		if (!acquire(lock)) {
-			LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-			return new JobResult(metadata, JobOutcome.SKIPPED, null,
-					"Another job instance owns the lock. Skipping execution");
-		}
+		return () -> {
+			String lockName = getLockName(metadata);
+			InterProcessMutex lock = getLock(lockName);
 
-		try {
-			return runnable.run();
-		} finally {
-			release(lock);
-		}
+			LOGGER.info("Attempting to lock '{}'", lockName);
+			if (!acquire(lock)) {
+				LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
+				return new JobResult(metadata, JobOutcome.SKIPPED, null,
+						"Another job instance owns the lock. Skipping execution");
+			}
+
+			try {
+				return executable.run();
+			} finally {
+				release(lock);
+			}
+		};
 	}
 
 	protected boolean acquire(InterProcessMutex lock) {

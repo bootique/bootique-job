@@ -21,13 +21,13 @@ import com.nhl.launcher.env.Environment;
 import com.nhl.launcher.job.Job;
 import com.nhl.launcher.job.command.ExecCommand;
 import com.nhl.launcher.job.command.ListCommand;
-import com.nhl.launcher.job.locking.LocalSerialJobRunner;
-import com.nhl.launcher.job.locking.LockType;
-import com.nhl.launcher.job.locking.SerialJobRunner;
-import com.nhl.launcher.job.locking.ZkClusterSerialJobRunner;
+import com.nhl.launcher.job.lock.LocalLockHandler;
+import com.nhl.launcher.job.lock.LockHandler;
+import com.nhl.launcher.job.lock.LockType;
+import com.nhl.launcher.job.lock.ZkClusterLockHandler;
 import com.nhl.launcher.job.runnable.ErrorHandlingRunnableJobFactory;
 import com.nhl.launcher.job.runnable.RunnableJobFactory;
-import com.nhl.launcher.job.runnable.RunnableSerialJobFactory;
+import com.nhl.launcher.job.runnable.LockAwareRunnableJobFactory;
 import com.nhl.launcher.job.runnable.SimpleRunnableJobFactory;
 import com.nhl.launcher.job.scheduler.DefaultScheduler;
 import com.nhl.launcher.job.scheduler.Scheduler;
@@ -78,31 +78,31 @@ public class Jobs {
 
 			jobTypes.forEach(jt -> Multibinder.newSetBinder(binder, Job.class).addBinding().to(jt).in(Singleton.class));
 
-			MapBinder<LockType, SerialJobRunner> serialJobRunners = MapBinder.newMapBinder(binder, LockType.class,
-					SerialJobRunner.class);
-			serialJobRunners.addBinding(LockType.local).to(LocalSerialJobRunner.class);
+			MapBinder<LockType, LockHandler> serialJobRunners = MapBinder.newMapBinder(binder, LockType.class,
+					LockHandler.class);
+			serialJobRunners.addBinding(LockType.local).to(LocalLockHandler.class);
 
 			if (enableZookeeperLocks) {
-				serialJobRunners.addBinding(LockType.clustered).to(ZkClusterSerialJobRunner.class);
+				serialJobRunners.addBinding(LockType.clustered).to(ZkClusterLockHandler.class);
 			}
 		}
 
 		@Provides
-		public Scheduler createScheduler(Set<Job> jobs, Environment environment,
-				Map<LockType, SerialJobRunner> jobRunners, ConfigurationFactory configFactory) {
+		public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners,
+				ConfigurationFactory configFactory) {
 
 			JobsConfig config = configFactory.subconfig(configPrefix, JobsConfig.class);
 			TaskScheduler taskScheduler = createTaskScheduler(config);
 
 			LockType lockType = config.isClusteredLocks() ? LockType.clustered : LockType.local;
-			SerialJobRunner serialRunner = jobRunners.get(lockType);
+			LockHandler lockHandler = jobRunners.get(lockType);
 
-			if (serialRunner == null) {
+			if (lockHandler == null) {
 				throw new IllegalStateException("No SerialJobRunner for lock type: " + lockType);
 			}
 
 			RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-			RunnableJobFactory rf2 = new RunnableSerialJobFactory(rf1, serialRunner);
+			RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 			RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
 			// TODO: write a builder instead of this insane constructor
