@@ -4,46 +4,50 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.nhl.launcher</groupId>
-		<artifactId>launcher-parent</artifactId>
+		<groupId>com.nhl.bootique.parent</groupId>
+		<artifactId>bootique-parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<groupId>com.nhl.launcher.job</groupId>
-	<artifactId>launcher-job</artifactId>
+	<groupId>com.nhl.bootique.job</groupId>
+	<artifactId>bootique-job</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Job framework with Launcher Integration</name>
-	<description>Provides a job expecution framework with Launcher integration</description>
+	<name>Job framework with bootique Integration</name>
+	<description>Provides a job expecution framework with bootique integration</description>
 
 	<properties>
-		<launcher-core-version>1.0-SNAPSHOT</launcher-core-version>
-		<launcher-zookeeper-version>1.0-SNAPSHOT</launcher-zookeeper-version>
+		<bootique-version>1.0-SNAPSHOT</bootique-version>
+		<bootique-zookeeper-version>1.0-SNAPSHOT</bootique-zookeeper-version>
+
+		<!-- 
+			TODO: we are bringing the entire huge Spring framework to 
+		 	just use a few scheduling classes, and no injection 
+		-->
 		<spring-version>4.2.3.RELEASE</spring-version>
 	</properties>
 
 	<scm>
-		<developerConnection>scm:git:ssh://git.nhl.com/repos/launcher/launcher-job</developerConnection>
+		<developerConnection>scm:git:ssh://git@github.com/nhl/bootique-job</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
 	<repositories>
 		<repository>
-			<id>nhl2upstream</id>
-			<name>NHL Artifacts</name>
-			<url>http://maven.nhl.com/content/groups/nhl2upstream</url>
+			<id>bootique-dependencies</id>
+			<name>Bootique Dependencies Repo</name>
+			<url>http://maven.objectstyle.org/nexus/content/groups/linkrest</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
-
 	<pluginRepositories>
 		<pluginRepository>
-			<id>nhl2upstream</id>
-			<name>NHL Artifacts</name>
-			<url>http://maven.nhl.com/content/groups/nhl2upstream/</url>
+			<id>bootique-dependencies</id>
+			<name>Bootique Dependencies Repo</name>
+			<url>http://maven.objectstyle.org/nexus/content/groups/linkrest</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -53,14 +57,14 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.nhl.launcher.core</groupId>
-				<artifactId>launcher-core</artifactId>
-				<version>${launcher-core-version}</version>
+				<groupId>com.nhl.bootique</groupId>
+				<artifactId>bootique</artifactId>
+				<version>${bootique-version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.nhl.launcher.zookeeper</groupId>
-				<artifactId>launcher-zookeeper</artifactId>
-				<version>${launcher-zookeeper-version}</version>
+				<groupId>com.nhl.bootique.zookeeper</groupId>
+				<artifactId>bootique-zookeeper</artifactId>
+				<version>${bootique-zookeeper-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -86,8 +90,8 @@
 
 		<!-- Compile dependencies -->
 		<dependency>
-			<groupId>com.nhl.launcher.core</groupId>
-			<artifactId>launcher-core</artifactId>
+			<groupId>com.nhl.bootique</groupId>
+			<artifactId>bootique</artifactId>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -98,8 +102,8 @@
 
 		<!-- Optional compile dependencies -->
 		<dependency>
-			<groupId>com.nhl.launcher.zookeeper</groupId>
-			<artifactId>launcher-zookeeper</artifactId>
+			<groupId>com.nhl.bootique.zookeeper</groupId>
+			<artifactId>bootique-zookeeper</artifactId>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
