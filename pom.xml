@@ -14,8 +14,8 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Job framework with bootique Integration</name>
-	<description>Provides a job expecution framework with bootique integration</description>
+	<name>Job framework with Bootique Integration</name>
+	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
 		<bootique-version>1.0-SNAPSHOT</bootique-version>
