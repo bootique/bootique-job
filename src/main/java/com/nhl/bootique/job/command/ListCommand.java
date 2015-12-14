@@ -4,29 +4,27 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.nhl.bootique.command.CommandOutcome;
 import com.nhl.bootique.command.OptionTriggeredCommand;
 import com.nhl.bootique.job.Job;
 import com.nhl.bootique.jopt.Options;
+import com.nhl.bootique.log.BootLogger;
 
 import joptsimple.OptionParser;
 
 public class ListCommand extends OptionTriggeredCommand {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ListCommand.class);
-
 	private static final String LIST_OPTION = "list";
 
 	private Provider<Set<Job>> jobsProvider;
+	private BootLogger bootLogger;
 
 	@Inject
-	public ListCommand(Provider<Set<Job>> jobsProvider) {
+	public ListCommand(Provider<Set<Job>> jobsProvider, BootLogger bootLogger) {
 		this.jobsProvider = jobsProvider;
+		this.bootLogger = bootLogger;
 	}
 
 	@Override
@@ -47,7 +45,7 @@ public class ListCommand extends OptionTriggeredCommand {
 			return CommandOutcome.failed(1, "No jobs are available.");
 		}
 
-		LOGGER.info("Available jobs:");
+		bootLogger.stdout("Available jobs:");
 
 		// TODO: sort jobs by name for more readable output
 
@@ -66,9 +64,9 @@ public class ListCommand extends OptionTriggeredCommand {
 			}).reduce((s1, s2) -> s1 + ", " + s2);
 
 			if (params.isPresent()) {
-				LOGGER.info(String.format("     - %s(%s)", j.getMetadata().getName(), params.get()));
+				bootLogger.stdout(String.format("     - %s(%s)", j.getMetadata().getName(), params.get()));
 			} else {
-				LOGGER.info(String.format("     - %s", j.getMetadata().getName()));
+				bootLogger.stdout(String.format("     - %s", j.getMetadata().getName()));
 			}
 		});
 
