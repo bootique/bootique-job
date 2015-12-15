@@ -12,7 +12,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
-import com.nhl.bootique.command.Command;
+import com.nhl.bootique.BQModule;
 import com.nhl.bootique.env.Environment;
 import com.nhl.bootique.factory.FactoryConfigurationService;
 import com.nhl.bootique.job.Job;
@@ -79,9 +79,7 @@ public class JobBundle {
 		@Override
 		public void configure(Binder binder) {
 
-			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ExecCommand.class);
-			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ListCommand.class);
-			Multibinder.newSetBinder(binder, Command.class).addBinding().to(ScheduleCommand.class);
+			BQModule.bindCommands(binder, ExecCommand.class, ListCommand.class, ScheduleCommand.class);
 
 			jobTypes.forEach(jt -> Multibinder.newSetBinder(binder, Job.class).addBinding().to(jt).in(Singleton.class));
 
