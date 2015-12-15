@@ -6,20 +6,20 @@
 	<parent>
 		<groupId>com.nhl.bootique.parent</groupId>
 		<artifactId>bootique-parent</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.5-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.nhl.bootique.job</groupId>
 	<artifactId>bootique-job</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Job framework with Bootique Integration</name>
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>1.0-SNAPSHOT</bootique-version>
-		<bootique-zookeeper-version>1.0-SNAPSHOT</bootique-zookeeper-version>
+		<bootique-version>0.5-SNAPSHOT</bootique-version>
+		<bootique-zookeeper-version>0.5-SNAPSHOT</bootique-zookeeper-version>
 
 		<!-- 
 			TODO: we are bringing the entire huge Spring framework to 
