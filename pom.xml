@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.nhl.bootique.parent</groupId>
 		<artifactId>bootique-parent</artifactId>
-		<version>0.5-SNAPSHOT</version>
+		<version>0.5</version>
 	</parent>
 
 	<groupId>com.nhl.bootique.job</groupId>
@@ -18,8 +18,8 @@
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.5-SNAPSHOT</bootique-version>
-		<bootique-zookeeper-version>0.5-SNAPSHOT</bootique-zookeeper-version>
+		<bootique-version>0.5</bootique-version>
+		<bootique-zookeeper-version>0.5</bootique-zookeeper-version>
 
 		<!-- 
 			TODO: we are bringing the entire huge Spring framework to 
@@ -37,7 +37,7 @@
 		<repository>
 			<id>bootique-dependencies</id>
 			<name>Bootique Dependencies Repo</name>
-			<url>http://maven.objectstyle.org/nexus/content/groups/linkrest</url>
+			<url>http://maven.objectstyle.org/nexus/content/groups/bootique-upstream</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -47,7 +47,7 @@
 		<pluginRepository>
 			<id>bootique-dependencies</id>
 			<name>Bootique Dependencies Repo</name>
-			<url>http://maven.objectstyle.org/nexus/content/groups/linkrest</url>
+			<url>http://maven.objectstyle.org/nexus/content/groups/bootique-upstream</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
