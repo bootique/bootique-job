@@ -68,8 +68,14 @@ public class ExecCommand extends OptionTriggeredCommand {
 		// Stream above, it will block and won't be able to do parallel
 		// scheduling
 
-		results.stream().map(f -> f.get()).forEach(r -> LOGGER
-				.info(String.format("Finished job '%s', result: %s", r.getMetadata().getName(), r.getOutcome())));
+		results.stream().map(f -> f.get()).forEach(r -> {
+			if (r.getMessage() != null) {
+				LOGGER.info(String.format("Finished job '%s', result: %s, message: %s", r.getMetadata().getName(),
+						r.getOutcome(), r.getMessage()));
+			} else {
+				LOGGER.info(String.format("Finished job '%s', result: %s", r.getMetadata().getName(), r.getOutcome()));
+			}
+		});
 		return CommandOutcome.succeeded();
 	}
 }

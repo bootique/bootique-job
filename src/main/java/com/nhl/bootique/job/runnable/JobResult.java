@@ -12,9 +12,13 @@ public class JobResult {
 	public static JobResult success(JobMetadata metadata) {
 		return new JobResult(metadata, JobOutcome.SUCCESS, null, null);
 	}
-	
+
 	public static JobResult failure(JobMetadata metadata) {
 		return new JobResult(metadata, JobOutcome.FAILURE, null, null);
+	}
+	
+	public static JobResult failure(JobMetadata metadata, String message) {
+		return new JobResult(metadata, JobOutcome.FAILURE, null, message);
 	}
 
 	public static JobResult failure(JobMetadata metadata, Throwable th) {
@@ -35,13 +39,17 @@ public class JobResult {
 		this.throwable = throwable;
 		this.message = message;
 	}
-	
+
 	public JobMetadata getMetadata() {
 		return metadata;
 	}
 
 	public JobOutcome getOutcome() {
 		return outcome;
+	}
+
+	public boolean isSuccess() {
+		return outcome == JobOutcome.SUCCESS;
 	}
 
 	public Throwable getThrowable() {

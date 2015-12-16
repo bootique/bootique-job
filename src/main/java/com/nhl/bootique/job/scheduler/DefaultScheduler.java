@@ -61,7 +61,8 @@ public class DefaultScheduler implements Scheduler {
 
 		Job job = jobs.get(jobName);
 		if (job == null) {
-			return new JobFuture(new ExpiredFuture(), () -> JobResult.failure(JobMetadataBuilder.build(jobName)));
+			return new JobFuture(new ExpiredFuture(),
+					() -> JobResult.failure(JobMetadataBuilder.build(jobName), "Invalid job name: " + jobName));
 		}
 
 		Map<String, Object> parameters = jobParams(job);

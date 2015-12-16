@@ -12,7 +12,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
-import com.nhl.bootique.BQModule;
+import com.nhl.bootique.BQContribBinder;
 import com.nhl.bootique.FactoryModule;
 import com.nhl.bootique.env.Environment;
 import com.nhl.bootique.factory.FactoryConfigurationService;
@@ -23,7 +23,7 @@ import com.nhl.bootique.job.command.ScheduleCommand;
 import com.nhl.bootique.job.lock.LocalLockHandler;
 import com.nhl.bootique.job.lock.LockHandler;
 import com.nhl.bootique.job.lock.LockType;
-import com.nhl.bootique.job.lock.ZkClusterLockHandler;
+import com.nhl.bootique.job.lock.zookeeper.ZkClusterLockHandler;
 import com.nhl.bootique.job.scheduler.Scheduler;
 import com.nhl.bootique.job.scheduler.SchedulerFactory;
 
@@ -64,7 +64,7 @@ public class JobModule extends FactoryModule<SchedulerFactory> {
 
 	@Override
 	public void configure(Binder binder) {
-		BQModule.bindCommandTypes(binder, ExecCommand.class, ListCommand.class, ScheduleCommand.class);
+		BQContribBinder.binder(binder).bindCommandTypes(ExecCommand.class, ListCommand.class, ScheduleCommand.class);
 		JobModule.bindJobTypes(binder, jobTypes);
 		MapBinder<LockType, LockHandler> lockHandlers = MapBinder.newMapBinder(binder, LockType.class,
 				LockHandler.class);
