@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>com.nhl.bootique.parent</groupId>
 		<artifactId>bootique-parent</artifactId>
-		<version>0.5</version>
+		<version>0.6</version>
 	</parent>
 
 	<groupId>com.nhl.bootique.job</groupId>
@@ -20,10 +21,8 @@
 		<bootique-version>0.8-SNAPSHOT</bootique-version>
 		<bootique-zookeeper-version>0.5</bootique-zookeeper-version>
 
-		<!-- 
-			TODO: we are bringing the entire huge Spring framework to 
-		 	just use a few scheduling classes, and no injection 
-		-->
+		<!-- TODO: we are bringing the entire huge Spring framework to just use 
+			a few scheduling classes, and no injection -->
 		<spring-version>4.2.3.RELEASE</spring-version>
 	</properties>
 
@@ -108,4 +107,11 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>

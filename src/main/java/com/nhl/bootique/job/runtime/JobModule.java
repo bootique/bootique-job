@@ -6,13 +6,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.Multibinder;
-import com.nhl.bootique.BQContribBinder;
+import com.nhl.bootique.BQBinder;
 import com.nhl.bootique.FactoryModule;
 import com.nhl.bootique.env.Environment;
 import com.nhl.bootique.factory.FactoryConfigurationService;
@@ -28,17 +25,6 @@ import com.nhl.bootique.job.scheduler.Scheduler;
 import com.nhl.bootique.job.scheduler.SchedulerFactory;
 
 public class JobModule extends FactoryModule<SchedulerFactory> {
-
-	@SafeVarargs
-	public static void bindJobTypes(Binder binder, Class<? extends Job>... jobTypes) {
-		Preconditions.checkNotNull(jobTypes);
-		bindJobTypes(binder, Arrays.asList(jobTypes));
-	}
-
-	public static void bindJobTypes(Binder binder, Collection<Class<? extends Job>> jobTypes) {
-		Multibinder<Job> jobBinder = Multibinder.newSetBinder(binder, Job.class);
-		jobTypes.forEach(jt -> jobBinder.addBinding().to(jt).in(Singleton.class));
-	}
 
 	private Collection<Class<? extends Job>> jobTypes = new HashSet<>();
 
@@ -64,8 +50,10 @@ public class JobModule extends FactoryModule<SchedulerFactory> {
 
 	@Override
 	public void configure(Binder binder) {
-		BQContribBinder.binder(binder).bindCommandTypes(ExecCommand.class, ListCommand.class, ScheduleCommand.class);
-		JobModule.bindJobTypes(binder, jobTypes);
+		BQBinder.contributeTo(binder).commandTypes(ExecCommand.class, ListCommand.class, ScheduleCommand.class);
+
+		JobBinder.contributeTo(binder).jobTypes(jobTypes);
+
 		MapBinder<LockType, LockHandler> lockHandlers = MapBinder.newMapBinder(binder, LockType.class,
 				LockHandler.class);
 		lockHandlers.addBinding(LockType.local).to(LocalLockHandler.class);
