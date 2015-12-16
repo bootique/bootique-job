@@ -32,15 +32,15 @@ public class SchedulerFactory {
 		this.threadPoolSize = 3;
 	}
 
-	public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners) {
+	public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> lockHandlers) {
 
 		TaskScheduler taskScheduler = createTaskScheduler();
 
 		LockType lockType = clusteredLocks ? LockType.clustered : LockType.local;
-		LockHandler lockHandler = jobRunners.get(lockType);
+		LockHandler lockHandler = lockHandlers.get(lockType);
 
 		if (lockHandler == null) {
-			throw new IllegalStateException("No SerialJobRunner for lock type: " + lockType);
+			throw new IllegalStateException("No LockHandler for lock type: " + lockType);
 		}
 
 		RunnableJobFactory rf1 = new SimpleRunnableJobFactory();

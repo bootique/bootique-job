@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.inject.Injector;
 import com.nhl.bootique.job.JobMetadata;
 import com.nhl.bootique.job.runnable.JobOutcome;
 import com.nhl.bootique.job.runnable.JobResult;
@@ -23,11 +23,11 @@ public class ZkClusterLockHandler implements LockHandler {
 	private final static String ZK_PATH_PREFIX = "/"
 			+ ZkClusterLockHandler.class.getPackage().getName().replace('.', '/') + "/";
 
-	private final Provider<CuratorFramework> zkClient;
+	private final Injector injector;
 
 	@Inject
-	public ZkClusterLockHandler(Provider<CuratorFramework> zkClient) {
-		this.zkClient = zkClient;
+	public ZkClusterLockHandler(Injector injector) {
+		this.injector = injector;
 	}
 
 	@Override
@@ -69,9 +69,14 @@ public class ZkClusterLockHandler implements LockHandler {
 	}
 
 	private InterProcessMutex getLock(String lockName) {
+
+		// defer CuratorFramework faulting as much as possible... so using
+		// Injector here instead of instance or provider injection
+
 		// do not cache the locks, as this would break locking within
 		// the same VM
-		return new InterProcessMutex(zkClient.get(), lockName);
+
+		return new InterProcessMutex(injector.getInstance(CuratorFramework.class), lockName);
 	}
 
 	private String getLockName(JobMetadata metadata) {
