@@ -1,4 +1,4 @@
-package com.nhl.bootique.job;
+package com.nhl.bootique.job.runtime;
 
 import static org.junit.Assert.assertTrue;
 
@@ -7,6 +7,7 @@ import java.util.ServiceLoader;
 import org.junit.Test;
 
 import com.nhl.bootique.BQModuleProvider;
+import com.nhl.bootique.job.runtime.JobModuleProvider;
 
 public class JobModuleProviderIT {
 	@Test

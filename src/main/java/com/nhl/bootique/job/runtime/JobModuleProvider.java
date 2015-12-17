@@ -1,8 +1,7 @@
-package com.nhl.bootique.job;
+package com.nhl.bootique.job.runtime;
 
 import com.google.inject.Module;
 import com.nhl.bootique.BQModuleProvider;
-import com.nhl.bootique.job.runtime.JobModule;
 
 public class JobModuleProvider implements BQModuleProvider{
 
