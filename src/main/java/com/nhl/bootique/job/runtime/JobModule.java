@@ -63,6 +63,6 @@ public class JobModule extends FactoryModule<SchedulerFactory> {
 	@Provides
 	public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners,
 			FactoryConfigurationService configFactory) {
-		return createFactory(configFactory).createScheduler(jobs, environment, jobRunners);
+		return createFactory(configFactory).createScheduler(jobs, environment, configFactory, jobRunners);
 	}
 }

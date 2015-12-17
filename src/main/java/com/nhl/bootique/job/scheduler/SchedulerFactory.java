@@ -8,7 +8,9 @@ import java.util.Set;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.nhl.bootique.env.Environment;
+import com.nhl.bootique.factory.FactoryConfigurationService;
 import com.nhl.bootique.job.Job;
 import com.nhl.bootique.job.lock.LockHandler;
 import com.nhl.bootique.job.lock.LockType;
@@ -30,9 +32,11 @@ public class SchedulerFactory {
 	public SchedulerFactory() {
 		this.triggers = new ArrayList<>();
 		this.threadPoolSize = 3;
+		this.jobPropertiesPrefix = "jobs";
 	}
 
-	public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> lockHandlers) {
+	public Scheduler createScheduler(Set<Job> jobs, Environment environment,
+			FactoryConfigurationService configurationService, Map<LockType, LockHandler> lockHandlers) {
 
 		TaskScheduler taskScheduler = createTaskScheduler();
 
@@ -47,8 +51,12 @@ public class SchedulerFactory {
 		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
+		Map<String, Map<String, String>> jobProperties = configurationService
+				.factory(new TypeReference<Map<String, Map<String, String>>>() {
+				}, jobPropertiesPrefix);
+
 		// TODO: write a builder instead of this insane constructor
-		return new DefaultScheduler(jobs, triggers, taskScheduler, rf3, environment, jobPropertiesPrefix);
+		return new DefaultScheduler(jobs, triggers, taskScheduler, rf3, jobProperties);
 	}
 
 	protected TaskScheduler createTaskScheduler() {

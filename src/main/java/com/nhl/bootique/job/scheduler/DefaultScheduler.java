@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 
-import com.nhl.bootique.env.Environment;
 import com.nhl.bootique.job.Job;
 import com.nhl.bootique.job.JobMetadata;
 import com.nhl.bootique.job.JobMetadataBuilder;
@@ -35,18 +34,15 @@ public class DefaultScheduler implements Scheduler {
 	private TaskScheduler taskScheduler;
 	private RunnableJobFactory runnableJobFactory;
 	private Collection<Job> jobs;
-	private Environment environment;
 	private Collection<TriggerDescriptor> triggers;
-	private String jobPropertiesPrefix;
+	private Map<String, Map<String, String>> jobProperties;
 
 	public DefaultScheduler(Collection<Job> jobs, Collection<TriggerDescriptor> triggers, TaskScheduler taskScheduler,
-			RunnableJobFactory runnableJobFactory, Environment environment, String jobPropertiesPrefix) {
+			RunnableJobFactory runnableJobFactory, Map<String, Map<String, String>> jobProperties) {
 
 		this.jobs = jobs;
 		this.triggers = triggers;
-		this.environment = environment;
-		this.jobPropertiesPrefix = jobPropertiesPrefix;
-
+		this.jobProperties = jobProperties;
 		this.taskScheduler = taskScheduler;
 		this.runnableJobFactory = runnableJobFactory;
 	}
@@ -115,9 +111,7 @@ public class DefaultScheduler implements Scheduler {
 
 		Map<String, Object> params = new HashMap<>();
 		for (JobParameterMetadata<?> param : job.getMetadata().getParameters()) {
-
-			String propertyName = toPropertyName(job.getMetadata(), param);
-			String valueString = environment.getProperty(propertyName);
+			String valueString = propertyValue(job.getMetadata(), param);
 			Object value = param.fromString(valueString);
 			params.put(param.getName(), value);
 		}
@@ -125,9 +119,9 @@ public class DefaultScheduler implements Scheduler {
 		return params;
 	}
 
-	private String toPropertyName(JobMetadata jobMD, JobParameterMetadata<?> parameterMD) {
-		String prefix = jobPropertiesPrefix == null ? "" : jobPropertiesPrefix + ".";
-		return prefix + jobMD.getName() + "." + parameterMD.getName();
+	private String propertyValue(JobMetadata jobMD, JobParameterMetadata<?> param) {
+		Map<String, String> singleJobProperties = jobProperties.get(jobMD.getName());
+		return singleJobProperties != null ? singleJobProperties.get(param.getName()) : null;
 	}
 
 	private final class ExpiredFuture implements ScheduledFuture<Object> {
