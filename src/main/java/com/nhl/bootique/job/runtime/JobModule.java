@@ -10,7 +10,7 @@ import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.google.inject.multibindings.MapBinder;
 import com.nhl.bootique.BQBinder;
-import com.nhl.bootique.FactoryModule;
+import com.nhl.bootique.ConfigModule;
 import com.nhl.bootique.env.Environment;
 import com.nhl.bootique.factory.FactoryConfigurationService;
 import com.nhl.bootique.job.Job;
@@ -24,16 +24,15 @@ import com.nhl.bootique.job.lock.zookeeper.ZkClusterLockHandler;
 import com.nhl.bootique.job.scheduler.Scheduler;
 import com.nhl.bootique.job.scheduler.SchedulerFactory;
 
-public class JobModule extends FactoryModule<SchedulerFactory> {
+public class JobModule extends ConfigModule {
 
 	private Collection<Class<? extends Job>> jobTypes = new HashSet<>();
 
 	public JobModule() {
-		super(SchedulerFactory.class);
 	}
 
 	public JobModule(String configPrefix) {
-		super(SchedulerFactory.class, configPrefix);
+		super(configPrefix);
 	}
 
 	@Override
@@ -63,6 +62,7 @@ public class JobModule extends FactoryModule<SchedulerFactory> {
 	@Provides
 	public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners,
 			FactoryConfigurationService configFactory) {
-		return createFactory(configFactory).createScheduler(jobs, environment, configFactory, jobRunners);
+		return configFactory.factory(SchedulerFactory.class, configPrefix).createScheduler(jobs, environment,
+				configFactory, jobRunners);
 	}
 }
