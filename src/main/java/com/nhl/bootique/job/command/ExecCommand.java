@@ -59,7 +59,7 @@ public class ExecCommand extends OptionTriggeredCommand {
 
 		Set<String> jobNames = new HashSet<>(jobArgs);
 
-		LOGGER.info("ExecCommand executed");
+		LOGGER.info("Will run job(s): " + jobNames);
 
 		Scheduler scheduler = schedulerProvider.get();
 		Collection<JobFuture> results = jobNames.stream().map(jn -> scheduler.runOnce(jn)).collect(toList());
