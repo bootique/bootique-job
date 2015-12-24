@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.nhl.bootique.parent</groupId>
 		<artifactId>bootique-parent</artifactId>
-		<version>0.6</version>
+		<version>0.9</version>
 	</parent>
 
 	<groupId>com.nhl.bootique.job</groupId>
@@ -17,8 +17,8 @@
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.9</bootique-version>
-		<bootique-zookeeper-version>0.6</bootique-zookeeper-version>
+		<bootique-version>0.10</bootique-version>
+		<bootique-zookeeper-version>0.7</bootique-zookeeper-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
@@ -27,29 +27,9 @@
 
 	<scm>
 		<developerConnection>scm:git:ssh://git@github.com/nhl/bootique-job</developerConnection>
+		<url>https://github.com/nhl/bootique-job</url>
 		<tag>HEAD</tag>
 	</scm>
-
-	<repositories>
-		<repository>
-			<id>bootique-dependencies</id>
-			<name>Bootique Dependencies Repo</name>
-			<url>http://maven.objectstyle.org/nexus/content/groups/bootique-upstream</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>bootique-dependencies</id>
-			<name>Bootique Dependencies Repo</name>
-			<url>http://maven.objectstyle.org/nexus/content/groups/bootique-upstream</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<dependencyManagement>
 		<dependencies>
@@ -113,4 +93,28 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<!-- Optional profile used to sign artifacts -->
+	<profiles>
+		<profile>
+			<id>gpg</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

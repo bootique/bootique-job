@@ -8,9 +8,8 @@ import java.util.Set;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.nhl.bootique.config.ConfigurationFactory;
 import com.nhl.bootique.env.Environment;
-import com.nhl.bootique.factory.FactoryConfigurationService;
 import com.nhl.bootique.job.Job;
 import com.nhl.bootique.job.lock.LockHandler;
 import com.nhl.bootique.job.lock.LockType;
@@ -18,6 +17,7 @@ import com.nhl.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
 import com.nhl.bootique.job.runnable.LockAwareRunnableJobFactory;
 import com.nhl.bootique.job.runnable.RunnableJobFactory;
 import com.nhl.bootique.job.runnable.SimpleRunnableJobFactory;
+import com.nhl.bootique.type.TypeRef;
 
 /**
  * A configuration object that is used to setup jobs runtime.
@@ -35,8 +35,8 @@ public class SchedulerFactory {
 		this.jobPropertiesPrefix = "jobs";
 	}
 
-	public Scheduler createScheduler(Set<Job> jobs, Environment environment,
-			FactoryConfigurationService configurationService, Map<LockType, LockHandler> lockHandlers) {
+	public Scheduler createScheduler(Set<Job> jobs, Environment environment, ConfigurationFactory configFactory,
+			Map<LockType, LockHandler> lockHandlers) {
 
 		TaskScheduler taskScheduler = createTaskScheduler();
 
@@ -51,8 +51,8 @@ public class SchedulerFactory {
 		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
-		Map<String, Map<String, String>> jobProperties = configurationService
-				.factory(new TypeReference<Map<String, Map<String, String>>>() {
+		Map<String, Map<String, String>> jobProperties = configFactory
+				.config(new TypeRef<Map<String, Map<String, String>>>() {
 				}, jobPropertiesPrefix);
 
 		// TODO: write a builder instead of this insane constructor

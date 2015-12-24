@@ -11,8 +11,8 @@ import com.google.inject.Provides;
 import com.google.inject.multibindings.MapBinder;
 import com.nhl.bootique.BQBinder;
 import com.nhl.bootique.ConfigModule;
+import com.nhl.bootique.config.ConfigurationFactory;
 import com.nhl.bootique.env.Environment;
-import com.nhl.bootique.factory.FactoryConfigurationService;
 import com.nhl.bootique.job.Job;
 import com.nhl.bootique.job.command.ExecCommand;
 import com.nhl.bootique.job.command.ListCommand;
@@ -61,8 +61,8 @@ public class JobModule extends ConfigModule {
 
 	@Provides
 	public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners,
-			FactoryConfigurationService configFactory) {
-		return configFactory.factory(SchedulerFactory.class, configPrefix).createScheduler(jobs, environment,
+			ConfigurationFactory configFactory) {
+		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobs, environment,
 				configFactory, jobRunners);
 	}
 }
