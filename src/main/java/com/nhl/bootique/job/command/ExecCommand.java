@@ -11,47 +11,44 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.nhl.bootique.cli.Cli;
+import com.nhl.bootique.cli.CliOption;
+import com.nhl.bootique.command.CommandMetadata;
 import com.nhl.bootique.command.CommandOutcome;
-import com.nhl.bootique.command.OptionTriggeredCommand;
+import com.nhl.bootique.command.CommandWithMetadata;
 import com.nhl.bootique.job.runnable.JobFuture;
 import com.nhl.bootique.job.scheduler.Scheduler;
-import com.nhl.bootique.jopt.Options;
 
-import joptsimple.OptionParser;
-
-public class ExecCommand extends OptionTriggeredCommand {
+public class ExecCommand extends CommandWithMetadata {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExecCommand.class);
 
-	private static final String EXEC_OPTION = "exec";
 	public static final String JOB_OPTION = "job";
 
 	private Provider<Scheduler> schedulerProvider;
 
+	private static CliOption.Builder createJobOption() {
+		return CliOption.builder(JOB_OPTION).description("Specifies the name of the job to run with '--exec'. "
+				+ "Available job names can be viewed using '--list' command.").valueRequired("job_name");
+	}
+
+	private static CommandMetadata createMetadata() {
+		return CommandMetadata.builder(ExecCommand.class)
+				.description("Executes one or more jobs. Jobs are specified with '--job' options")
+				.addOption(createJobOption()).build();
+	}
+
 	// using Provider for lazy init
 	@Inject
 	public ExecCommand(Provider<Scheduler> schedulerProvider) {
+		super(createMetadata());
 		this.schedulerProvider = schedulerProvider;
 	}
 
 	@Override
-	protected String getOption() {
-		return EXEC_OPTION;
-	}
+	public CommandOutcome run(Cli cli) {
 
-	@Override
-	public void configOptions(OptionParser parser) {
-		parser.accepts(getOption(), "Executes one or more jobs. Jobs are specified with '--job' options");
-		parser.accepts(JOB_OPTION,
-				"Specifies the name of the job to run with '--exec'. "
-						+ "Available job names can be viewed using '--list' command.")
-				.withRequiredArg().describedAs("job_name");
-	}
-
-	@Override
-	protected CommandOutcome doRun(Options options) {
-
-		Collection<String> jobArgs = options.stringsFor(JOB_OPTION);
+		Collection<String> jobArgs = cli.optionStrings(JOB_OPTION);
 		if (jobArgs == null || jobArgs.isEmpty()) {
 			return CommandOutcome.failed(1,
 					String.format("No jobs specified. Use '--%s' option to provide job names", JOB_OPTION));

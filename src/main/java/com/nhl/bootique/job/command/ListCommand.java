@@ -6,39 +6,32 @@ import java.util.Set;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.nhl.bootique.cli.Cli;
+import com.nhl.bootique.command.CommandMetadata;
 import com.nhl.bootique.command.CommandOutcome;
-import com.nhl.bootique.command.OptionTriggeredCommand;
+import com.nhl.bootique.command.CommandWithMetadata;
 import com.nhl.bootique.job.Job;
-import com.nhl.bootique.jopt.Options;
 import com.nhl.bootique.log.BootLogger;
 
-import joptsimple.OptionParser;
-
-public class ListCommand extends OptionTriggeredCommand {
-
-	private static final String LIST_OPTION = "list";
+public class ListCommand extends CommandWithMetadata {
 
 	private Provider<Set<Job>> jobsProvider;
 	private BootLogger bootLogger;
 
+	private static CommandMetadata createMetadata() {
+		return CommandMetadata.builder(ListCommand.class).description("Lists all jobs available in the app").build();
+	}
+
 	@Inject
 	public ListCommand(Provider<Set<Job>> jobsProvider, BootLogger bootLogger) {
+		super(createMetadata());
+
 		this.jobsProvider = jobsProvider;
 		this.bootLogger = bootLogger;
 	}
 
 	@Override
-	public void configOptions(OptionParser parser) {
-		parser.accepts(getOption(), "Lists all jobs available in the app");
-	}
-
-	@Override
-	protected String getOption() {
-		return LIST_OPTION;
-	}
-
-	@Override
-	protected CommandOutcome doRun(Options options) {
+	public CommandOutcome run(Cli cli) {
 
 		Collection<Job> jobs = jobsProvider.get();
 		if (jobs.isEmpty()) {
