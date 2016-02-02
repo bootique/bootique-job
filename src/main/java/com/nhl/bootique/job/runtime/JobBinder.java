@@ -9,6 +9,9 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.nhl.bootique.job.Job;
 
+/**
+ * @deprecated since 0.9 in favor of {@link JobModule#contributeJobs(Binder)}.
+ */
 public class JobBinder {
 
 	public static JobBinder contributeTo(Binder binder) {

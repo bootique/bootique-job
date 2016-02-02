@@ -31,6 +31,16 @@ public class JobModule extends ConfigModule {
 
 	private Collection<Class<? extends Job>> jobTypes = new HashSet<>();
 
+	/**
+	 * @param binder
+	 *            DI binder passed to the Module that invokes this method.
+	 * @since 0.11
+	 * @return returns a {@link Multibinder} for contributed jobs.
+	 */
+	public static Multibinder<Job> contributeJobs(Binder binder) {
+		return Multibinder.newSetBinder(binder, Job.class);
+	}
+
 	public JobModule() {
 	}
 
@@ -52,13 +62,16 @@ public class JobModule extends ConfigModule {
 
 	@Override
 	public void configure(Binder binder) {
-		
+
 		Multibinder<Command> commandBinder = BQCoreModule.contributeCommands(binder);
 		commandBinder.addBinding().to(ExecCommand.class).in(Singleton.class);
 		commandBinder.addBinding().to(ListCommand.class).in(Singleton.class);
 		commandBinder.addBinding().to(ScheduleCommand.class).in(Singleton.class);
 
-		JobBinder.contributeTo(binder).jobTypes(jobTypes);
+		// trigger extension points creation and provide default contributions
+
+		Multibinder<Job> jobBinder = JobModule.contributeJobs(binder);
+		jobTypes.forEach(jt -> jobBinder.addBinding().to(jt).in(Singleton.class));
 
 		MapBinder<LockType, LockHandler> lockHandlers = MapBinder.newMapBinder(binder, LockType.class,
 				LockHandler.class);
