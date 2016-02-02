@@ -8,9 +8,12 @@ import java.util.Set;
 
 import com.google.inject.Binder;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.multibindings.MapBinder;
-import com.nhl.bootique.BQBinder;
+import com.google.inject.multibindings.Multibinder;
+import com.nhl.bootique.BQCoreModule;
 import com.nhl.bootique.ConfigModule;
+import com.nhl.bootique.command.Command;
 import com.nhl.bootique.config.ConfigurationFactory;
 import com.nhl.bootique.env.Environment;
 import com.nhl.bootique.job.Job;
@@ -49,7 +52,11 @@ public class JobModule extends ConfigModule {
 
 	@Override
 	public void configure(Binder binder) {
-		BQBinder.contributeTo(binder).commandTypes(ExecCommand.class, ListCommand.class, ScheduleCommand.class);
+		
+		Multibinder<Command> commandBinder = BQCoreModule.contributeCommands(binder);
+		commandBinder.addBinding().to(ExecCommand.class).in(Singleton.class);
+		commandBinder.addBinding().to(ListCommand.class).in(Singleton.class);
+		commandBinder.addBinding().to(ScheduleCommand.class).in(Singleton.class);
 
 		JobBinder.contributeTo(binder).jobTypes(jobTypes);
 
