@@ -1,2 +1,4 @@
 0.9:
 
+#1 Upgrade Bootique to 0.12
+#2 Move contribution API from JobBinder into static methods on JobModule
