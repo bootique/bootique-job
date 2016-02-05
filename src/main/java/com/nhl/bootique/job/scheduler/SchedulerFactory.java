@@ -51,12 +51,15 @@ public class SchedulerFactory {
 		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
-		Map<String, Map<String, String>> jobProperties = configFactory
-				.config(new TypeRef<Map<String, Map<String, String>>>() {
-				}, jobPropertiesPrefix);
+		Map<String, Map<String, String>> jobProperties = createJobProperties(configFactory);
 
 		// TODO: write a builder instead of this insane constructor
 		return new DefaultScheduler(jobs, triggers, taskScheduler, rf3, jobProperties);
+	}
+
+	protected Map<String, Map<String, String>> createJobProperties(ConfigurationFactory configFactory) {
+		return configFactory.config(new TypeRef<Map<String, Map<String, String>>>() {
+		}, jobPropertiesPrefix);
 	}
 
 	protected TaskScheduler createTaskScheduler() {
