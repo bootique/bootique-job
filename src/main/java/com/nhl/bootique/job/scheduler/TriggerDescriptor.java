@@ -12,6 +12,7 @@ public class TriggerDescriptor {
 	private String cron;
 	private long fixedDelayMs;
 	private long fixedRateMs;
+	private long initialDelayMs = 10 * 1000;
 
 	public String getJob() {
 		return job;
@@ -53,6 +54,14 @@ public class TriggerDescriptor {
 		this.fixedRateMs = fixedRateMs;
 	}
 
+	public long getInitialDelayMs() {
+		return initialDelayMs;
+	}
+
+	public void setInitialDelayMs(long initialDelayMs) {
+		this.initialDelayMs = initialDelayMs;
+	}
+
 	/**
 	 * Returns a human-readable String with trigger parameters description. Used
 	 * mainly for debugging.
@@ -77,12 +86,12 @@ public class TriggerDescriptor {
 		} else if (fixedDelayMs > 0) {
 			PeriodicTrigger pt = new PeriodicTrigger(fixedDelayMs);
 			pt.setFixedRate(false);
-			pt.setInitialDelay(10 * 1000);
+			pt.setInitialDelay(initialDelayMs);
 			return pt;
 		} else if (fixedRateMs > 0) {
 			PeriodicTrigger pt = new PeriodicTrigger(fixedRateMs);
 			pt.setFixedRate(true);
-			pt.setInitialDelay(10 * 1000);
+			pt.setInitialDelay(initialDelayMs);
 			return pt;
 		}
 
