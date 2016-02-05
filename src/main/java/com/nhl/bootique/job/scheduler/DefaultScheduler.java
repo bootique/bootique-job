@@ -20,7 +20,6 @@ import org.springframework.scheduling.TaskScheduler;
 
 import com.nhl.bootique.job.Job;
 import com.nhl.bootique.job.JobMetadata;
-import com.nhl.bootique.job.JobMetadataBuilder;
 import com.nhl.bootique.job.JobParameterMetadata;
 import com.nhl.bootique.job.runnable.JobFuture;
 import com.nhl.bootique.job.runnable.JobResult;
@@ -58,7 +57,7 @@ public class DefaultScheduler implements Scheduler {
 		Job job = jobs.get(jobName);
 		if (job == null) {
 			return new JobFuture(new ExpiredFuture(),
-					() -> JobResult.failure(JobMetadataBuilder.build(jobName), "Invalid job name: " + jobName));
+					() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName));
 		}
 
 		Map<String, Object> parameters = jobParams(job);

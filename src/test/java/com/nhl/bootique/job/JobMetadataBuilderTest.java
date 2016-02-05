@@ -10,16 +10,12 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.nhl.bootique.job.JobMetadata;
-import com.nhl.bootique.job.JobMetadataBuilder;
-import com.nhl.bootique.job.JobParameterMetadata;
-
 public class JobMetadataBuilderTest {
 
 	@Test
 	public void testBuild_static() {
 
-		JobMetadata j = JobMetadataBuilder.build("nn");
+		JobMetadata j = JobMetadata.build("nn");
 		assertNotNull(j);
 		assertEquals("nn", j.getName());
 		assertTrue(j.getParameters().isEmpty());
@@ -28,7 +24,7 @@ public class JobMetadataBuilderTest {
 	@Test
 	public void testBuild_Name() {
 
-		JobMetadata j = JobMetadataBuilder.newBuilder("nn").build();
+		JobMetadata j = JobMetadata.builder("nn").build();
 		assertNotNull(j);
 		assertEquals("nn", j.getName());
 		assertTrue(j.getParameters().isEmpty());
@@ -37,7 +33,7 @@ public class JobMetadataBuilderTest {
 	@Test
 	public void testBuild_Params() {
 
-		JobMetadata j = JobMetadataBuilder.newBuilder("nn").dateParam("dd", "2015-02-04").stringParam("ss", "ssv")
+		JobMetadata j = JobMetadata.builder("nn").dateParam("dd", "2015-02-04").stringParam("ss", "ssv")
 				.longParam("ll", "34556775").build();
 		assertEquals(3, j.getParameters().size());
 

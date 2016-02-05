@@ -4,6 +4,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * @deprecated since 0.9 in favor of {@link JobMetadata#builder(Class)} and
+ *             friends.
+ */
 public class JobMetadataBuilder {
 
 	private String name;
