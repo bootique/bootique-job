@@ -54,7 +54,7 @@ public class JobMetadata {
 				? name.substring(0, name.length() - "job".length()) : name;
 	}
 
-	public JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters) {
+	JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters) {
 		this.name = name;
 		this.parameters = parameters;
 	}
