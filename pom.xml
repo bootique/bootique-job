@@ -18,7 +18,7 @@
 
 	<properties>
 		<bootique-version>0.12</bootique-version>
-		<bootique-zookeeper-version>0.8-SNAPSHOT</bootique-zookeeper-version>
+		<bootique-zookeeper-version>0.8</bootique-zookeeper-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
