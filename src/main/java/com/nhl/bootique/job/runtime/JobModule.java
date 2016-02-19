@@ -80,7 +80,7 @@ public class JobModule extends ConfigModule {
 	}
 
 	@Provides
-	public Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners,
+	protected Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners,
 			ConfigurationFactory configFactory) {
 		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobs, environment,
 				configFactory, jobRunners);
