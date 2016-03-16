@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -17,7 +18,7 @@
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.12</bootique-version>
+		<bootique-version>0.15-SNAPSHOT</bootique-version>
 		<bootique-zookeeper-version>0.8</bootique-zookeeper-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
@@ -36,6 +37,11 @@
 			<dependency>
 				<groupId>com.nhl.bootique</groupId>
 				<artifactId>bootique</artifactId>
+				<version>${bootique-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.nhl.bootique</groupId>
+				<artifactId>bootique-test</artifactId>
 				<version>${bootique-version}</version>
 			</dependency>
 			<dependency>
@@ -62,6 +68,11 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.nhl.bootique</groupId>
+			<artifactId>bootique-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
@@ -93,7 +104,7 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<!-- Optional profile used to sign artifacts -->
 	<profiles>
 		<profile>
