@@ -2,6 +2,7 @@
 
 * #5 Upgrade to Bootique 0.15
 * #7 Upgrade to BQ 0.18 and bootique-curator
+* #8 Bridge commons-logging to SLF4J
 
 ## 0.9:
 
