@@ -14,12 +14,12 @@
 	<version>0.10-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Job framework with Bootique Integration</name>
+	<name>bootique-job: Job framework with Bootique Integration</name>
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.15-SNAPSHOT</bootique-version>
-		<bootique-zookeeper-version>0.8</bootique-zookeeper-version>
+		<bootique-version>0.18-SNAPSHOT</bootique-version>
+		<bootique-curator-version>0.9-SNAPSHOT</bootique-curator-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
@@ -45,9 +45,9 @@
 				<version>${bootique-version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.nhl.bootique.zookeeper</groupId>
-				<artifactId>bootique-zookeeper</artifactId>
-				<version>${bootique-zookeeper-version}</version>
+				<groupId>com.nhl.bootique.curator</groupId>
+				<artifactId>bootique-curator</artifactId>
+				<version>${bootique-curator-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -90,8 +90,8 @@
 
 		<!-- Optional compile dependencies -->
 		<dependency>
-			<groupId>com.nhl.bootique.zookeeper</groupId>
-			<artifactId>bootique-zookeeper</artifactId>
+			<groupId>com.nhl.bootique.curator</groupId>
+			<artifactId>bootique-curator</artifactId>
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>

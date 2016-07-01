@@ -1,6 +1,7 @@
 ## 0.10
 
 * #5 Upgrade to Bootique 0.15
+* #7 Upgrade to BQ 0.18 and bootique-curator
 
 ## 0.9:
 
