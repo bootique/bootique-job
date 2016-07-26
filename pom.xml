@@ -18,8 +18,8 @@
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.18-SNAPSHOT</bootique-version>
-		<bootique-curator-version>0.9-SNAPSHOT</bootique-curator-version>
+		<bootique-version>0.18</bootique-version>
+		<bootique-curator-version>0.9</bootique-curator-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
