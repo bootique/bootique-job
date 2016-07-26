@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.nhl.bootique.parent</groupId>
+		<groupId>io.bootique.parent</groupId>
 		<artifactId>bootique-parent</artifactId>
-		<version>0.10</version>
+		<version>0.12</version>
 	</parent>
 
-	<groupId>com.nhl.bootique.job</groupId>
+	<groupId>io.bootique.job</groupId>
 	<artifactId>bootique-job</artifactId>
 	<version>0.11-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -17,8 +17,8 @@
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.18</bootique-version>
-		<bootique-curator-version>0.9</bootique-curator-version>
+		<bootique-version>0.19-SNAPSHOT</bootique-version>
+		<bootique-curator-version>0.10-SNAPSHOT</bootique-curator-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
@@ -26,25 +26,25 @@
 	</properties>
 
 	<scm>
-		<developerConnection>scm:git:ssh://git@github.com/nhl/bootique-job</developerConnection>
-		<url>https://github.com/nhl/bootique-job</url>
+		<developerConnection>scm:git:ssh://git@github.com/bootique/bootique-job</developerConnection>
+		<url>https://github.com/bootique/bootique-job</url>
 		<tag>HEAD</tag>
 	</scm>
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.nhl.bootique</groupId>
+				<groupId>io.bootique</groupId>
 				<artifactId>bootique</artifactId>
 				<version>${bootique-version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.nhl.bootique</groupId>
+				<groupId>io.bootique</groupId>
 				<artifactId>bootique-test</artifactId>
 				<version>${bootique-version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.nhl.bootique.curator</groupId>
+				<groupId>io.bootique.curator</groupId>
 				<artifactId>bootique-curator</artifactId>
 				<version>${bootique-curator-version}</version>
 			</dependency>
@@ -86,14 +86,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.nhl.bootique</groupId>
+			<groupId>io.bootique</groupId>
 			<artifactId>bootique-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
 		<!-- Compile dependencies -->
 		<dependency>
-			<groupId>com.nhl.bootique</groupId>
+			<groupId>io.bootique</groupId>
 			<artifactId>bootique</artifactId>
 			<scope>compile</scope>
 		</dependency>
@@ -115,7 +115,7 @@
 
 		<!-- Optional compile dependencies -->
 		<dependency>
-			<groupId>com.nhl.bootique.curator</groupId>
+			<groupId>io.bootique.curator</groupId>
 			<artifactId>bootique-curator</artifactId>
 			<scope>compile</scope>
 			<optional>true</optional>
