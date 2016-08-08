@@ -17,13 +17,27 @@
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.19-SNAPSHOT</bootique-version>
-		<bootique-curator-version>0.10-SNAPSHOT</bootique-curator-version>
+		<bootique-version>0.19</bootique-version>
+		<bootique-curator-version>0.10</bootique-curator-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
 		<spring-version>4.2.3.RELEASE</spring-version>
 	</properties>
+
+	<scm>
+        <developerConnection>scm:git:ssh://git@github.com/bootique/bootique-jdbc</developerConnection>
+        <url>https://github.com/bootique/bootique-jdbc</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-bootique-releases</id>
+            <name>bintray-bootique-releases</name>
+            <url>https://api.bintray.com/maven/bootique/releases/bootique-jdbc/;publish=1</url>
+        </repository>
+    </distributionManagement>
 
 	<dependencyManagement>
 		<dependencies>
