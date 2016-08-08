@@ -26,8 +26,8 @@
 	</properties>
 
 	<scm>
-        <developerConnection>scm:git:ssh://git@github.com/bootique/bootique-jdbc</developerConnection>
-        <url>https://github.com/bootique/bootique-jdbc</url>
+        <developerConnection>scm:git:ssh://git@github.com/bootique/bootique-job</developerConnection>
+        <url>https://github.com/bootique/bootique-job</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -35,7 +35,7 @@
         <repository>
             <id>bintray-bootique-releases</id>
             <name>bintray-bootique-releases</name>
-            <url>https://api.bintray.com/maven/bootique/releases/bootique-jdbc/;publish=1</url>
+            <url>https://api.bintray.com/maven/bootique/releases/bootique-job/;publish=1</url>
         </repository>
     </distributionManagement>
 
