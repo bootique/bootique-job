@@ -3,9 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>io.bootique.parent</groupId>
-		<artifactId>bootique-parent</artifactId>
-		<version>0.12</version>
+		<groupId>io.bootique.modules.parent</groupId>
+		<artifactId>bootique-modules-parent</artifactId>
+		<version>0.2</version>
 	</parent>
 
 	<groupId>io.bootique.job</groupId>
@@ -24,12 +24,6 @@
 			a few scheduling classes, and no injection -->
 		<spring-version>4.2.3.RELEASE</spring-version>
 	</properties>
-
-	<scm>
-		<developerConnection>scm:git:ssh://git@github.com/bootique/bootique-job</developerConnection>
-		<url>https://github.com/bootique/bootique-job</url>
-		<tag>HEAD</tag>
-	</scm>
 
 	<dependencyManagement>
 		<dependencies>
@@ -121,14 +115,6 @@
 			<optional>true</optional>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-failsafe-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
 
 	<!-- Optional profile used to sign artifacts -->
 	<profiles>
