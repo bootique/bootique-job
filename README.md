@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/bootique/bootique-job.svg)](https://travis-ci.org/bootique/bootique-job)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.bootique.job/bootique-job/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.bootique.job/bootique-job/)
+
 
 # bootique-job
 Provides a job execution framework with [Bootique](http://bootique.io) integration. The framework includes a basic 
