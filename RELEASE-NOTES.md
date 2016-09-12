@@ -1,3 +1,7 @@
+## 0.12
+
+* #10 Upgrade to Bootique 0.20
+
 ## 0.11
 
 * #9 Move to io.bootique namespace

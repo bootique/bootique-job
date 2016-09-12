@@ -2,9 +2,9 @@ package io.bootique.job.command;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import io.bootique.application.CommandMetadata;
+import io.bootique.application.OptionMetadata;
 import io.bootique.cli.Cli;
-import io.bootique.cli.CliOption;
-import io.bootique.command.CommandMetadata;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
 import io.bootique.job.runnable.JobFuture;
@@ -26,8 +26,8 @@ public class ExecCommand extends CommandWithMetadata {
 
 	private Provider<Scheduler> schedulerProvider;
 
-	private static CliOption.Builder createJobOption() {
-		return CliOption.builder(JOB_OPTION).description("Specifies the name of the job to run with '--exec'. "
+	private static OptionMetadata.Builder createJobOption() {
+		return OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to run with '--exec'. "
 				+ "Available job names can be viewed using '--list' command.").valueRequired("job_name");
 	}
 
