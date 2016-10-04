@@ -10,7 +10,7 @@
 
 	<groupId>io.bootique.job</groupId>
 	<artifactId>bootique-job</artifactId>
-	<version>0.12</version>
+	<version>0.13-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>bootique-job: Job framework with Bootique Integration</name>
@@ -28,7 +28,7 @@
 	<scm>
         <developerConnection>scm:git:ssh://git@github.com/bootique/bootique-job</developerConnection>
         <url>https://github.com/bootique/bootique-job</url>
-        <tag>bootique-job-0.12</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
