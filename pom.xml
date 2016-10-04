@@ -17,7 +17,7 @@
 	<description>Provides a job execution framework with Bootique integration</description>
 
 	<properties>
-		<bootique-version>0.20-SNAPSHOT</bootique-version>
+		<bootique-version>0.20</bootique-version>
 		<bootique-curator-version>0.10</bootique-curator-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
