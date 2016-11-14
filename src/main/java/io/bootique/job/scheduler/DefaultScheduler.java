@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -52,15 +53,35 @@ public class DefaultScheduler implements Scheduler {
 
 	@Override
 	public JobFuture runOnce(String jobName) {
+		Optional<Job> jobOptional = findJobByName(jobName);
+		return jobOptional.isPresent() ? runJob(jobOptional.get()) : invalidJobNameResult(jobName);
+	}
+
+	@Override
+	public JobFuture runOnce(String jobName, Map<String, Object> parameters) {
+		Optional<Job> jobOptional = findJobByName(jobName);
+
+		Job job = jobOptional.get();
+		parameters = mergeParams(parameters, jobParams(job));
+		return jobOptional.isPresent() ? runJobWithParameters(job, parameters) : invalidJobNameResult(jobName);
+	}
+
+	private Optional<Job> findJobByName(String jobName) {
 		Map<String, Job> jobs = mapJobs();
-
 		Job job = jobs.get(jobName);
-		if (job == null) {
-			return new JobFuture(new ExpiredFuture(),
-					() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName));
-		}
+		return (job == null) ? Optional.empty() : Optional.of(job);
+	}
 
-		Map<String, Object> parameters = jobParams(job);
+	private JobFuture invalidJobNameResult(String jobName) {
+		return new JobFuture(new ExpiredFuture(),
+					() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName));
+	}
+
+	private JobFuture runJob(Job job) {
+		return runJobWithParameters(job, jobParams(job));
+	}
+
+	private JobFuture runJobWithParameters(Job job, Map<String, Object> parameters) {
 		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 
 		JobResult[] result = new JobResult[1];
@@ -99,7 +120,7 @@ public class DefaultScheduler implements Scheduler {
 		return triggers.size();
 	}
 
-	Map<String, Object> jobParams(Job job) {
+	protected Map<String, Object> jobParams(Job job) {
 
 		// Taking parameters from Environment (i.e. System, etc.). Meaning
 		// parameters can be passed as -Dp1=v1 -Dp2=v2 .. also can be bound in
@@ -116,6 +137,12 @@ public class DefaultScheduler implements Scheduler {
 		}
 
 		return params;
+	}
+
+	protected Map<String, Object> mergeParams(Map<String, Object> overridenParams, Map<String, Object> defaultParams) {
+		Map<String, Object> merged = new HashMap<>(defaultParams);
+		merged.putAll(overridenParams);
+		return merged;
 	}
 
 	private String propertyValue(JobMetadata jobMD, JobParameterMetadata<?> param) {
