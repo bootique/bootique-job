@@ -2,6 +2,7 @@
 
 * #11 Pass parameters to ad-hoc job executions
 * #13 Upgrade to BQ 0.21
+* #14 Removing deprecated code
 
 ## 0.12
 
