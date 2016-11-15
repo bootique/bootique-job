@@ -1,3 +1,7 @@
+## 0.13
+
+* #11 Pass parameters to ad-hoc job executions
+
 ## 0.12
 
 * #10 Upgrade to Bootique 0.20
