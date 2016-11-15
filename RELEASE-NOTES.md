@@ -1,6 +1,7 @@
 ## 0.13
 
 * #11 Pass parameters to ad-hoc job executions
+* #13 Upgrade to BQ 0.21
 
 ## 0.12
 
