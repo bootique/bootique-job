@@ -15,9 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.PrimitiveIterator;
-import java.util.Random;
-import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -45,7 +42,8 @@ public class ExecCommandIT {
     /**
      * 1. jobs are submitted to the executor in the same order as they appear in program arguments
      * 2. jobs are more likely to be executed in the same order in which they are submitted to the executor
-     * => to increase the prob. of other orders of execution we vary the execution time of each job
+     * => to increase the prob. of other orders of execution (incl. overlapping executions)
+     *    we make the first submitted job the most time-consuming
      **/
     private void testExec_MultipleJobs(boolean serial) {
         String[] args;
@@ -55,16 +53,13 @@ public class ExecCommandIT {
             args = new String[] {"--exec", "--job=job1", "--job=job2", "--job=job3"};
         }
 
-        Random random = new Random(System.currentTimeMillis());
-        PrimitiveIterator.OfInt runningTimes = IntStream.generate(() -> random.nextInt(1000) * 1000).iterator();
-
         Job1 job1;
         Job2 job2;
         Job3 job3;
         for (int i = 0; i < 100; i++) {
-            job1 = new Job1(runningTimes.next());
-            job2 = new Job2(runningTimes.next());
-            job3 = new Job3(runningTimes.next());
+            job1 = new Job1(100000);
+            job2 = new Job2(10000);
+            job3 = new Job3(1000);
             executeJobs(Arrays.asList(job1, job2, job3), args);
             assertExecutedInOrder(Arrays.asList(job1, job2, job3));
         }
