@@ -1,31 +1,31 @@
 package io.bootique.job.scheduler;
 
-import static java.util.stream.Collectors.toMap;
+import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.JobParameterMetadata;
+import io.bootique.job.config.JobDefinition;
+import io.bootique.job.config.JobGroup;
+import io.bootique.job.config.SingleJob;
+import io.bootique.job.runnable.JobFuture;
+import io.bootique.job.runnable.JobResult;
+import io.bootique.job.runnable.RunnableJob;
+import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.job.scheduler.execution.ExecutionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.TaskScheduler;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import io.bootique.job.runnable.JobFuture;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.TaskScheduler;
-
-import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.JobParameterMetadata;
-import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runnable.RunnableJob;
-import io.bootique.job.runnable.RunnableJobFactory;
+import static java.util.stream.Collectors.toMap;
 
 public class DefaultScheduler implements Scheduler {
 
@@ -35,16 +35,42 @@ public class DefaultScheduler implements Scheduler {
 	private RunnableJobFactory runnableJobFactory;
 	private Collection<Job> jobs;
 	private Collection<TriggerDescriptor> triggers;
-	private Map<String, Map<String, String>> jobProperties;
+	private ExecutionFactory executionFactory;
+	private Map<String, JobDefinition> jobDefinitions;
 
-	public DefaultScheduler(Collection<Job> jobs, Collection<TriggerDescriptor> triggers, TaskScheduler taskScheduler,
-			RunnableJobFactory runnableJobFactory, Map<String, Map<String, String>> jobProperties) {
+	public DefaultScheduler(Collection<Job> jobs,
+							Collection<TriggerDescriptor> triggers,
+							TaskScheduler taskScheduler,
+							RunnableJobFactory runnableJobFactory,
+							ExecutionFactory executionFactory,
+							Map<String, JobDefinition> jobDefinitions) {
 
-		this.jobs = jobs;
 		this.triggers = triggers;
-		this.jobProperties = jobProperties;
 		this.taskScheduler = taskScheduler;
 		this.runnableJobFactory = runnableJobFactory;
+		this.executionFactory = executionFactory;
+		this.jobDefinitions = jobDefinitions;
+
+		this.jobs = collectFlattenedJobs(jobs);
+	}
+
+	private Collection<Job> collectFlattenedJobs(Collection<Job> jobs) {
+		List<Job> allJobs = new ArrayList<>(jobs);
+		allJobs.addAll(collectJobGroups(jobDefinitions, executionFactory));
+		return allJobs;
+	}
+
+	private Collection<Job> collectJobGroups(Map<String, JobDefinition> jobDefinitions,
+											 ExecutionFactory executionFactory) {
+		return jobDefinitions.entrySet().stream()
+				.filter(e -> e.getValue() instanceof JobGroup)
+				.collect(ArrayList::new,
+						(acc, e) -> acc.add(createJobGroup(e.getKey(), executionFactory)),
+						ArrayList::addAll);
+	}
+
+	private Job createJobGroup(String name, ExecutionFactory executionFactory) {
+		return new LazyJobGroup(name, executionFactory, this);
 	}
 
 	private Map<String, Job> mapJobs() {
@@ -146,46 +172,13 @@ public class DefaultScheduler implements Scheduler {
 	}
 
 	private String propertyValue(JobMetadata jobMD, JobParameterMetadata<?> param) {
-		Map<String, String> singleJobProperties = jobProperties.get(jobMD.getName());
-		return singleJobProperties != null ? singleJobProperties.get(param.getName()) : null;
-	}
-
-	private final class ExpiredFuture implements ScheduledFuture<Object> {
-
-		@Override
-		public boolean cancel(boolean mayInterruptIfRunning) {
-			return false;
+		JobDefinition jobDefinition = jobDefinitions.get(jobMD.getName());
+		if (jobDefinition instanceof SingleJob) {
+			Object paramObj = ((SingleJob) jobDefinition).getParams().get(param.getName());
+			if (paramObj != null) {
+				return paramObj.toString();
+			}
 		}
-
-		@Override
-		public boolean isCancelled() {
-			return false;
-		}
-
-		@Override
-		public boolean isDone() {
-			return true;
-		}
-
-		@Override
-		public Object get() throws InterruptedException, ExecutionException {
-			return null;
-		}
-
-		@Override
-		public Object get(long timeout, TimeUnit unit)
-				throws InterruptedException, ExecutionException, TimeoutException {
-			return null;
-		}
-
-		@Override
-		public long getDelay(TimeUnit unit) {
-			return 0;
-		}
-
-		@Override
-		public int compareTo(Delayed o) {
-			return -(int) o.getDelay(TimeUnit.SECONDS);
-		}
+		return null;
 	}
 }

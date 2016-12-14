@@ -19,10 +19,12 @@
 	<properties>
 		<bootique-version>0.21-SNAPSHOT</bootique-version>
 		<bootique-curator-version>0.10</bootique-curator-version>
+		<cayenne-version>4.0.M4-SNAPSHOT</cayenne-version>
 
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
 		<spring-version>4.2.3.RELEASE</spring-version>
+		<slf4j-version>1.7.13</slf4j-version>
 	</properties>
 
 	<scm>
@@ -57,6 +59,11 @@
 				<version>${bootique-curator-version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.cayenne</groupId>
+				<artifactId>cayenne-di</artifactId>
+				<version>${cayenne-version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-context</artifactId>
 				<version>${spring-version}</version>
@@ -75,7 +82,7 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>jcl-over-slf4j</artifactId>
-				<version>1.7.13</version>
+				<version>${slf4j-version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -98,11 +105,21 @@
 			<artifactId>bootique-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j-version}</version>
+		</dependency>
 
 		<!-- Compile dependencies -->
 		<dependency>
 			<groupId>io.bootique</groupId>
 			<artifactId>bootique</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cayenne</groupId>
+			<artifactId>cayenne-di</artifactId>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

@@ -3,12 +3,14 @@ package io.bootique.job.scheduler;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.env.Environment;
 import io.bootique.job.Job;
+import io.bootique.job.config.JobDefinition;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
 import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
 import io.bootique.job.runnable.LockAwareRunnableJobFactory;
 import io.bootique.job.runnable.RunnableJobFactory;
 import io.bootique.job.runnable.SimpleRunnableJobFactory;
+import io.bootique.job.scheduler.execution.ExecutionFactory;
 import io.bootique.type.TypeRef;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -52,14 +54,14 @@ public class SchedulerFactory {
 		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
-		Map<String, Map<String, String>> jobProperties = createJobProperties(configFactory);
-
+		Map<String, JobDefinition> jobDefinitions = createJobProperties(configFactory);
+		ExecutionFactory executionFactory = new ExecutionFactory(jobDefinitions);
 		// TODO: write a builder instead of this insane constructor
-		return new DefaultScheduler(jobs, triggers, taskScheduler, rf3, jobProperties);
+		return new DefaultScheduler(jobs, triggers, taskScheduler, rf3, executionFactory, jobDefinitions);
 	}
 
-	protected Map<String, Map<String, String>> createJobProperties(ConfigurationFactory configFactory) {
-		return configFactory.config(new TypeRef<Map<String,Map<String,String>>>() {
+	protected Map<String, JobDefinition> createJobProperties(ConfigurationFactory configFactory) {
+		return configFactory.config(new TypeRef<Map<String,JobDefinition>>() {
 		}, jobPropertiesPrefix);
 	}
 

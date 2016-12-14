@@ -72,11 +72,12 @@ public class ExecCommand extends CommandWithMetadata {
 		}
 
 		scheduledExecutions.map(f -> f.get()).forEach(r -> {
-			if (r.getMessage() != null) {
+			if (r.getThrowable() == null) {
 				LOGGER.info(String.format("Finished job '%s', result: %s, message: %s", r.getMetadata().getName(),
 						r.getOutcome(), r.getMessage()));
 			} else {
-				LOGGER.info(String.format("Finished job '%s', result: %s", r.getMetadata().getName(), r.getOutcome()));
+				LOGGER.error(String.format("Finished job '%s', result: %s, message: %s", r.getMetadata().getName(),
+						r.getOutcome(), r.getMessage()), r.getThrowable());
 			}
 		});
 		return CommandOutcome.succeeded();
