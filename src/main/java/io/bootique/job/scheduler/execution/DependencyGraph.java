@@ -81,8 +81,8 @@ class DependencyGraph implements Execution {
 
     @Override
     public void traverseExecution(ExecutionVisitor visitor) {
-        List<SingleJobExecution> executions = graph.topSort();
+        List<List<SingleJobExecution>> executions = graph.topSort();
         Collections.reverse(executions);
-        executions.forEach(execution -> visitor.visitExecutionStep(Collections.singletonList(execution)));
+        executions.forEach(visitor::visitExecutionStep);
     }
 }
