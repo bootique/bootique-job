@@ -4,6 +4,7 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.env.Environment;
 import io.bootique.job.Job;
 import io.bootique.job.config.JobDefinition;
+import io.bootique.job.config.SingleJob;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
 import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
@@ -32,7 +33,7 @@ public class SchedulerFactory {
 
 	public SchedulerFactory() {
 		this.triggers = new ArrayList<>();
-		this.threadPoolSize = 3;
+		this.threadPoolSize = 10;
 		this.jobPropertiesPrefix = "jobs";
 	}
 
@@ -54,10 +55,19 @@ public class SchedulerFactory {
 		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
-		Map<String, JobDefinition> jobDefinitions = createJobProperties(configFactory);
+		Map<String, JobDefinition> jobDefinitions = collectJobDefinitions(jobs, configFactory);
 		ExecutionFactory executionFactory = new ExecutionFactory(jobDefinitions);
 		// TODO: write a builder instead of this insane constructor
 		return new DefaultScheduler(jobs, triggers, taskScheduler, rf3, executionFactory, jobDefinitions);
+	}
+
+	private Map<String, JobDefinition> collectJobDefinitions(Set<Job> jobs, ConfigurationFactory configFactory) {
+		Map<String, JobDefinition> jobDefinitions = createJobProperties(configFactory);
+		// create definition for each job, that is not present in config
+		jobs.stream().filter(job -> !jobDefinitions.containsKey(job.getMetadata().getName())).forEach(job -> {
+			jobDefinitions.put(job.getMetadata().getName(), new SingleJob());
+		});
+		return jobDefinitions;
 	}
 
 	protected Map<String, JobDefinition> createJobProperties(ConfigurationFactory configFactory) {

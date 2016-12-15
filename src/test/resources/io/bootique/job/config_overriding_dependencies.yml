@@ -1,0 +1,33 @@
+jobs:
+  job1:
+    dependsOn:
+      - job2
+  job2:
+    dependsOn:
+      - job3
+  job3: {}
+  group1:
+    type: group
+    jobs:
+      job1: {}
+  group2:
+    type: group
+    jobs:
+      job1: {}
+      job2: {}
+      job3: {}
+  group3:
+    type: group
+    jobs:
+      job1:
+        dependsOn:
+          - job3
+  group4:
+    type: group
+    jobs:
+      job1: {}
+      job2:
+        dependsOn: []
+      job3:
+        dependsOn:
+          - job1

@@ -10,12 +10,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-class CayenneDependencyGraph implements Execution {
+class DependencyGraph implements Execution {
 
     private final Map<String, SingleJobExecution> knownExecutions = new LinkedHashMap<>();
     private final DIGraph<SingleJobExecution> graph;
 
-    CayenneDependencyGraph(String rootJobName, Map<String, JobDefinition> definitionMap) {
+    DependencyGraph(String rootJobName, Map<String, JobDefinition> definitionMap) {
         DIGraph<SingleJobExecution> graph = new DIGraph<>();
         NestedJobDefinitions jobDefinitions = new NestedJobDefinitions(definitionMap);
         populateWithDependencies(rootJobName, null, graph, jobDefinitions, new HashMap<>());
@@ -56,12 +56,13 @@ class CayenneDependencyGraph implements Execution {
                                                    Map<String, SingleJobExecution> childExecutions) {
         String jobName = execution.getJobName();
         childExecutions.put(jobName, execution);
-        ((SingleJob) jobDefinitions.getDefinition(jobName)).getDependsOn().forEach(parentName -> {
-            if (childExecutions.containsKey(parentName)) {
-                throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
-            }
-            populateWithDependencies(parentName, execution, graph, jobDefinitions, childExecutions);
-        });
+        ((SingleJob) jobDefinitions.getDefinition(jobName)).getDependsOn().ifPresent(parents ->
+            parents.forEach(parentName -> {
+                if (childExecutions.containsKey(parentName)) {
+                    throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
+                }
+                populateWithDependencies(parentName, execution, graph, jobDefinitions, childExecutions);
+            }));
         childExecutions.remove(jobName);
     }
 
@@ -82,6 +83,6 @@ class CayenneDependencyGraph implements Execution {
     public void traverseExecution(ExecutionVisitor visitor) {
         List<SingleJobExecution> executions = graph.topSort();
         Collections.reverse(executions);
-        executions.forEach(execution -> visitor.visitExecutionStep(Collections.singleton(execution)));
+        executions.forEach(execution -> visitor.visitExecutionStep(Collections.singletonList(execution)));
     }
 }

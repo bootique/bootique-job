@@ -69,7 +69,7 @@ class LazyJobGroup implements Job {
 				}
 
                 List<JobFuture> futures = jobExecutions.stream()
-                        .map(job -> scheduler.runOnce(job.getJobName(), job.getParams()))
+                        .map(job -> scheduler.runStandaloneJob(job.getJobName(), job.getParams()))
                         .collect(Collectors.toList());
 
                 List<JobResult> failures = new ArrayList<>();

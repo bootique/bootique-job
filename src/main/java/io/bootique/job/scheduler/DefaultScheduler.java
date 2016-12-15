@@ -4,7 +4,6 @@ import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobParameterMetadata;
 import io.bootique.job.config.JobDefinition;
-import io.bootique.job.config.JobGroup;
 import io.bootique.job.config.SingleJob;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
@@ -15,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,8 +33,8 @@ public class DefaultScheduler implements Scheduler {
 	private TaskScheduler taskScheduler;
 	private RunnableJobFactory runnableJobFactory;
 	private Collection<Job> jobs;
+	private Collection<Job> jobGroups;
 	private Collection<TriggerDescriptor> triggers;
-	private ExecutionFactory executionFactory;
 	private Map<String, JobDefinition> jobDefinitions;
 
 	public DefaultScheduler(Collection<Job> jobs,
@@ -48,54 +47,60 @@ public class DefaultScheduler implements Scheduler {
 		this.triggers = triggers;
 		this.taskScheduler = taskScheduler;
 		this.runnableJobFactory = runnableJobFactory;
-		this.executionFactory = executionFactory;
 		this.jobDefinitions = jobDefinitions;
 
-		this.jobs = collectFlattenedJobs(jobs);
-	}
-
-	private Collection<Job> collectFlattenedJobs(Collection<Job> jobs) {
-		List<Job> allJobs = new ArrayList<>(jobs);
-		allJobs.addAll(collectJobGroups(jobDefinitions, executionFactory));
-		return allJobs;
+		this.jobs = jobs;
+		this.jobGroups = collectJobGroups(jobDefinitions, executionFactory);
 	}
 
 	private Collection<Job> collectJobGroups(Map<String, JobDefinition> jobDefinitions,
 											 ExecutionFactory executionFactory) {
 		return jobDefinitions.entrySet().stream()
-				.filter(e -> e.getValue() instanceof JobGroup)
-				.collect(ArrayList::new,
-						(acc, e) -> acc.add(createJobGroup(e.getKey(), executionFactory)),
-						ArrayList::addAll);
+				// filter out standalone jobs without dependencies
+				.filter(e -> !(e.getValue() instanceof SingleJob) || (((SingleJob) e.getValue()).getDependsOn().isPresent()))
+				.map(e -> createJobGroup(e.getKey(), executionFactory))
+				.collect(Collectors.toList());
 	}
 
 	private Job createJobGroup(String name, ExecutionFactory executionFactory) {
 		return new LazyJobGroup(name, executionFactory, this);
 	}
 
-	private Map<String, Job> mapJobs() {
-		return jobs.stream().collect(toMap(j -> j.getMetadata().getName(), j -> j));
-	}
-
 	@Override
 	public JobFuture runOnce(String jobName) {
-		Optional<Job> jobOptional = findJobByName(jobName);
-		return jobOptional.isPresent() ? runJob(jobOptional.get()) : invalidJobNameResult(jobName);
+		return runOnce(jobName, Collections.emptyMap());
 	}
 
 	@Override
 	public JobFuture runOnce(String jobName, Map<String, Object> parameters) {
-		Optional<Job> jobOptional = findJobByName(jobName);
-
-		Job job = jobOptional.get();
-		parameters = mergeParams(parameters, jobParams(job));
-		return jobOptional.isPresent() ? runJobWithParameters(job, parameters) : invalidJobNameResult(jobName);
+		if (findJobByName(jobName, mapJobGroups()).isPresent()) {
+			return runJobGroup(jobName, parameters);
+		} else {
+			return runStandaloneJob(jobName, parameters);
+		}
 	}
 
-	private Optional<Job> findJobByName(String jobName) {
-		Map<String, Job> jobs = mapJobs();
+	JobFuture runJobGroup(String groupName, Map<String, Object> parameters) {
+		Optional<Job> jobOptional = findJobByName(groupName, mapJobGroups());
+		return jobOptional.isPresent() ? runJobGroupWithParameters(jobOptional.get(), parameters) : invalidJobNameResult(groupName);
+	}
+
+	JobFuture runStandaloneJob(String jobName, Map<String, Object> parameters) {
+		Optional<Job> jobOptional = findJobByName(jobName, mapJobs());
+		return jobOptional.isPresent() ? runJobWithParameters(jobOptional.get(), parameters) : invalidJobNameResult(jobName);
+	}
+
+	private Optional<Job> findJobByName(String jobName, Map<String, Job> jobs) {
 		Job job = jobs.get(jobName);
 		return (job == null) ? Optional.empty() : Optional.of(job);
+	}
+
+	private Map<String, Job> mapJobs() {
+		return jobs.stream().collect(toMap(j -> j.getMetadata().getName(), j -> j));
+	}
+
+	private Map<String, Job> mapJobGroups() {
+		return jobGroups.stream().collect(toMap(j -> j.getMetadata().getName(), j -> j));
 	}
 
 	private JobFuture invalidJobNameResult(String jobName) {
@@ -103,11 +108,17 @@ public class DefaultScheduler implements Scheduler {
 					() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName));
 	}
 
-	private JobFuture runJob(Job job) {
-		return runJobWithParameters(job, jobParams(job));
+	private JobFuture runJobGroupWithParameters(Job group, Map<String, Object> parameters) {
+		Map<String, Object> mergedParameters = mergeParams(parameters, jobParams(group));
+
+		JobResult[] result = new JobResult[1];
+		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = group.run(mergedParameters), new Date());
+		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(group.getMetadata()));
 	}
 
 	private JobFuture runJobWithParameters(Job job, Map<String, Object> parameters) {
+		parameters = mergeParams(parameters, jobParams(job));
+
 		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 
 		JobResult[] result = new JobResult[1];

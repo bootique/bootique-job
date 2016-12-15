@@ -65,7 +65,7 @@ public class ExecutionIT extends BaseJobTest {
     @Test
     public void testExecution_Group4_MultipleJobs_Dependent_OverridenParams() {
         Job1 job1 = new Job1();
-        Job2 job2 = new Job2(10000);
+        Job2 job2 = new Job2(1000);
         String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group4"};
 
         List<ExecutableJob> jobs = Arrays.asList(job2, job1);
@@ -77,8 +77,8 @@ public class ExecutionIT extends BaseJobTest {
     @Test
     public void testExecution_Group5_MultipleJobs_Dependent_OverridenParams() {
         Job1 job1 = new Job1();
-        Job2 job2 = new Job2(100);
-        Job3 job3 = new Job3(10000);
+        Job2 job2 = new Job2(1000);
+        Job3 job3 = new Job3(100000);
         String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group5"};
 
         List<ExecutableJob> jobs = Arrays.asList(job3, job2, job1);
@@ -97,5 +97,75 @@ public class ExecutionIT extends BaseJobTest {
             put("k", "overriden");
             put("y", "added");
         }});
+    }
+
+    @Test
+    public void testExecution_JobWithDependencies_1() {
+        Job1 job1 = new Job1();
+        Job2 job2 = new Job2(1000);
+        Job3 job3 = new Job3(100000);
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job1"};
+
+        List<ExecutableJob> jobs = Arrays.asList(job3, job2, job1);
+        executeJobs(jobs, args);
+        assertExecutedInOrder(jobs);
+    }
+
+    @Test
+    public void testExecution_JobWithDependencies_2() {
+        Job2 job2 = new Job2();
+        Job3 job3 = new Job3(1000);
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job2"};
+
+        List<ExecutableJob> jobs = Arrays.asList(job3, job2);
+        executeJobs(jobs, args);
+        assertExecutedInOrder(jobs);
+    }
+
+    @Test
+    public void testExecution_Group1_DefaultDependencies() {
+        Job1 job1 = new Job1();
+        Job2 job2 = new Job2(1000);
+        Job3 job3 = new Job3(100000);
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group1"};
+
+        List<ExecutableJob> jobs = Arrays.asList(job3, job2, job1);
+        executeJobs(jobs, args);
+        assertExecutedInOrder(jobs);
+    }
+
+    @Test
+    public void testExecution_Group2_DefaultDependencies() {
+        Job1 job1 = new Job1();
+        Job2 job2 = new Job2(1000);
+        Job3 job3 = new Job3(100000);
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group2"};
+
+        List<ExecutableJob> jobs = Arrays.asList(job3, job2, job1);
+        executeJobs(jobs, args);
+        assertExecutedInOrder(jobs);
+    }
+
+    @Test
+    public void testExecution_Group3_OverridenDependencies() {
+        Job1 job1 = new Job1();
+        Job3 job3 = new Job3(1000);
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group3"};
+
+        List<ExecutableJob> jobs = Arrays.asList(job3, job1);
+        executeJobs(jobs, args);
+        assertExecutedInOrder(jobs);
+    }
+
+    @Test
+    public void testExecution_Group4_OverridenDependencies() {
+        Job1 job1 = new Job1();
+        Job2 job2 = new Job2();
+        Job3 job3 = new Job3(1000);
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group4"};
+
+        List<ExecutableJob> jobs = Arrays.asList(job2, job1, job3);
+        executeJobs(jobs, args);
+        assertExecutedInOrder(jobs);
     }
 }

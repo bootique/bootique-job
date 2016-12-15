@@ -19,7 +19,7 @@ public class ExecutionFactory {
     public Execution getExecution(String jobName) {
         Execution execution = executions.get(jobName);
         if (execution == null) {
-            execution = new CayenneDependencyGraph(jobName, jobDefinitions);
+            execution = new DependencyGraph(jobName, jobDefinitions);
             Execution existing = executions.putIfAbsent(jobName, execution);
             if (existing != null) {
                 execution = existing;

@@ -1,8 +1,8 @@
 package io.bootique.job.scheduler.execution;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface ExecutionVisitor {
 
-    void visitExecutionStep(Collection<SingleJobExecution> jobExecutions);
+    void visitExecutionStep(List<SingleJobExecution> jobExecutions);
 }

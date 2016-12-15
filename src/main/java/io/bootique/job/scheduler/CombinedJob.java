@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class CombinedJob extends BaseJob {
+class CombinedJob extends BaseJob {
 
     public static Builder builder(JobMetadata.Builder metadataBuilder) {
         return new Builder(metadataBuilder);

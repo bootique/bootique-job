@@ -3,15 +3,16 @@ package io.bootique.job.config;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class SingleJob implements JobDefinition {
 
     private Map<String, Object> params;
-    private List<String> dependsOn;
+    private Optional<List<String>> dependsOn;
 
     public SingleJob() {
         this.params = Collections.emptyMap();
-        this.dependsOn = Collections.emptyList();
+        this.dependsOn = Optional.empty();
     }
 
     public Map<String, Object> getParams() {
@@ -22,11 +23,11 @@ public class SingleJob implements JobDefinition {
         this.params = params;
     }
 
-    public List<String> getDependsOn() {
+    public Optional<List<String>> getDependsOn() {
         return dependsOn;
     }
 
     public void setDependsOn(List<String> dependsOn) {
-        this.dependsOn = dependsOn;
+        this.dependsOn = Optional.of(dependsOn);
     }
 }
