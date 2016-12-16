@@ -70,7 +70,8 @@ public class ExecutionFactory {
 
         @Override
         public JobResult run(Map<String, Object> parameters) {
-            return delegate.run(parameters);
+            // TODO: merge params
+            return delegate.run(execution.getParams());
         }
 
         @Override

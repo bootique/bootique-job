@@ -49,6 +49,7 @@ class GroupExecution implements Execution {
 
     @Override
     public JobResult run(Map<String, Object> params) {
+        // TODO: merge execution params into individual jobs' params
         try {
             traverseExecution(jobExecutions -> {
                 Set<JobResult> results = execute(jobExecutions);

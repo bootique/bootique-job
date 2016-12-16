@@ -54,3 +54,9 @@ jobs:
         params:
           k: overriden
           y: added
+  group6:
+    type: group
+    jobs:
+      job1:
+        params:
+          a: overriden

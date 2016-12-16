@@ -34,6 +34,19 @@ public class ExecutionIT extends BaseJobTest {
     }
 
     @Test
+    public void testExecution_Group6_SingleJob_OverridenParams() {
+        Job1 job1 = new Job1();
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group6"};
+
+        List<ExecutableJob> jobs = Collections.singletonList(job1);
+        executeJobs(jobs, args);
+        assertExecutedWithParams(job1, new HashMap<String, Object>() {{
+            put("a", "overriden");
+            put("b", "default");
+        }});
+    }
+
+    @Test
     public void testExecution_Group2_MultipleJobs_Parallel_DefaultParams() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2();
