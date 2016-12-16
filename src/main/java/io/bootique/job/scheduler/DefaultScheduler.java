@@ -81,7 +81,7 @@ public class DefaultScheduler implements Scheduler {
 			Execution job = executionFactory.getExecution(tc.getJob());
 			Map<String, Object> parameters = jobParams(job);
 
-			schedule(job, parameters, job.getMetadata(), tc.createTrigger());
+			schedule(job, parameters, tc.createTrigger());
 		});
 
 		return triggers.size();
@@ -98,7 +98,7 @@ public class DefaultScheduler implements Scheduler {
 		if (jobOptional.isPresent()) {
 			Execution job = jobOptional.get();
 			parameters = mergeParams(parameters, jobParams(job));
-			return runOnce(job, parameters, job.getMetadata(), new Date());
+			return runOnce(job, parameters, new Date());
 		} else {
 			return invalidJobNameResult(jobName);
 		}
@@ -150,17 +150,17 @@ public class DefaultScheduler implements Scheduler {
 		return null;
 	}
 
-	public JobFuture runOnce(Job job, Map<String, Object> parameters, JobMetadata metadata, Date date) {
+	public JobFuture runOnce(Job job, Map<String, Object> parameters, Date date) {
 		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 		JobResult[] result = new JobResult[1];
 		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), date);
-		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(metadata));
+		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
 	}
 
-	public ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, JobMetadata metadata, Trigger trigger) {
+	public ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
 		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 		JobResult[] result = new JobResult[1];
 		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), trigger);
-		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(metadata));
+		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
 	}
 }

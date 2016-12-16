@@ -82,7 +82,7 @@ public class Execution implements Job {
         List<JobFuture> futures = jobExecutions.stream()
                 .map(jobExecution -> {
                     Job job = jobs.get(jobExecution.getJobName());
-                    return scheduler.runOnce(job, jobExecution.getParams(), job.getMetadata(), new Date());
+                    return scheduler.runOnce(job, jobExecution.getParams(), new Date());
                 })
                 .collect(Collectors.toList());
 
