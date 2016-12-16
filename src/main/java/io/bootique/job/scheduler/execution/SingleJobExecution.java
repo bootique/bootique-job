@@ -2,7 +2,7 @@ package io.bootique.job.scheduler.execution;
 
 import java.util.Map;
 
-public class SingleJobExecution {
+class SingleJobExecution {
 
     private String jobName;
     private Map<String, Object> params;

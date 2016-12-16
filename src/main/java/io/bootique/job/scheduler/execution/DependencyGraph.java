@@ -4,13 +4,13 @@ import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.JobGroup;
 import io.bootique.job.config.SingleJob;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-class DependencyGraph implements Execution {
+class DependencyGraph {
 
     private final Map<String, SingleJobExecution> knownExecutions = new LinkedHashMap<>();
     private final DIGraph<SingleJobExecution> graph;
@@ -79,10 +79,11 @@ class DependencyGraph implements Execution {
         return new IllegalArgumentException("Unexpected job definition type: " + definition.getClass().getName());
     }
 
-    @Override
-    public void traverseExecution(ExecutionVisitor visitor) {
-        List<List<SingleJobExecution>> executions = graph.topSort();
-        Collections.reverse(executions);
-        executions.forEach(visitor::visitExecutionStep);
+    public List<Set<SingleJobExecution>> topSort() {
+        return graph.topSort();
+    }
+
+    public Set<String> getJobNames() {
+        return knownExecutions.keySet();
     }
 }

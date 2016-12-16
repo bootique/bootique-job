@@ -7,7 +7,9 @@ import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJob;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
+import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.job.scheduler.execution.Execution;
 import io.bootique.job.scheduler.execution.ExecutionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +23,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toMap;
 
 public class DefaultScheduler implements Scheduler {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScheduler.class);
 
 	private TaskScheduler taskScheduler;
-	private Collection<Job> jobs;
-	private Collection<ScheduledJob> jobGroups;
+	private RunnableJobFactory runnableJobFactory;
+	private ExecutionFactory executionFactory;
+	private Set<String> availableJobs;
 	private Collection<TriggerDescriptor> triggers;
 	private Map<String, JobDefinition> jobDefinitions;
 
@@ -41,44 +42,20 @@ public class DefaultScheduler implements Scheduler {
 							Collection<TriggerDescriptor> triggers,
 							TaskScheduler taskScheduler,
 							RunnableJobFactory runnableJobFactory,
-							ExecutionFactory executionFactory,
 							Map<String, JobDefinition> jobDefinitions) {
 
 		this.triggers = triggers;
+		this.runnableJobFactory = runnableJobFactory;
 		this.taskScheduler = taskScheduler;
+		this.availableJobs = collectJobNames(jobs, jobDefinitions);
 		this.jobDefinitions = jobDefinitions;
-
-		this.jobs = jobs;
-		this.jobGroups = collectJobGroups(jobs, jobDefinitions, executionFactory, runnableJobFactory);
+		this.executionFactory = new ExecutionFactory(jobs, jobDefinitions, this);
 	}
 
-	private Collection<ScheduledJob> collectJobGroups(Collection<Job> jobs,
-													  Map<String, JobDefinition> jobDefinitions,
-													  ExecutionFactory executionFactory,
-													  RunnableJobFactory runnableJobFactory) {
-
-		Map<String, Job> jobMap = jobs.stream().collect(toMap(j -> j.getMetadata().getName(), j -> j));
-
-		return jobDefinitions.entrySet().stream()
-				.map(e -> {
-					// don't create groups for standalone jobs without dependencies
-					if (isStandaloneJob(e.getValue())) {
-						return new ScheduledJob(jobMap.get(e.getKey()), runnableJobFactory, this);
-					} else {
-						return new ScheduledJob(createJobGroup(e.getKey(), executionFactory), runnableJobFactory, this);
-					}
-				})
-				.collect(Collectors.toList());
-	}
-
-	private boolean isStandaloneJob(JobDefinition jobDefinition) {
-		return jobDefinition instanceof SingleJob
-				&& ((SingleJob) jobDefinition).getDependsOn().isPresent()
-				&& ((SingleJob) jobDefinition).getDependsOn().get().isEmpty();
-	}
-
-	private Job createJobGroup(String name, ExecutionFactory executionFactory) {
-		return new LazyJobGroup(name, executionFactory, this);
+	private Set<String> collectJobNames(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions) {
+		Set<String> jobNames = jobs.stream().map(job -> job.getMetadata().getName()).collect(Collectors.toSet());
+		jobNames.addAll(jobDefinitions.keySet());
+		return jobNames;
 	}
 
 	@Override
@@ -89,9 +66,7 @@ public class DefaultScheduler implements Scheduler {
 			return 0;
 		}
 
-		Map<String, ScheduledJob> jobs = mapJobLaunchers();
-
-		List<String> badTriggers = triggers.stream().filter(t -> !jobs.containsKey(t.getJob()))
+		List<String> badTriggers = triggers.stream().filter(t -> !availableJobs.contains(t.getJob()))
 				.map(t -> t.getJob() + ":" + t.getTrigger()).collect(Collectors.toList());
 
 		if (badTriggers.size() > 0) {
@@ -103,10 +78,10 @@ public class DefaultScheduler implements Scheduler {
 			String jobName = tc.getJob();
 			LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, tc.describeTrigger()));
 
-			ScheduledJob job = jobs.get(tc.getJob());
+			Execution job = executionFactory.getExecution(tc.getJob());
 			Map<String, Object> parameters = jobParams(job);
 
-			job.schedule(parameters, tc.createTrigger());
+			schedule(job, parameters, job.getMetadata(), tc.createTrigger());
 		});
 
 		return triggers.size();
@@ -119,37 +94,19 @@ public class DefaultScheduler implements Scheduler {
 
 	@Override
 	public JobFuture runOnce(String jobName, Map<String, Object> parameters) {
-		Optional<ScheduledJob> jobOptional = findJobByName(jobName, mapJobLaunchers());
+		Optional<Execution> jobOptional = findJobByName(jobName);
 		if (jobOptional.isPresent()) {
-			ScheduledJob job = jobOptional.get();
+			Execution job = jobOptional.get();
 			parameters = mergeParams(parameters, jobParams(job));
-			return job.runAsync(parameters);
+			return runOnce(job, parameters, job.getMetadata(), new Date());
 		} else {
 			return invalidJobNameResult(jobName);
 		}
 	}
 
-	public JobFuture runStandaloneJob(String jobName, Map<String, Object> parameters) {
-		Optional<Job> jobOptional = findJobByName(jobName, mapJobs());
-		if (jobOptional.isPresent()) {
-			Job job = jobOptional.get();
-			return runOnce(() -> job.run(mergeParams(parameters, jobParams(job))), job.getMetadata(), new Date());
-		} else {
-			return invalidJobNameResult(jobName);
-		}
-	}
-
-	private <T extends Job> Optional<T> findJobByName(String jobName, Map<String, T> jobMap) {
-		T job = jobMap.get(jobName);
+	private Optional<Execution> findJobByName(String jobName) {
+		Execution job = executionFactory.getExecution(jobName);
 		return (job == null) ? Optional.empty() : Optional.of(job);
-	}
-
-	private Map<String, ScheduledJob> mapJobLaunchers() {
-		return jobGroups.stream().collect(toMap(j -> j.getMetadata().getName(), j -> j));
-	}
-
-	private Map<String, Job> mapJobs() {
-		return jobs.stream().collect(toMap(j -> j.getMetadata().getName(), j -> j));
 	}
 
 	private JobFuture invalidJobNameResult(String jobName) {
@@ -193,15 +150,17 @@ public class DefaultScheduler implements Scheduler {
 		return null;
 	}
 
-	JobFuture runOnce(Supplier<JobResult> r, JobMetadata metadata, Date date) {
+	public JobFuture runOnce(Job job, Map<String, Object> parameters, JobMetadata metadata, Date date) {
+		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 		JobResult[] result = new JobResult[1];
-		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = r.get(), date);
+		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), date);
 		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(metadata));
 	}
 
-	ScheduledFuture<?> schedule(Supplier<JobResult> r, JobMetadata metadata, Trigger trigger) {
+	public ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, JobMetadata metadata, Trigger trigger) {
+		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 		JobResult[] result = new JobResult[1];
-		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = r.get(), trigger);
+		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), trigger);
 		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(metadata));
 	}
 }

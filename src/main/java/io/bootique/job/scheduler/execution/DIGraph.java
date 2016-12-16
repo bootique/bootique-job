@@ -4,10 +4,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The implementation here is basically an adjacency list, but a {@link Map} is
@@ -113,12 +115,12 @@ class DIGraph<V> {
      * @return List of groups of vertices. Vertices from the same group have the same rank.
      *         Rank is the distance from a vertex, from which the graph traversal started).
      */
-    public List<List<V>> topSort() {
+    public List<Set<V>> topSort() {
         Map<V, Integer> degree = inDegree();
         Deque<V> zeroDegree = new ArrayDeque<>();
-        LinkedList<List<V>> result = new LinkedList<>();
+        LinkedList<Set<V>> result = new LinkedList<>();
 
-        List<V> sameRank = new ArrayList<>();
+        Set<V> sameRank = new HashSet<>();
 
         for (Map.Entry<V, Integer> entry : degree.entrySet()) {
             if (entry.getValue() == 0) {
@@ -131,7 +133,7 @@ class DIGraph<V> {
         while (!zeroDegree.isEmpty()) {
             if (!sameRank.isEmpty()) {
                 result.push(sameRank);
-                sameRank = new ArrayList<>();
+                sameRank = new HashSet<>();
             }
 
             V v = zeroDegree.pop();
@@ -146,7 +148,7 @@ class DIGraph<V> {
         }
 
         // Check that we have used the entire graph (if not, there was a cycle)
-        if (result.stream().mapToInt(List::size).sum() != neighbors.size()) {
+        if (result.stream().mapToInt(Collection::size).sum() != neighbors.size()) {
             return null;
         }
 

@@ -1,4 +1,4 @@
-package io.bootique.job.scheduler;
+package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 
 class CombinedJob extends BaseJob {
 
-    public static Builder builder(JobMetadata.Builder metadataBuilder) {
-        return new Builder(metadataBuilder);
+    public static Builder builder(JobMetadata metadata) {
+        return new Builder(metadata);
     }
 
     private List<Supplier<JobFuture>> jobs;
@@ -43,11 +43,11 @@ class CombinedJob extends BaseJob {
 
     public static class Builder {
 
-        private JobMetadata.Builder metadataBuilder;
+        private JobMetadata metadata;
         private List<Supplier<JobFuture>> jobs;
 
-        private Builder(JobMetadata.Builder metadataBuilder) {
-            this.metadataBuilder = metadataBuilder;
+        private Builder(JobMetadata metadata) {
+            this.metadata = metadata;
             this.jobs = new ArrayList<>();
         }
 
@@ -60,7 +60,7 @@ class CombinedJob extends BaseJob {
             if (jobs.isEmpty()) {
                 throw new IllegalStateException("No jobs");
             }
-            return new CombinedJob(metadataBuilder.build(), jobs);
+            return new CombinedJob(metadata, jobs);
         }
     }
 }
