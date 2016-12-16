@@ -1,0 +1,12 @@
+jobs:
+  # job1, job2 and job3 are added implicitly via DI contribution
+  group1:
+    type: group
+    jobs:
+      job1: {}
+  group2:
+    type: group
+    jobs:
+      job2:
+        dependsOn:
+          - job3

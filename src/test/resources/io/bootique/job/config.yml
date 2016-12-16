@@ -1,0 +1,56 @@
+jobs:
+  job1:
+    params:
+      a: default
+      b: default
+  job2:
+    params:
+      e: default
+  job3:
+    params:
+      i: default
+      k: default
+  group1:
+    type: group
+    jobs:
+      job1: {}
+  group2:
+    type: group
+    jobs:
+      job1: {}
+      job2: {}
+  group3:
+    type: group
+    jobs:
+      job1:
+        params:
+          a: overriden
+      job2:
+        params:
+          y: added
+  group4:
+    type: group
+    jobs:
+      job1:
+        dependsOn:
+          - job2
+      job2:
+        params:
+          e: overriden
+  group5:
+    type: group
+    jobs:
+      job1:
+        params:
+          b: overriden
+        dependsOn:
+          - job2
+      job2:
+        params:
+          z: added
+        dependsOn:
+          - job3
+      job3:
+        params:
+          k: overriden
+          y: added
