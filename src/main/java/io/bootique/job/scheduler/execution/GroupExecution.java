@@ -70,11 +70,6 @@ class GroupExecution implements Execution {
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
     public void traverseExecution(ExecutionVisitor visitor) {
         List<Set<JobExecution>> executions = graph.topSort();
         Collections.reverse(executions);

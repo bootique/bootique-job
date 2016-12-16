@@ -71,7 +71,7 @@ public class PrintCommand extends CommandWithMetadata {
     private void printExecutionPlan(Execution execution, OutputStream out) {
         PrintWriter w = new PrintWriter(out);
 
-        w.write(String.format("[[Execution plan: %s]] ", execution.getName()));
+        w.write(String.format("[[Execution plan: %s]] ", execution.getMetadata().getName()));
         int[] counter = new int[]{1};
         execution.traverseExecution(jobExecutions -> {
             if (counter[0] > 1) {

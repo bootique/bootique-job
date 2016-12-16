@@ -98,11 +98,6 @@ public class DefaultExecutionFactory implements ExecutionFactory {
         }
 
         @Override
-        public String getName() {
-            return getMetadata().getName();
-        }
-
-        @Override
         public void traverseExecution(ExecutionVisitor visitor) {
             visitor.visitExecutionStep(Collections.singleton(execution));
         }
