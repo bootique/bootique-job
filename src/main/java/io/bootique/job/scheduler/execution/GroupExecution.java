@@ -5,7 +5,7 @@ import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.scheduler.DefaultScheduler;
+import io.bootique.job.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +25,9 @@ class GroupExecution implements Execution {
     private String name;
     private Map<String, Job> jobs;
     private DependencyGraph graph;
-    private DefaultScheduler scheduler;
+    private Scheduler scheduler;
 
-    public GroupExecution(String name, Collection<Job> jobs, DependencyGraph graph, DefaultScheduler scheduler) {
+    public GroupExecution(String name, Collection<Job> jobs, DependencyGraph graph, Scheduler scheduler) {
         this.name = name;
         this.jobs = mapJobs(jobs);
         this.graph = graph;
@@ -67,6 +67,11 @@ class GroupExecution implements Execution {
         } catch (Exception e) {
             return JobResult.failure(getMetadata(), e);
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
