@@ -32,7 +32,7 @@ public class SchedulerFactory {
 
 	public SchedulerFactory() {
 		this.triggers = new ArrayList<>();
-		this.threadPoolSize = 10;
+		this.threadPoolSize = 4;
 		this.jobPropertiesPrefix = "jobs";
 	}
 

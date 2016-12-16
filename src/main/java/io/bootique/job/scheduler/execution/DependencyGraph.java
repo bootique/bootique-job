@@ -12,26 +12,26 @@ import java.util.Set;
 
 class DependencyGraph {
 
-    private final Map<String, SingleJobExecution> knownExecutions = new LinkedHashMap<>();
-    private final DIGraph<SingleJobExecution> graph;
+    private final Map<String, JobExecution> knownExecutions = new LinkedHashMap<>();
+    private final DIGraph<JobExecution> graph;
 
     DependencyGraph(String rootJobName, Map<String, JobDefinition> definitionMap) {
-        DIGraph<SingleJobExecution> graph = new DIGraph<>();
+        DIGraph<JobExecution> graph = new DIGraph<>();
         Environment jobDefinitions = new Environment(definitionMap);
         populateWithDependencies(rootJobName, null, graph, jobDefinitions, new HashMap<>());
         this.graph = graph;
     }
 
     private void populateWithDependencies(String jobName,
-                                          SingleJobExecution childExecution,
-                                          DIGraph<SingleJobExecution> graph,
+                                          JobExecution childExecution,
+                                          DIGraph<JobExecution> graph,
                                           Environment jobDefinitions,
-                                          Map<String, SingleJobExecution> childExecutions) {
+                                          Map<String, JobExecution> childExecutions) {
 
         JobDefinition jobDefinition = jobDefinitions.getDefinition(jobName);
         if (jobDefinition instanceof SingleJob) {
             SingleJob singleJob = (SingleJob) jobDefinition;
-            SingleJobExecution execution = getOrCreateExecution(jobName, singleJob);
+            JobExecution execution = getOrCreateExecution(jobName, singleJob);
             graph.add(execution);
             if (childExecution != null) {
                 graph.add(execution, childExecution);
@@ -50,10 +50,10 @@ class DependencyGraph {
         }
     }
 
-    private void populateWithSingleJobDependencies(SingleJobExecution execution,
-                                                   DIGraph<SingleJobExecution> graph,
+    private void populateWithSingleJobDependencies(JobExecution execution,
+                                                   DIGraph<JobExecution> graph,
                                                    Environment jobDefinitions,
-                                                   Map<String, SingleJobExecution> childExecutions) {
+                                                   Map<String, JobExecution> childExecutions) {
         String jobName = execution.getJobName();
         childExecutions.put(jobName, execution);
         ((SingleJob) jobDefinitions.getDefinition(jobName)).getDependsOn().ifPresent(parents ->
@@ -66,10 +66,10 @@ class DependencyGraph {
         childExecutions.remove(jobName);
     }
 
-    private SingleJobExecution getOrCreateExecution(String jobName, SingleJob definition) {
-        SingleJobExecution execution = knownExecutions.get(jobName);
+    private JobExecution getOrCreateExecution(String jobName, SingleJob definition) {
+        JobExecution execution = knownExecutions.get(jobName);
         if (execution == null) {
-            execution = new SingleJobExecution(jobName, definition.getParams());
+            execution = new JobExecution(jobName, definition.getParams());
             knownExecutions.put(jobName, execution);
         }
         return execution;
@@ -79,7 +79,7 @@ class DependencyGraph {
         return new IllegalArgumentException("Unexpected job definition type: " + definition.getClass().getName());
     }
 
-    public List<Set<SingleJobExecution>> topSort() {
+    public List<Set<JobExecution>> topSort() {
         return graph.topSort();
     }
 

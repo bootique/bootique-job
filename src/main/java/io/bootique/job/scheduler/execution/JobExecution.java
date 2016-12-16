@@ -2,12 +2,12 @@ package io.bootique.job.scheduler.execution;
 
 import java.util.Map;
 
-class SingleJobExecution {
+public class JobExecution {
 
     private String jobName;
     private Map<String, Object> params;
 
-    public SingleJobExecution(String jobName, Map<String, Object> params) {
+    public JobExecution(String jobName, Map<String, Object> params) {
         this.jobName = jobName;
         this.params = params;
     }
