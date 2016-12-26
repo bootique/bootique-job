@@ -12,7 +12,6 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.Job;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
-import io.bootique.job.command.PrintCommand;
 import io.bootique.job.command.ScheduleCommand;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJob;
@@ -72,7 +71,6 @@ public class JobModule extends ConfigModule {
 		commandBinder.addBinding().to(ExecCommand.class).in(Singleton.class);
 		commandBinder.addBinding().to(ListCommand.class).in(Singleton.class);
 		commandBinder.addBinding().to(ScheduleCommand.class).in(Singleton.class);
-		commandBinder.addBinding().to(PrintCommand.class).in(Singleton.class);
 
 		// trigger extension points creation and provide default contributions
 
