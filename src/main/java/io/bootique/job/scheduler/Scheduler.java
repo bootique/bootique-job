@@ -1,8 +1,12 @@
 package io.bootique.job.scheduler;
 
+import io.bootique.job.Job;
 import io.bootique.job.runnable.JobFuture;
+import org.springframework.scheduling.Trigger;
 
+import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
 public interface Scheduler {
 
@@ -23,6 +27,10 @@ public interface Scheduler {
      * @since 0.13
      */
     JobFuture runOnce(String jobName, Map<String, Object> parameters);
+
+    JobFuture runOnce(Job job, Map<String, Object> parameters, Date date);
+
+    ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, Trigger trigger);
 
     int start();
 }
