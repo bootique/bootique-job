@@ -75,7 +75,11 @@ public class ExecCommand extends CommandWithMetadata {
 	}
 
 	private void runSerial(List<String> jobNames, Scheduler scheduler) {
-		jobNames.stream().map(scheduler::runOnce).map(JobFuture::get).forEach(this::processResult);
+
+		jobNames.forEach(name -> {
+			JobResult result = scheduler.runOnce(name).get();
+			processResult(result);
+		});
 	}
 
 	private void processResult(JobResult result) {
