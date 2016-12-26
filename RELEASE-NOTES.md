@@ -3,6 +3,7 @@
 * #11 Pass parameters to ad-hoc job executions
 * #13 Upgrade to BQ 0.21
 * #14 Removing deprecated code
+* #15 Exec command: Order and repetition of jobs
 
 ## 0.12
 
