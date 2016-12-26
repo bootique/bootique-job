@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * @since 0.13
+ */
 public class SingleJob implements JobDefinition {
 
     private Map<String, Object> params;

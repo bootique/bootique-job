@@ -6,6 +6,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * @since 0.13
+ */
 public final class ExpiredFuture implements ScheduledFuture<Object> {
 
     @Override

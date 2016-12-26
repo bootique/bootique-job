@@ -15,6 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+/**
+ * @since 0.13
+ */
 public class DefaultExecutionFactory implements ExecutionFactory {
 
     private Set<String> availableJobs;

@@ -28,8 +28,22 @@ public interface Scheduler {
      */
     JobFuture runOnce(String jobName, Map<String, Object> parameters);
 
+    /**
+     * @param job
+     * @param parameters
+     * @param date
+     * @return a Future to track job progress.
+     * @since 0.13
+     */
     JobFuture runOnce(Job job, Map<String, Object> parameters, Date date);
 
+    /**
+     * @param job
+     * @param parameters
+     * @param trigger
+     * @return a Future to track job progress.
+     * @since 0.13
+     */
     ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, Trigger trigger);
 
     int start();

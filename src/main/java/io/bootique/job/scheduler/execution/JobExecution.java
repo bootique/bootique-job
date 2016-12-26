@@ -2,6 +2,9 @@ package io.bootique.job.scheduler.execution;
 
 import java.util.Map;
 
+/**
+ * @since 0.13
+ */
 public class JobExecution {
 
     private String jobName;

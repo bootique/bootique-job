@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * @since 0.13
+ */
 @JsonTypeName("group")
 public class JobGroup implements JobDefinition {
 
