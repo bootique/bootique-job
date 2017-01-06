@@ -9,17 +9,21 @@ import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.command.Command;
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.env.Environment;
 import io.bootique.job.Job;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
+import io.bootique.job.config.JobDefinition;
+import io.bootique.job.config.SingleJob;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
 import io.bootique.job.lock.zookeeper.ZkClusterLockHandler;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
+import io.bootique.job.scheduler.execution.DefaultExecutionFactory;
+import io.bootique.job.scheduler.execution.ExecutionFactory;
+import io.bootique.type.TypeRef;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -80,9 +84,26 @@ public class JobModule extends ConfigModule {
 	}
 
 	@Provides
-	protected Scheduler createScheduler(Set<Job> jobs, Environment environment, Map<LockType, LockHandler> jobRunners,
+	protected Scheduler createScheduler(Map<LockType, LockHandler> jobRunners,
+										ExecutionFactory executionFactory,
 										ConfigurationFactory configFactory) {
-		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobs, environment,
-				configFactory, jobRunners);
+		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobRunners, executionFactory);
+	}
+
+	@Provides
+	@Singleton
+	protected ExecutionFactory createExecutionFactory(Set<Job> jobs,
+													  Scheduler scheduler,
+													  ConfigurationFactory configFactory) {
+		return new DefaultExecutionFactory(jobs, collectJobDefinitions(jobs, configFactory), scheduler);
+	}
+
+	private Map<String, JobDefinition> collectJobDefinitions(Set<Job> jobs, ConfigurationFactory configFactory) {
+		Map<String, JobDefinition> jobDefinitions = configFactory.config(new TypeRef<Map<String,JobDefinition>>() {}, "jobs");
+		// create definition for each job, that is not present in config
+		jobs.stream().filter(job -> !jobDefinitions.containsKey(job.getMetadata().getName())).forEach(job -> {
+			jobDefinitions.put(job.getMetadata().getName(), new SingleJob());
+		});
+		return jobDefinitions;
 	}
 }

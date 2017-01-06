@@ -23,6 +23,7 @@
 		<!-- TODO: we are bringing the entire huge Spring framework to just use 
 			a few scheduling classes, and no injection -->
 		<spring-version>4.2.3.RELEASE</spring-version>
+		<slf4j-version>1.7.13</slf4j-version>
 	</properties>
 
 	<scm>
@@ -75,7 +76,7 @@
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>jcl-over-slf4j</artifactId>
-				<version>1.7.13</version>
+				<version>${slf4j-version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -96,6 +97,12 @@
 		<dependency>
 			<groupId>io.bootique</groupId>
 			<artifactId>bootique-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j-version}</version>
 			<scope>test</scope>
 		</dependency>
 
