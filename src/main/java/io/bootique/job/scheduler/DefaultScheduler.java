@@ -6,8 +6,7 @@ import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
-import io.bootique.job.scheduler.execution.Execution;
-import io.bootique.job.scheduler.execution.ExecutionFactory;
+import io.bootique.job.JobRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -28,17 +27,17 @@ public class DefaultScheduler implements Scheduler {
 
 	private TaskScheduler taskScheduler;
 	private RunnableJobFactory runnableJobFactory;
-	private ExecutionFactory executionFactory;
+	private JobRegistry jobRegistry;
 	private Collection<TriggerDescriptor> triggers;
 
 	public DefaultScheduler(Collection<TriggerDescriptor> triggers,
 							TaskScheduler taskScheduler,
 							RunnableJobFactory runnableJobFactory,
-							ExecutionFactory executionFactory) {
+							JobRegistry jobRegistry) {
 		this.triggers = triggers;
 		this.runnableJobFactory = runnableJobFactory;
 		this.taskScheduler = taskScheduler;
-		this.executionFactory = executionFactory;
+		this.jobRegistry = jobRegistry;
 	}
 
 	@Override
@@ -49,7 +48,7 @@ public class DefaultScheduler implements Scheduler {
 			return 0;
 		}
 
-		List<String> badTriggers = triggers.stream().filter(t -> !executionFactory.getAvailableJobs().contains(t.getJob()))
+		List<String> badTriggers = triggers.stream().filter(t -> !jobRegistry.getAvailableJobs().contains(t.getJob()))
 				.map(t -> t.getJob() + ":" + t.getTrigger()).collect(Collectors.toList());
 
 		if (badTriggers.size() > 0) {
@@ -61,7 +60,7 @@ public class DefaultScheduler implements Scheduler {
 			String jobName = tc.getJob();
 			LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, tc.describeTrigger()));
 
-			Execution job = executionFactory.getExecution(tc.getJob());
+			Job job = jobRegistry.getJob(tc.getJob());
 
 			schedule(job, Collections.emptyMap(), tc.createTrigger());
 		});
@@ -76,17 +75,17 @@ public class DefaultScheduler implements Scheduler {
 
 	@Override
 	public JobFuture runOnce(String jobName, Map<String, Object> parameters) {
-		Optional<Execution> jobOptional = findJobByName(jobName);
+		Optional<Job> jobOptional = findJobByName(jobName);
 		if (jobOptional.isPresent()) {
-			Execution job = jobOptional.get();
+			Job job = jobOptional.get();
 			return runOnce(job, parameters);
 		} else {
 			return invalidJobNameResult(jobName);
 		}
 	}
 
-	private Optional<Execution> findJobByName(String jobName) {
-		Execution job = executionFactory.getExecution(jobName);
+	private Optional<Job> findJobByName(String jobName) {
+		Job job = jobRegistry.getJob(jobName);
 		return (job == null) ? Optional.empty() : Optional.of(job);
 	}
 

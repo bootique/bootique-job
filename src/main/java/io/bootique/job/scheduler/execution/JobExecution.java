@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * @since 0.13
  */
-public class JobExecution {
+class JobExecution {
 
     private String jobName;
     private Map<String, Object> params;

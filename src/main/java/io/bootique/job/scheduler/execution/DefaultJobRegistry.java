@@ -1,5 +1,6 @@
 package io.bootique.job.scheduler.execution;
 
+import io.bootique.job.JobRegistry;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.config.JobDefinition;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * @since 0.13
  */
-public class DefaultExecutionFactory implements ExecutionFactory {
+public class DefaultJobRegistry implements JobRegistry {
 
     private Set<String> availableJobs;
 
@@ -27,7 +28,7 @@ public class DefaultExecutionFactory implements ExecutionFactory {
     private ConcurrentMap<String, Execution> executions;
     private Scheduler scheduler;
 
-    public DefaultExecutionFactory(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions, Scheduler scheduler) {
+    public DefaultJobRegistry(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions, Scheduler scheduler) {
         this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
         this.jobs = jobs;
         this.jobDefinitions = jobDefinitions;
@@ -47,7 +48,7 @@ public class DefaultExecutionFactory implements ExecutionFactory {
     }
 
     @Override
-    public Execution getExecution(String jobName) {
+    public Execution getJob(String jobName) {
         Execution execution = executions.get(jobName);
         if (execution == null) {
             DependencyGraph graph = new DependencyGraph(jobName, jobDefinitions);

@@ -6,7 +6,7 @@ import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
 import io.bootique.job.runnable.LockAwareRunnableJobFactory;
 import io.bootique.job.runnable.RunnableJobFactory;
 import io.bootique.job.runnable.SimpleRunnableJobFactory;
-import io.bootique.job.scheduler.execution.ExecutionFactory;
+import io.bootique.job.JobRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -29,7 +29,7 @@ public class SchedulerFactory {
 	}
 
 	public Scheduler createScheduler(Map<LockType, LockHandler> lockHandlers,
-									 ExecutionFactory executionFactory) {
+									 JobRegistry jobRegistry) {
 
 		TaskScheduler taskScheduler = createTaskScheduler();
 
@@ -45,7 +45,7 @@ public class SchedulerFactory {
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
 		// TODO: write a builder instead of this insane constructor
-		return new DefaultScheduler(triggers, taskScheduler, rf3, executionFactory);
+		return new DefaultScheduler(triggers, taskScheduler, rf3, jobRegistry);
 	}
 
 	protected TaskScheduler createTaskScheduler() {
