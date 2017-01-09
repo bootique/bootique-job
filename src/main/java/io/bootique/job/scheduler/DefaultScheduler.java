@@ -79,7 +79,7 @@ public class DefaultScheduler implements Scheduler {
 		Optional<Execution> jobOptional = findJobByName(jobName);
 		if (jobOptional.isPresent()) {
 			Execution job = jobOptional.get();
-			return runOnce(job, parameters, new Date());
+			return runOnce(job, parameters);
 		} else {
 			return invalidJobNameResult(jobName);
 		}
@@ -96,14 +96,18 @@ public class DefaultScheduler implements Scheduler {
 	}
 
 	@Override
-	public JobFuture runOnce(Job job, Map<String, Object> parameters, Date date) {
-		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
-		JobResult[] result = new JobResult[1];
-		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), date);
-		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
+	public JobFuture runOnce(Job job) {
+		return runOnce(job, Collections.emptyMap());
 	}
 
 	@Override
+	public JobFuture runOnce(Job job, Map<String, Object> parameters) {
+		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
+		JobResult[] result = new JobResult[1];
+		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), new Date());
+		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
+	}
+
 	public ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
 		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 		JobResult[] result = new JobResult[1];

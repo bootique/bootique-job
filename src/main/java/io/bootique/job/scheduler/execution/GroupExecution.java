@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,7 @@ class GroupExecution implements Execution {
         List<JobFuture> futures = jobExecutions.stream()
                 .map(jobExecution -> {
                     Job job = jobs.get(jobExecution.getJobName());
-                    return scheduler.runOnce(job, jobExecution.getParams(), new Date());
+                    return scheduler.runOnce(job, jobExecution.getParams());
                 })
                 .collect(Collectors.toList());
 
