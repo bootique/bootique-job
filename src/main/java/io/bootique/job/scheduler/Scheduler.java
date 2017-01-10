@@ -3,6 +3,7 @@ package io.bootique.job.scheduler;
 import io.bootique.job.Job;
 import io.bootique.job.runnable.JobFuture;
 
+import java.util.Collection;
 import java.util.Map;
 
 public interface Scheduler {
@@ -45,4 +46,12 @@ public interface Scheduler {
     JobFuture runOnce(Job job, Map<String, Object> parameters);
 
     int start();
+
+    /**
+     * Returns a collection of triggers, configured for this scheduler.
+     *
+     * @return Collection of triggers, configured for this scheduler.
+     * @since 0.13
+     */
+    Collection<TriggerDescriptor> getTriggers();
 }

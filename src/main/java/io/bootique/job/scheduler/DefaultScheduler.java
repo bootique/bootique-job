@@ -34,7 +34,7 @@ public class DefaultScheduler implements Scheduler {
 							TaskScheduler taskScheduler,
 							RunnableJobFactory runnableJobFactory,
 							JobRegistry jobRegistry) {
-		this.triggers = triggers;
+		this.triggers = Collections.unmodifiableCollection(triggers);
 		this.runnableJobFactory = runnableJobFactory;
 		this.taskScheduler = taskScheduler;
 		this.jobRegistry = jobRegistry;
@@ -66,6 +66,11 @@ public class DefaultScheduler implements Scheduler {
 		});
 
 		return triggers.size();
+	}
+
+	@Override
+	public Collection<TriggerDescriptor> getTriggers() {
+		return triggers;
 	}
 
 	@Override
