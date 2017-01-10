@@ -15,18 +15,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-class GroupExecution implements Execution {
+class JobGroup implements Job {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GroupExecution.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobGroup.class);
 
     private String name;
     private Map<String, Job> jobs;
     private DependencyGraph graph;
     private Scheduler scheduler;
 
-    public GroupExecution(String name, Collection<Job> jobs, DependencyGraph graph, Scheduler scheduler) {
+    public JobGroup(String name, Collection<Job> jobs, DependencyGraph graph, Scheduler scheduler) {
         this.name = name;
         this.jobs = mapJobs(jobs);
         this.graph = graph;
@@ -68,11 +69,10 @@ class GroupExecution implements Execution {
         }
     }
 
-    @Override
-    public void traverseExecution(ExecutionVisitor visitor) {
+    private void traverseExecution(Consumer<Set<JobExecution>> visitor) {
         List<Set<JobExecution>> executions = graph.topSort();
         Collections.reverse(executions);
-        executions.forEach(visitor::visitExecutionStep);
+        executions.forEach(visitor::accept);
     }
 
     private Set<JobResult> execute(Set<JobExecution> jobExecutions) {

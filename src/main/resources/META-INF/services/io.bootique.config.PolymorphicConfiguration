@@ -1,2 +1,2 @@
-io.bootique.job.config.SingleJob
-io.bootique.job.config.JobGroup
+io.bootique.job.config.SingleJobDefinition
+io.bootique.job.config.JobGroupDefinition

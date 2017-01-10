@@ -1,7 +1,7 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.config.JobDefinition;
-import io.bootique.job.config.SingleJob;
+import io.bootique.job.config.SingleJobDefinition;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,27 +29,27 @@ class Environment {
         if (defaultEnvironment.isPresent()) {
             if (definition == null) {
                 definition = defaultEnvironment.get().getDefinition(jobName);
-            } else if (definition instanceof SingleJob) {
+            } else if (definition instanceof SingleJobDefinition) {
                 JobDefinition delegateDefinition = defaultEnvironment.get().getDefinition(jobName);
-                if (delegateDefinition instanceof SingleJob) {
-                    definition = mergeDefinitions((SingleJob) definition, (SingleJob) delegateDefinition);
+                if (delegateDefinition instanceof SingleJobDefinition) {
+                    definition = mergeDefinitions((SingleJobDefinition) definition, (SingleJobDefinition) delegateDefinition);
                 }
             }
         }
         return Objects.requireNonNull(definition, "Unknown job: " + jobName);
     }
 
-    private SingleJob mergeDefinitions(SingleJob overriding, SingleJob overriden) {
-        return new SingleJob(mergeParams(overriding, overriden), mergeDependencies(overriding, overriden));
+    private SingleJobDefinition mergeDefinitions(SingleJobDefinition overriding, SingleJobDefinition overriden) {
+        return new SingleJobDefinition(mergeParams(overriding, overriden), mergeDependencies(overriding, overriden));
     }
 
-    private Map<String, Object> mergeParams(SingleJob overriding, SingleJob overriden) {
+    private Map<String, Object> mergeParams(SingleJobDefinition overriding, SingleJobDefinition overriden) {
         Map<String, Object> params = new HashMap<>(overriden.getParams());
         params.putAll(overriding.getParams());
         return params;
     }
 
-    private Optional<List<String>> mergeDependencies(SingleJob overriding, SingleJob overriden) {
+    private Optional<List<String>> mergeDependencies(SingleJobDefinition overriding, SingleJobDefinition overriden) {
         return overriding.getDependsOn().isPresent() ? overriding.getDependsOn() : overriden.getDependsOn();
     }
 }

@@ -1,8 +1,8 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.config.JobDefinition;
-import io.bootique.job.config.JobGroup;
-import io.bootique.job.config.SingleJob;
+import io.bootique.job.config.JobGroupDefinition;
+import io.bootique.job.config.SingleJobDefinition;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,8 +29,8 @@ class DependencyGraph {
                                           Map<String, JobExecution> childExecutions) {
 
         JobDefinition jobDefinition = jobDefinitions.getDefinition(jobName);
-        if (jobDefinition instanceof SingleJob) {
-            SingleJob singleJob = (SingleJob) jobDefinition;
+        if (jobDefinition instanceof SingleJobDefinition) {
+            SingleJobDefinition singleJob = (SingleJobDefinition) jobDefinition;
             JobExecution execution = getOrCreateExecution(jobName, singleJob);
             graph.add(execution);
             if (childExecution != null) {
@@ -38,8 +38,8 @@ class DependencyGraph {
             }
             populateWithSingleJobDependencies(execution, graph, jobDefinitions, childExecutions);
 
-        } else if (jobDefinition instanceof JobGroup) {
-            JobGroup group = (JobGroup) jobDefinition;
+        } else if (jobDefinition instanceof JobGroupDefinition) {
+            JobGroupDefinition group = (JobGroupDefinition) jobDefinition;
             group.getJobs().forEach((name, definition) -> {
                 Environment groupDefinitions = new Environment(group.getJobs(), jobDefinitions);
                 populateWithDependencies(name, childExecution, graph, groupDefinitions, childExecutions);
@@ -56,7 +56,7 @@ class DependencyGraph {
                                                    Map<String, JobExecution> childExecutions) {
         String jobName = execution.getJobName();
         childExecutions.put(jobName, execution);
-        ((SingleJob) jobDefinitions.getDefinition(jobName)).getDependsOn().ifPresent(parents ->
+        ((SingleJobDefinition) jobDefinitions.getDefinition(jobName)).getDependsOn().ifPresent(parents ->
             parents.forEach(parentName -> {
                 if (childExecutions.containsKey(parentName)) {
                     throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
@@ -66,7 +66,7 @@ class DependencyGraph {
         childExecutions.remove(jobName);
     }
 
-    private JobExecution getOrCreateExecution(String jobName, SingleJob definition) {
+    private JobExecution getOrCreateExecution(String jobName, SingleJobDefinition definition) {
         JobExecution execution = knownExecutions.get(jobName);
         if (execution == null) {
             execution = new JobExecution(jobName, definition.getParams());

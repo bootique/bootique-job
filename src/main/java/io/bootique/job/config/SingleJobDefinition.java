@@ -8,17 +8,17 @@ import java.util.Optional;
 /**
  * @since 0.13
  */
-public class SingleJob implements JobDefinition {
+public class SingleJobDefinition implements JobDefinition {
 
     private Map<String, Object> params;
     private Optional<List<String>> dependsOn;
 
-    public SingleJob() {
+    public SingleJobDefinition() {
         this.params = Collections.emptyMap();
         this.dependsOn = Optional.empty();
     }
 
-    public SingleJob(Map<String, Object> params, Optional<List<String>> dependsOn) {
+    public SingleJobDefinition(Map<String, Object> params, Optional<List<String>> dependsOn) {
         this.params = params;
         this.dependsOn = dependsOn;
     }

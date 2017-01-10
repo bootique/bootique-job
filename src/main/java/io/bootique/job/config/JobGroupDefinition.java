@@ -9,19 +9,19 @@ import java.util.Map;
  * @since 0.13
  */
 @JsonTypeName("group")
-public class JobGroup implements JobDefinition {
+public class JobGroupDefinition implements JobDefinition {
 
-    private Map<String, SingleJob> jobs;
+    private Map<String, SingleJobDefinition> jobs;
 
-    public JobGroup() {
+    public JobGroupDefinition() {
         this.jobs = Collections.emptyMap();
     }
 
-    public Map<String, SingleJob> getJobs() {
+    public Map<String, SingleJobDefinition> getJobs() {
         return jobs;
     }
 
-    public void setJobs(Map<String, SingleJob> jobs) {
+    public void setJobs(Map<String, SingleJobDefinition> jobs) {
         this.jobs = jobs;
     }
 }

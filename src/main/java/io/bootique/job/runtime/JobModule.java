@@ -14,7 +14,7 @@ import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
 import io.bootique.job.config.JobDefinition;
-import io.bootique.job.config.SingleJob;
+import io.bootique.job.config.SingleJobDefinition;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
@@ -92,9 +92,9 @@ public class JobModule extends ConfigModule {
 
 	@Provides
 	@Singleton
-	protected JobRegistry createExecutionFactory(Set<Job> jobs,
-												 Scheduler scheduler,
-												 ConfigurationFactory configFactory) {
+	protected JobRegistry createJobRegistry(Set<Job> jobs,
+											Scheduler scheduler,
+											ConfigurationFactory configFactory) {
 		return new DefaultJobRegistry(jobs, collectJobDefinitions(jobs, configFactory), scheduler);
 	}
 
@@ -102,7 +102,7 @@ public class JobModule extends ConfigModule {
 		Map<String, JobDefinition> jobDefinitions = configFactory.config(new TypeRef<Map<String,JobDefinition>>() {}, "jobs");
 		// create definition for each job, that is not present in config
 		jobs.stream().filter(job -> !jobDefinitions.containsKey(job.getMetadata().getName())).forEach(job -> {
-			jobDefinitions.put(job.getMetadata().getName(), new SingleJob());
+			jobDefinitions.put(job.getMetadata().getName(), new SingleJobDefinition());
 		});
 		return jobDefinitions;
 	}
