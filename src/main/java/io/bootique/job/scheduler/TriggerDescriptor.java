@@ -1,9 +1,12 @@
 package io.bootique.job.scheduler;
 
+import io.bootique.annotation.BQConfig;
+import io.bootique.annotation.BQConfigProperty;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.PeriodicTrigger;
 
+@BQConfig("Trigger of a one of the following flavors: cron, periodic, fixed-rate.")
 public class TriggerDescriptor {
 
 	private String job;
@@ -18,6 +21,7 @@ public class TriggerDescriptor {
 		return job;
 	}
 
+	@BQConfigProperty("Job that the trigger applies to.")
 	public void setJob(String jobName) {
 		this.job = jobName;
 	}
@@ -26,6 +30,7 @@ public class TriggerDescriptor {
 		return trigger;
 	}
 
+	@BQConfigProperty("Unique identifier, used in logging and reporting.")
 	public void setTrigger(String triggerName) {
 		this.trigger = triggerName;
 	}
@@ -34,6 +39,7 @@ public class TriggerDescriptor {
 		return cron;
 	}
 
+	@BQConfigProperty("Cron expression.")
 	public void setCron(String cronExpression) {
 		this.cron = cronExpression;
 	}
@@ -42,6 +48,8 @@ public class TriggerDescriptor {
 		return fixedDelayMs;
 	}
 
+	@BQConfigProperty("Delay between job executions in millis." +
+			" New job instances will be scheduled to run in D milliseconds after the completion of the preceding instance.")
 	public void setFixedDelayMs(long fixedDelayMs) {
 		this.fixedDelayMs = fixedDelayMs;
 	}
@@ -50,6 +58,7 @@ public class TriggerDescriptor {
 		return fixedRateMs;
 	}
 
+	@BQConfigProperty("Fixed rate in millis. New job instances will be run exactly every R milliseconds.")
 	public void setFixedRateMs(long fixedRateMs) {
 		this.fixedRateMs = fixedRateMs;
 	}
@@ -58,6 +67,7 @@ public class TriggerDescriptor {
 		return initialDelayMs;
 	}
 
+	@BQConfigProperty("Initial delay in millis. Applies to periodic and fixed-rate triggers.")
 	public void setInitialDelayMs(long initialDelayMs) {
 		this.initialDelayMs = initialDelayMs;
 	}
