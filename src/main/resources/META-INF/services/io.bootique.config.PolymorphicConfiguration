@@ -1,2 +1,3 @@
+io.bootique.job.config.JobDefinition
 io.bootique.job.config.SingleJobDefinition
 io.bootique.job.config.JobGroupDefinition
