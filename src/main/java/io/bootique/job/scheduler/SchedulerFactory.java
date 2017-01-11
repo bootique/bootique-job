@@ -1,5 +1,7 @@
 package io.bootique.job.scheduler;
 
+import io.bootique.annotation.BQConfig;
+import io.bootique.annotation.BQConfigProperty;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
 import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
@@ -17,6 +19,7 @@ import java.util.Map;
 /**
  * A configuration object that is used to setup jobs runtime.
  */
+@BQConfig("Job scheduler/executor.")
 public class SchedulerFactory {
 
 	private Collection<TriggerDescriptor> triggers;
@@ -55,14 +58,18 @@ public class SchedulerFactory {
 		return taskScheduler;
 	}
 
+	@BQConfigProperty("Collection of job triggers.")
 	public void setTriggers(Collection<TriggerDescriptor> triggers) {
 		this.triggers = triggers;
 	}
 
+	@BQConfigProperty("Minimum number of workers to keep alive (and not allow to time out etc)." +
+			" Should be 1 or higher. Default value is 1.")
 	public void setThreadPoolSize(int threadPoolSize) {
 		this.threadPoolSize = threadPoolSize;
 	}
 
+	@BQConfigProperty("Determines whether the lock handlers will be aware of the Zookeeper cluster.")
 	public void setClusteredLocks(boolean clusteredLocks) {
 		this.clusteredLocks = clusteredLocks;
 	}
