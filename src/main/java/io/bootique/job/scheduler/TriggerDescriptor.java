@@ -6,7 +6,7 @@ import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.PeriodicTrigger;
 
-@BQConfig("Trigger of a one of the following flavors: cron, periodic, fixed-rate.")
+@BQConfig("Trigger of one of the following flavors: cron, periodic, fixed-rate.")
 public class TriggerDescriptor {
 
 	private String job;

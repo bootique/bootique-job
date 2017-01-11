@@ -1,5 +1,6 @@
 package io.bootique.job.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 
@@ -12,6 +13,7 @@ import java.util.Optional;
  * @since 0.13
  */
 @BQConfig("Standalone job with optional dependencies.")
+@JsonTypeName("single")
 public class SingleJobDefinition implements JobDefinition {
 
     private Map<String, Object> params;
