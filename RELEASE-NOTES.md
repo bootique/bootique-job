@@ -4,6 +4,7 @@
 * #13 Upgrade to BQ 0.21
 * #14 Removing deprecated code
 * #15 Exec command: Order and repetition of jobs
+* #22 Config self-documentation
 
 ## 0.12
 
