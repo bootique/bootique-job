@@ -21,14 +21,26 @@ public class ErrorHandlingRunnableJobFactory implements RunnableJobFactory {
 
 		RunnableJob rj = delegate.runnable(job, parameters);
 
-		return () -> {
-			try {
-				return rj.run();
-			} catch (Throwable th) {
-				LOGGER.info("Exception while running job '{}'", job.getMetadata().getName(), th);
-				return JobResult.unknown(job.getMetadata(), th);
+		return new RunnableJob() {
+			@Override
+			public JobResult run() {
+				try {
+					return rj.run();
+				} catch (Throwable th) {
+					LOGGER.info("Exception while running job '{}'", job.getMetadata().getName(), th);
+					return JobResult.unknown(job.getMetadata(), th);
+				}
+			}
+
+			@Override
+			public Map<String, Object> getParameters() {
+				return rj.getParameters();
+			}
+
+			@Override
+			public boolean isRunning() {
+				return rj.isRunning();
 			}
 		};
 	}
-
 }

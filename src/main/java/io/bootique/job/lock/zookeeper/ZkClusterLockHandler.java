@@ -1,6 +1,7 @@
 package io.bootique.job.lock.zookeeper;
 
 import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.BaseRunnableJob;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.RunnableJob;
 import org.slf4j.Logger;
@@ -10,6 +11,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runnable.JobResult;
+
+import java.util.Map;
 
 public class ZkClusterLockHandler implements LockHandler {
 
@@ -29,23 +32,30 @@ public class ZkClusterLockHandler implements LockHandler {
 
 	@Override
 	public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
+		return new BaseRunnableJob() {
+			@Override
+			protected JobResult doRun() {
+				String lockName = getLockName(metadata);
 
-		return () -> {
-			String lockName = getLockName(metadata);
+				LOGGER.info("Attempting to lock '{}'", lockName);
 
-			LOGGER.info("Attempting to lock '{}'", lockName);
+				ZkMutex lock = ZkMutex.acquire(injector, lockName);
+				if (lock == null) {
+					LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
+					return new JobResult(metadata, JobOutcome.SKIPPED, null,
+							"Another job instance owns the lock. Skipping execution");
+				}
 
-			ZkMutex lock = ZkMutex.acquire(injector, lockName);
-			if (lock == null) {
-				LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-				return new JobResult(metadata, JobOutcome.SKIPPED, null,
-						"Another job instance owns the lock. Skipping execution");
+				try {
+					return executable.run();
+				} finally {
+					lock.release();
+				}
 			}
 
-			try {
-				return executable.run();
-			} finally {
-				lock.release();
+			@Override
+			public Map<String, Object> getParameters() {
+				return executable.getParameters();
 			}
 		};
 	}

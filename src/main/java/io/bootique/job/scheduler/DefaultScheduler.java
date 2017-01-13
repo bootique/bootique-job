@@ -12,13 +12,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class DefaultScheduler implements Scheduler {
@@ -29,6 +35,7 @@ public class DefaultScheduler implements Scheduler {
 	private RunnableJobFactory runnableJobFactory;
 	private JobRegistry jobRegistry;
 	private Collection<TriggerDescriptor> triggers;
+	private JobFutures jobFutures;
 
 	public DefaultScheduler(Collection<TriggerDescriptor> triggers,
 							TaskScheduler taskScheduler,
@@ -38,6 +45,7 @@ public class DefaultScheduler implements Scheduler {
 		this.runnableJobFactory = runnableJobFactory;
 		this.taskScheduler = taskScheduler;
 		this.jobRegistry = jobRegistry;
+		this.jobFutures = new JobFutures();
 	}
 
 	@Override
@@ -74,6 +82,11 @@ public class DefaultScheduler implements Scheduler {
 	}
 
 	@Override
+	public Collection<JobFuture> getSubmittedJobs() {
+		return jobFutures.getActiveJobs();
+	}
+
+	@Override
 	public JobFuture runOnce(String jobName) {
 		return runOnce(jobName, Collections.emptyMap());
 	}
@@ -95,8 +108,10 @@ public class DefaultScheduler implements Scheduler {
 	}
 
 	private JobFuture invalidJobNameResult(String jobName) {
-		return new JobFuture(new ExpiredFuture(),
-					() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName));
+		return JobFuture.forJob(jobName)
+				.future(new ExpiredFuture())
+				.resultSupplier(() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName))
+				.build();
 	}
 
 	@Override
@@ -106,16 +121,64 @@ public class DefaultScheduler implements Scheduler {
 
 	@Override
 	public JobFuture runOnce(Job job, Map<String, Object> parameters) {
-		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
-		JobResult[] result = new JobResult[1];
-		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), new Date());
-		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
+		return submit(job, parameters,
+				(rj, result) -> taskScheduler.schedule(() -> result[0] = rj.run(), new Date()));
 	}
 
-	public ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
+	private ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
+		return submit(job, parameters,
+				(rj, result) -> taskScheduler.schedule(() -> result[0] = rj.run(), trigger));
+	}
+
+	private JobFuture submit(Job job, Map<String, Object> parameters,
+							 BiFunction<RunnableJob, JobResult[], ScheduledFuture<?>> executor) {
+
 		RunnableJob rj = runnableJobFactory.runnable(job, parameters);
 		JobResult[] result = new JobResult[1];
-		ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), trigger);
-		return new JobFuture(jobFuture, () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
+		ScheduledFuture<?> jobFuture = executor.apply(rj, result);
+
+		JobFuture future = JobFuture.forJob(job.getMetadata().getName())
+				.future(jobFuture)
+				.runnable(rj)
+				.resultSupplier(() -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()))
+				.build();
+
+		jobFutures.addFuture(future);
+		return future;
+	}
+
+	private static class JobFutures {
+
+		private final Queue<JobFuture> submittedJobs;
+		private final Collection<JobFuture> runningJobs;
+
+		public JobFutures() {
+			this.runningJobs = new LinkedList<>();
+			this.submittedJobs = new LinkedBlockingQueue<>();
+		}
+
+		public JobFutures addFuture(JobFuture future) {
+			submittedJobs.add(future);
+			return this;
+		}
+
+		public Collection<JobFuture> getActiveJobs() {
+			synchronized (runningJobs) {
+				Iterator<JobFuture> iter = runningJobs.iterator();
+				while (iter.hasNext()) {
+					if (iter.next().isDone()) {
+						iter.remove();
+					}
+				}
+
+				JobFuture submitted;
+				while ((submitted = submittedJobs.poll()) != null && !submitted.isDone()) {
+					runningJobs.add(submitted);
+				}
+
+				// do copying prior to releasing the lock to avoid possible errors
+				return new ArrayList<>(runningJobs);
+			}
+		}
 	}
 }

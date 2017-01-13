@@ -54,4 +54,12 @@ public interface Scheduler {
      * @since 0.13
      */
     Collection<TriggerDescriptor> getTriggers();
+
+    /**
+     * Returns jobs that are currently submitted for execution.
+     *
+     * @return Collection of jobs that were submitted for execution but hadn't yet completed.
+     * @since 0.13
+     */
+    Collection<JobFuture> getSubmittedJobs();
 }
