@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -168,10 +169,12 @@ public class DefaultScheduler implements Scheduler {
 
 		private final Queue<JobFuture> submittedJobs;
 		private final Collection<JobFuture> runningJobs;
+		private final ReentrantLock lock;
 
 		public JobFutures() {
 			this.runningJobs = new LinkedList<>();
 			this.submittedJobs = new LinkedBlockingQueue<>();
+			this.lock = new ReentrantLock();
 
 			// If getActiveJobs() is rarely called, method response time and memory usage will grow over time.
 			// To prevent such situation a daemon will perform periodic cleanup of submitted and active jobs.
@@ -193,7 +196,8 @@ public class DefaultScheduler implements Scheduler {
 		}
 
 		public Collection<JobFuture> getActiveJobs() {
-			synchronized (runningJobs) {
+			lock.lock();
+			try {
 				Iterator<JobFuture> iter = runningJobs.iterator();
 				while (iter.hasNext()) {
 					if (iter.next().isDone()) {
@@ -208,6 +212,8 @@ public class DefaultScheduler implements Scheduler {
 
 				// do copying prior to releasing the lock to avoid possible errors
 				return new ArrayList<>(runningJobs);
+			} finally {
+				lock.unlock();
 			}
 		}
 	}
