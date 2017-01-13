@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.Trigger;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -171,6 +172,19 @@ public class DefaultScheduler implements Scheduler {
 		public JobFutures() {
 			this.runningJobs = new LinkedList<>();
 			this.submittedJobs = new LinkedBlockingQueue<>();
+
+			// If getActiveJobs() is rarely called, method response time and memory usage will grow over time.
+			// To prevent such situation a daemon will perform periodic cleanup of submitted and active jobs.
+			Thread cleaner = new Thread(() -> {
+				getActiveJobs();
+				try {
+					Thread.sleep(Duration.ofSeconds(60).toMillis());
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+			}, "io.bootique.job.Scheduler.JobFutureCleaner");
+			cleaner.setDaemon(true);
+			cleaner.start();
 		}
 
 		public JobFutures addFuture(JobFuture future) {
