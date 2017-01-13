@@ -98,7 +98,7 @@ public class DefaultScheduler implements Scheduler {
 			Job job = jobOptional.get();
 			return runOnce(job, parameters);
 		} else {
-			return invalidJobNameResult(jobName);
+			return invalidJobNameResult(jobName, parameters);
 		}
 	}
 
@@ -107,9 +107,25 @@ public class DefaultScheduler implements Scheduler {
 		return (job == null) ? Optional.empty() : Optional.of(job);
 	}
 
-	private JobFuture invalidJobNameResult(String jobName) {
+	private JobFuture invalidJobNameResult(String jobName, Map<String, Object> parameters) {
 		return JobFuture.forJob(jobName)
 				.future(new ExpiredFuture())
+				.runnable(new RunnableJob() {
+					@Override
+					public JobResult run() {
+						return JobResult.unknown(JobMetadata.build(jobName));
+					}
+
+					@Override
+					public Map<String, Object> getParameters() {
+						return parameters;
+					}
+
+					@Override
+					public boolean isRunning() {
+						return false;
+					}
+				})
 				.resultSupplier(() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName))
 				.build();
 	}

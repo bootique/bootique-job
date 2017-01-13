@@ -11,12 +11,15 @@ import java.util.function.Supplier;
 
 public class JobFuture implements ScheduledFuture<JobResult> {
 
+	/**
+	 * @since 0.13
+     */
 	public static Builder forJob(String job) {
 		return new Builder(job);
 	}
 
 	private String job;
-	private Optional<RunnableJob> runnable;
+	private RunnableJob runnable;
 	private ScheduledFuture<?> delegate;
 	private Supplier<JobResult> resultSupplier;
 
@@ -25,7 +28,7 @@ public class JobFuture implements ScheduledFuture<JobResult> {
 					 ScheduledFuture<?> delegate,
 					 Supplier<JobResult> resultSupplier) {
 		this.job = job;
-		this.runnable = Optional.ofNullable(runnable);
+		this.runnable = runnable;
 		this.delegate = delegate;
 		this.resultSupplier = resultSupplier;
 	}
@@ -55,11 +58,19 @@ public class JobFuture implements ScheduledFuture<JobResult> {
 		return delegate.isDone();
 	}
 
+	/**
+	 * @return Job name
+	 * @since 0.13
+     */
 	public String getJob() {
 		return job;
 	}
 
-	public Optional<RunnableJob> getRunnable() {
+	/**
+	 * @return Runnable job implementation
+	 * @since 0.13
+     */
+	public RunnableJob getRunnable() {
 		return runnable;
 	}
 
@@ -113,6 +124,7 @@ public class JobFuture implements ScheduledFuture<JobResult> {
 		}
 
 		public JobFuture build() {
+			Objects.requireNonNull(runnable);
 			Objects.requireNonNull(future);
 			Objects.requireNonNull(resultSupplier);
 			return new JobFuture(job, runnable, future, resultSupplier);
