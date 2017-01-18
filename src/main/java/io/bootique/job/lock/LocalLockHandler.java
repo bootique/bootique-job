@@ -1,10 +1,12 @@
 package io.bootique.job.lock;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import io.bootique.job.runnable.BaseRunnableJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,23 +30,30 @@ public class LocalLockHandler implements LockHandler {
 
 	@Override
 	public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
+		return new BaseRunnableJob() {
+			@Override
+			protected JobResult doRun() {
+				String lockName = toLockName(metadata);
+				Lock lock = getLock(lockName);
 
-		return () -> {
-			String lockName = toLockName(metadata);
-			Lock lock = getLock(lockName);
+				LOGGER.info("Attempting to lock '{}'", lockName);
 
-			LOGGER.info("Attempting to lock '{}'", lockName);
+				if (!lock.tryLock()) {
+					LOGGER.info("== Another job instance owns the lock. Skipping execution of '{}'", lockName);
+					return new JobResult(metadata, JobOutcome.SKIPPED, null,
+							"Another job instance owns the lock. Skipping execution");
+				}
 
-			if (!lock.tryLock()) {
-				LOGGER.info("== Another job instance owns the lock. Skipping execution of '{}'", lockName);
-				return new JobResult(metadata, JobOutcome.SKIPPED, null,
-						"Another job instance owns the lock. Skipping execution");
+				try {
+					return executable.run();
+				} finally {
+					lock.unlock();
+				}
 			}
 
-			try {
-				return executable.run();
-			} finally {
-				lock.unlock();
+			@Override
+			public Map<String, Object> getParameters() {
+				return executable.getParameters();
 			}
 		};
 	}

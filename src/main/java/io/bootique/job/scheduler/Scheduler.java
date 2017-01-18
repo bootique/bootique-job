@@ -5,6 +5,7 @@ import io.bootique.job.runnable.JobFuture;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 public interface Scheduler {
 
@@ -54,4 +55,15 @@ public interface Scheduler {
      * @since 0.13
      */
     Collection<TriggerDescriptor> getTriggers();
+
+    /**
+     * Returns jobs that are currently submitted for execution.
+     *
+     * Note that this method is inherently racy, and some futures in the returned collection might in fact be completed
+     * at the time this method returns. One may check the individual futures for completion by calling {@link Future#isDone()}.
+     *
+     * @return Collection of jobs that were submitted for execution but hadn't yet completed.
+     * @since 0.13
+     */
+    Collection<JobFuture> getSubmittedJobs();
 }

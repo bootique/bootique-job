@@ -12,14 +12,21 @@ public class SimpleRunnableJobFactory implements RunnableJobFactory {
 
 	@Override
 	public RunnableJob runnable(Job job, Map<String, Object> parameters) {
-		return () -> {
+		return new BaseRunnableJob() {
+			@Override
+			protected JobResult doRun() {
+				LOGGER.info(String.format("job '%s' started with params %s", job.getMetadata().getName(), parameters));
 
-			LOGGER.info(String.format("job '%s' started with params %s", job.getMetadata().getName(), parameters));
+				try {
+					return job.run(parameters);
+				} finally {
+					LOGGER.info(String.format("job '%s' finished", job.getMetadata().getName()));
+				}
+			}
 
-			try {
-				return job.run(parameters);
-			} finally {
-				LOGGER.info(String.format("job '%s' finished", job.getMetadata().getName()));
+			@Override
+			public Map<String, Object> getParameters() {
+				return parameters;
 			}
 		};
 	}
