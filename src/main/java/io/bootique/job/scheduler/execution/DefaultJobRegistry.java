@@ -1,8 +1,10 @@
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.JobRegistry;
 import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.JobRegistry;
 import io.bootique.job.config.JobDefinition;
+import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 
 import java.util.Collection;
@@ -52,7 +54,20 @@ public class DefaultJobRegistry implements JobRegistry {
             Collection<Job> executionJobs = collectJobs(graph);
             if (executionJobs.size() == 1) {
                 // do not create a full-fledged execution for standalone jobs
-                execution = new SingleJob(executionJobs.iterator().next(), graph.topSort().get(0).iterator().next());
+                Job job = executionJobs.iterator().next();
+                JobMetadata jobMetadata = cloneMetadata(jobName, job.getMetadata());
+                Job delegate = new Job() {
+                    @Override
+                    public JobMetadata getMetadata() {
+                        return jobMetadata;
+                    }
+
+                    @Override
+                    public JobResult run(Map<String, Object> parameters) {
+                        return job.run(parameters);
+                    }
+                };
+                execution = new SingleJob(delegate, graph.topSort().get(0).iterator().next());
             } else {
                 execution = new JobGroup(jobName, executionJobs, graph, scheduler);
             }
@@ -63,6 +78,12 @@ public class DefaultJobRegistry implements JobRegistry {
             }
         }
         return execution;
+    }
+
+    private JobMetadata cloneMetadata(String newName, JobMetadata metadata) {
+        JobMetadata.Builder builder = JobMetadata.builder(newName);
+        metadata.getParameters().forEach(builder::param);
+        return builder.build();
     }
 
     private Collection<Job> collectJobs(DependencyGraph graph) {
