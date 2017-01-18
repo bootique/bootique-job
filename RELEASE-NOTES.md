@@ -5,6 +5,7 @@
 * #14 Removing deprecated code
 * #15 Exec command: Order and repetition of jobs
 * #22 Config self-documentation
+* #25 Job groups are not listed with "--list"
 
 ## 0.12
 
