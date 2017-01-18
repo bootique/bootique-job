@@ -2,6 +2,7 @@ package io.bootique.job.command;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import io.bootique.job.JobRegistry;
 import io.bootique.meta.application.CommandMetadata;
 import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
@@ -11,11 +12,11 @@ import io.bootique.log.BootLogger;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ListCommand extends CommandWithMetadata {
 
-	private Provider<Set<Job>> jobsProvider;
+	private Provider<JobRegistry> jobRegistryProvider;
 	private BootLogger bootLogger;
 
 	private static CommandMetadata createMetadata() {
@@ -23,17 +24,19 @@ public class ListCommand extends CommandWithMetadata {
 	}
 
 	@Inject
-	public ListCommand(Provider<Set<Job>> jobsProvider, BootLogger bootLogger) {
+	public ListCommand(Provider<JobRegistry> jobRegistryProvider, BootLogger bootLogger) {
 		super(createMetadata());
 
-		this.jobsProvider = jobsProvider;
+		this.jobRegistryProvider = jobRegistryProvider;
 		this.bootLogger = bootLogger;
 	}
 
 	@Override
 	public CommandOutcome run(Cli cli) {
 
-		Collection<Job> jobs = jobsProvider.get();
+		JobRegistry jobRegistry = jobRegistryProvider.get();
+		Collection<Job> jobs = jobRegistry.getAvailableJobs().stream()
+				.map(jobRegistry::getJob).collect(Collectors.toList());
 		if (jobs.isEmpty()) {
 			return CommandOutcome.failed(1, "No jobs are available.");
 		}
