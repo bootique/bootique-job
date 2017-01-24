@@ -6,6 +6,7 @@
 * #15 Exec command: Order and repetition of jobs
 * #22 Config self-documentation
 * #25 Job groups are not listed with "--list"
+* #29 Convert parameters based on their type from metadata
 
 ## 0.12
 
