@@ -4,6 +4,8 @@ import io.bootique.job.fixture.ExecutableJob;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
 import io.bootique.job.fixture.Job3;
+import io.bootique.job.fixture.ParameterizedJob1;
+import io.bootique.job.fixture.ParameterizedJob2;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -180,5 +182,39 @@ public class ExecutionIT extends BaseJobTest {
         List<ExecutableJob> jobs = Arrays.asList(job2, job1, job3);
         executeJobs(jobs, args);
         assertExecutedInOrder(jobs);
+    }
+
+    @Test
+    public void testExecution_ParameterizedJob1_DefaultParameterValue() {
+        ParameterizedJob1 job1 = new ParameterizedJob1();
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                "--exec", "--job=parameterizedjob1"};
+
+        executeJobs(Collections.singleton(job1), args);
+        assertExecutedWithParams(job1, Collections.singletonMap("longp", 777L));
+    }
+
+    @Test
+    public void testExecution_Group1_ParametersConversion() {
+        ParameterizedJob1 job1 = new ParameterizedJob1();
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                "--exec", "--job=group1"};
+
+        executeJobs(Collections.singleton(job1), args);
+        assertExecutedWithParams(job1, Collections.singletonMap("longp", 1L));
+    }
+
+    @Test
+    public void testExecution_Group2_ParametersConversion() {
+        ParameterizedJob1 job1 = new ParameterizedJob1();
+        ParameterizedJob2 job2 = new ParameterizedJob2();
+        String[] args = new String[] {"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                "--exec", "--job=group2"};
+
+        List<ExecutableJob> jobs = Arrays.asList(job2, job1);
+        executeJobs(jobs, args);
+        assertExecutedInOrder(jobs);
+        assertExecutedWithParams(job1, Collections.singletonMap("longp", 777L));
+        assertExecutedWithParams(job2, Collections.singletonMap("longp", 33L));
     }
 }

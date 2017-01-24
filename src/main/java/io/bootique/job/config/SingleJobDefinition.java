@@ -16,7 +16,7 @@ import java.util.Optional;
 @JsonTypeName("single")
 public class SingleJobDefinition implements JobDefinition {
 
-    private Map<String, Object> params;
+    private Map<String, String> params;
     private Optional<List<String>> dependsOn;
 
     public SingleJobDefinition() {
@@ -24,17 +24,17 @@ public class SingleJobDefinition implements JobDefinition {
         this.dependsOn = Optional.empty();
     }
 
-    public SingleJobDefinition(Map<String, Object> params, Optional<List<String>> dependsOn) {
+    public SingleJobDefinition(Map<String, String> params, Optional<List<String>> dependsOn) {
         this.params = params;
         this.dependsOn = dependsOn;
     }
 
-    public Map<String, Object> getParams() {
+    public Map<String, String> getParams() {
         return params;
     }
 
     @BQConfigProperty
-    public void setParams(Map<String, Object> params) {
+    public void setParams(Map<String, String> params) {
         this.params = params;
     }
 

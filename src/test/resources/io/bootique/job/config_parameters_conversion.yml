@@ -1,0 +1,19 @@
+jobs:
+  parameterizedjob1:
+    params: {}
+  group1:
+    type: group
+    jobs:
+      parameterizedjob1:
+        params:
+          longp: 1
+  group2:
+    type: group
+    jobs:
+      parameterizedjob1:
+        params: {}
+        dependsOn:
+          - parameterizedjob2
+      parameterizedjob2:
+        params:
+          longp: 33

@@ -43,8 +43,8 @@ class Environment {
         return new SingleJobDefinition(mergeParams(overriding, overriden), mergeDependencies(overriding, overriden));
     }
 
-    private Map<String, Object> mergeParams(SingleJobDefinition overriding, SingleJobDefinition overriden) {
-        Map<String, Object> params = new HashMap<>(overriden.getParams());
+    private Map<String, String> mergeParams(SingleJobDefinition overriding, SingleJobDefinition overriden) {
+        Map<String, String> params = new HashMap<>(overriden.getParams());
         params.putAll(overriding.getParams());
         return params;
     }

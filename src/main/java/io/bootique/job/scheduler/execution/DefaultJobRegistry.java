@@ -9,6 +9,7 @@ import io.bootique.job.scheduler.Scheduler;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,16 +21,33 @@ import java.util.stream.Collectors;
  */
 public class DefaultJobRegistry implements JobRegistry {
 
+    /**
+     * Combined list of single job names and group names,
+     * i.e. everything that can be "run"
+     */
     private Set<String> availableJobs;
 
-    private Collection<Job> jobs;
+    /**
+     * "Real" job implementations (no groups here)
+     */
+    private Map<String, Job> jobs;
+
+    /**
+     * All single job and group definitions, that were specified in configuration
+     */
     private Map<String, JobDefinition> jobDefinitions;
+
+    /**
+     * Combined collection of single jobs and job groups,
+     * lazily populated upon request to retrieve a particular job
+     */
     private ConcurrentMap<String, Job> executions;
+
     private Scheduler scheduler;
 
     public DefaultJobRegistry(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions, Scheduler scheduler) {
         this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
-        this.jobs = jobs;
+        this.jobs = mapJobs(jobs);
         this.jobDefinitions = jobDefinitions;
         this.executions = new ConcurrentHashMap<>((int)(jobDefinitions.size() / 0.75d) + 1);
         this.scheduler = scheduler;
@@ -50,7 +68,7 @@ public class DefaultJobRegistry implements JobRegistry {
     public Job getJob(String jobName) {
         Job execution = executions.get(jobName);
         if (execution == null) {
-            DependencyGraph graph = new DependencyGraph(jobName, jobDefinitions);
+            DependencyGraph graph = new DependencyGraph(jobName, jobDefinitions, jobs);
             Collection<Job> executionJobs = collectJobs(graph);
             if (executionJobs.size() == 1) {
                 // do not create a full-fledged execution for standalone jobs
@@ -80,6 +98,10 @@ public class DefaultJobRegistry implements JobRegistry {
         return execution;
     }
 
+    private Map<String, Job> mapJobs(Collection<Job> jobs) {
+        return jobs.stream().collect(HashMap::new, (m, j) -> m.put(j.getMetadata().getName(), j), HashMap::putAll);
+    }
+
     private JobMetadata cloneMetadata(String newName, JobMetadata metadata) {
         JobMetadata.Builder builder = JobMetadata.builder(newName);
         metadata.getParameters().forEach(builder::param);
@@ -87,8 +109,9 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     private Collection<Job> collectJobs(DependencyGraph graph) {
-        return jobs.stream()
-                .filter(job -> graph.getJobNames().contains(job.getMetadata().getName()))
+        return jobs.entrySet().stream()
+                .filter(e -> graph.getJobNames().contains(e.getKey()))
+                .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
     }
 }
