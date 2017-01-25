@@ -1,10 +1,13 @@
-package io.bootique.job;
+package io.bootique.job.scheduler.execution;
 
+import io.bootique.job.BaseJob;
+import io.bootique.job.Job;
+import io.bootique.job.JobListener;
+import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
-import io.bootique.job.runnable.SimpleRunnableJobFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +27,7 @@ import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
-public class SimpleRunnableJobFactoryTest {
+public class CallbackTest {
 
     private RunnableJobFactory rjf;
     private JobStats jobStats;
@@ -34,7 +37,7 @@ public class SimpleRunnableJobFactoryTest {
     @Before
     public void before() {
         this.jobStats = new JobStats();
-        this.rjf = new SimpleRunnableJobFactory(Collections.singleton(jobStats));
+        this.rjf = (job, parameters) -> () -> Callback.runAndNotify(job, parameters, Collections.singleton(jobStats));
         this.executor = Executors.newFixedThreadPool(50);
     }
 

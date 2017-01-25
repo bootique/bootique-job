@@ -1,6 +1,7 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
+import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 class SingleJob implements Job {
 
@@ -15,10 +17,12 @@ class SingleJob implements Job {
 
     private Job delegate;
     private JobExecution execution;
+    private Set<JobListener> listeners;
 
-    SingleJob(Job delegate, JobExecution execution) {
+    SingleJob(Job delegate, JobExecution execution, Set<JobListener> listeners) {
         this.delegate = delegate;
         this.execution = execution;
+        this.listeners = listeners;
     }
 
     @Override
@@ -31,7 +35,7 @@ class SingleJob implements Job {
         Map<String, Object> mergedParams = mergeParams(parameters, execution.getParams());
         LOGGER.info(String.format("job '%s' started with params %s", getMetadata().getName(), mergedParams));
         try {
-            return delegate.run(mergedParams);
+            return Callback.runAndNotify(delegate, mergedParams, listeners);
         } finally {
             LOGGER.info(String.format("job '%s' finished", getMetadata().getName()));
         }

@@ -95,19 +95,19 @@ public class JobModule extends ConfigModule {
 	}
 
 	@Provides
-	protected Scheduler createScheduler(Set<JobListener> jobListeners,
-										Map<LockType, LockHandler> jobRunners,
+	protected Scheduler createScheduler(Map<LockType, LockHandler> jobRunners,
 										JobRegistry jobRegistry,
 										ConfigurationFactory configFactory) {
-		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobListeners, jobRunners, jobRegistry);
+		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobRunners, jobRegistry);
 	}
 
 	@Provides
 	@Singleton
 	protected JobRegistry createJobRegistry(Set<Job> jobs,
+											Set<JobListener> jobListeners,
 											Scheduler scheduler,
 											ConfigurationFactory configFactory) {
-		return new DefaultJobRegistry(jobs, collectJobDefinitions(jobs, configFactory), scheduler);
+		return new DefaultJobRegistry(jobs, collectJobDefinitions(jobs, configFactory), scheduler, jobListeners);
 	}
 
 	private Map<String, JobDefinition> collectJobDefinitions(Set<Job> jobs, ConfigurationFactory configFactory) {

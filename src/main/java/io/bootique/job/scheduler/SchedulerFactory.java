@@ -2,7 +2,6 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
-import io.bootique.job.JobListener;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
 import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
@@ -33,8 +32,7 @@ public class SchedulerFactory {
 		this.threadPoolSize = 4;
 	}
 
-	public Scheduler createScheduler(Set<JobListener> jobListeners,
-									 Map<LockType, LockHandler> lockHandlers,
+	public Scheduler createScheduler(Map<LockType, LockHandler> lockHandlers,
 									 JobRegistry jobRegistry) {
 
 		TaskScheduler taskScheduler = createTaskScheduler();
@@ -46,7 +44,7 @@ public class SchedulerFactory {
 			throw new IllegalStateException("No LockHandler for lock type: " + lockType);
 		}
 
-		RunnableJobFactory rf1 = new SimpleRunnableJobFactory(jobListeners);
+		RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
 		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
