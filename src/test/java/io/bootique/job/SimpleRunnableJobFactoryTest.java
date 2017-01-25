@@ -1,0 +1,152 @@
+package io.bootique.job;
+
+import io.bootique.job.runnable.JobOutcome;
+import io.bootique.job.runnable.JobResult;
+import io.bootique.job.runnable.RunnableJob;
+import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.job.runnable.SimpleRunnableJobFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
+
+import static org.junit.Assert.assertEquals;
+
+public class SimpleRunnableJobFactoryTest {
+
+    private RunnableJobFactory rjf;
+    private JobStats jobStats;
+
+    private ExecutorService executor;
+
+    @Before
+    public void before() {
+        this.jobStats = new JobStats();
+        this.rjf = new SimpleRunnableJobFactory(Collections.singleton(jobStats));
+        this.executor = Executors.newFixedThreadPool(50);
+    }
+
+    @After
+    public void after() {
+        this.executor.shutdownNow();
+    }
+
+    @Test
+    public void testListeners() throws InterruptedException {
+        int jobCount = 1000;
+        CountDownLatch latch = new CountDownLatch(jobCount);
+
+        List<Runnable> jobs = new ArrayList<>();
+        for (int i = 0; i < jobCount; i++) {
+            Job job = (i % 2 == 0) ? TestJob.withOutcome("goodjob", JobOutcome.SUCCESS) : TestJob.failing("badjob");
+            RunnableJob rj = rjf.runnable(job, Collections.emptyMap());
+            jobs.add(() -> {
+                try {
+                    rj.run();
+                } catch (Throwable e) {
+                    // ignore
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        Collections.shuffle(jobs);
+
+        jobs.forEach(executor::execute);
+        latch.await();
+
+        jobStats.assertHasResults("goodjob", Collections.singletonMap(JobOutcome.SUCCESS, 500));
+        jobStats.assertHasResults("badjob", Collections.singletonMap(JobOutcome.FAILURE, 500));
+    }
+
+    private static class TestJob extends BaseJob {
+
+        public static TestJob withOutcome(String name, JobOutcome outcome) {
+            return new TestJob(name, outcome);
+        }
+
+        public static TestJob failing(String name) {
+            return new TestJob(name);
+        }
+
+        private JobOutcome outcome;
+        private boolean shouldFail;
+
+        private TestJob(String name, JobOutcome outcome) {
+            super(JobMetadata.build(name));
+            this.outcome = outcome;
+        }
+
+        private TestJob(String name) {
+            super(JobMetadata.build(name));
+            this.shouldFail = true;
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> parameters) {
+            try {
+                Thread.sleep(ThreadLocalRandom.current().nextLong(50));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (shouldFail) {
+                throw new RuntimeException();
+            } else {
+                return new JobResult(getMetadata(), outcome, null, null);
+            }
+        }
+    }
+
+    private static class JobStats implements JobListener {
+
+        private Map<String, Set<JobResult>> allResults;
+
+        public JobStats() {
+            this.allResults = new ConcurrentHashMap<>();
+        }
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> callback) {
+            callback.accept(result -> getResults(jobName).add(result));
+        }
+
+        public Set<JobResult> getResults(String jobName) {
+            Set<JobResult> results = allResults.get(jobName);
+            if (results == null) {
+                results = ConcurrentHashMap.newKeySet();
+                Set<JobResult> existing = allResults.putIfAbsent(jobName, results);
+                if (existing != null) {
+                    results = existing;
+                }
+            }
+            return results;
+        }
+
+        public void assertHasResults(String jobName, Map<JobOutcome, Integer> outcomes) {
+            Set<JobResult> results = allResults.get(jobName);
+            if (results == null) {
+                throw new IllegalArgumentException("Unknown job: " + jobName);
+            }
+
+            Map<JobOutcome, Integer> realOutcomes = results.stream()
+                    .collect(HashMap::new, (m, r) -> {
+                        Integer count = m.get(r.getOutcome());
+                        m.put(r.getOutcome(), (count == null ? 1 : ++count));
+                    }, Map::putAll);
+
+            assertEquals(realOutcomes, outcomes);
+        }
+    }
+}

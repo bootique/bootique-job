@@ -10,6 +10,7 @@ import io.bootique.ConfigModule;
 import io.bootique.command.Command;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.Job;
+import io.bootique.job.JobListener;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
@@ -45,6 +46,14 @@ public class JobModule extends ConfigModule {
 		return Multibinder.newSetBinder(binder, Job.class);
 	}
 
+	/**
+	 * @param binder DI binder passed to the Module that invokes this method.
+	 * @return a {@link Multibinder} for contributed job lifecycle listeners
+     */
+	public static Multibinder<JobListener> contributeListeners(Binder binder) {
+		return Multibinder.newSetBinder(binder, JobListener.class);
+	}
+
 	public JobModule() {
 	}
 
@@ -77,6 +86,8 @@ public class JobModule extends ConfigModule {
 		Multibinder<Job> jobBinder = JobModule.contributeJobs(binder);
 		jobTypes.forEach(jt -> jobBinder.addBinding().to(jt).in(Singleton.class));
 
+		JobModule.contributeListeners(binder);
+
 		MapBinder<LockType, LockHandler> lockHandlers = MapBinder.newMapBinder(binder, LockType.class,
 				LockHandler.class);
 		lockHandlers.addBinding(LockType.local).to(LocalLockHandler.class);
@@ -84,10 +95,11 @@ public class JobModule extends ConfigModule {
 	}
 
 	@Provides
-	protected Scheduler createScheduler(Map<LockType, LockHandler> jobRunners,
+	protected Scheduler createScheduler(Set<JobListener> jobListeners,
+										Map<LockType, LockHandler> jobRunners,
 										JobRegistry jobRegistry,
 										ConfigurationFactory configFactory) {
-		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobRunners, jobRegistry);
+		return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobListeners, jobRunners, jobRegistry);
 	}
 
 	@Provides

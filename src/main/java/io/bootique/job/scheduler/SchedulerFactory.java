@@ -2,6 +2,7 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.job.JobListener;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
 import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
@@ -15,6 +16,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A configuration object that is used to setup jobs runtime.
@@ -31,7 +33,8 @@ public class SchedulerFactory {
 		this.threadPoolSize = 4;
 	}
 
-	public Scheduler createScheduler(Map<LockType, LockHandler> lockHandlers,
+	public Scheduler createScheduler(Set<JobListener> jobListeners,
+									 Map<LockType, LockHandler> lockHandlers,
 									 JobRegistry jobRegistry) {
 
 		TaskScheduler taskScheduler = createTaskScheduler();
@@ -43,7 +46,7 @@ public class SchedulerFactory {
 			throw new IllegalStateException("No LockHandler for lock type: " + lockType);
 		}
 
-		RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
+		RunnableJobFactory rf1 = new SimpleRunnableJobFactory(jobListeners);
 		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
