@@ -38,6 +38,9 @@ class Callback implements Consumer<Consumer<JobResult>> {
             callback.invoke(JobResult.failure(job.getMetadata(), e));
             throw e;
         }
+        if (result == null) {
+            result = JobResult.unknown(job.getMetadata());
+        }
         callback.invoke(result);
         return result;
     }
