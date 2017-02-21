@@ -4,6 +4,7 @@ import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.job.fixture.ExecutableJob;
 import io.bootique.job.runtime.JobModule;
+import io.bootique.job.runtime.JobModuleExtender;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,7 +24,8 @@ public class BaseJobTest {
     protected void executeJobs(Collection<? extends Job> jobs, String... args) {
 
         BQRuntime runtime = Bootique.app(args).module(new JobModule()).module(binder -> {
-            jobs.forEach(job -> JobModule.contributeJobs(binder).addBinding().toInstance(job));
+            JobModuleExtender extender = JobModule.extend(binder);
+            jobs.forEach(extender::addJob);
         }).createRuntime();
 
         try {
