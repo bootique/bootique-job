@@ -1,6 +1,7 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
+import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.config.JobDefinition;
@@ -44,13 +45,18 @@ public class DefaultJobRegistry implements JobRegistry {
     private ConcurrentMap<String, Job> executions;
 
     private Scheduler scheduler;
+    private Set<JobListener> listeners;
 
-    public DefaultJobRegistry(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions, Scheduler scheduler) {
+    public DefaultJobRegistry(Collection<Job> jobs,
+                              Map<String, JobDefinition> jobDefinitions,
+                              Scheduler scheduler,
+                              Set<JobListener> listeners) {
         this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
         this.jobs = mapJobs(jobs);
         this.jobDefinitions = jobDefinitions;
         this.executions = new ConcurrentHashMap<>((int)(jobDefinitions.size() / 0.75d) + 1);
         this.scheduler = scheduler;
+        this.listeners = listeners;
     }
 
     private Set<String> collectJobNames(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions) {
@@ -85,9 +91,9 @@ public class DefaultJobRegistry implements JobRegistry {
                         return job.run(parameters);
                     }
                 };
-                execution = new SingleJob(delegate, graph.topSort().get(0).iterator().next());
+                execution = new SingleJob(delegate, graph.topSort().get(0).iterator().next(), listeners);
             } else {
-                execution = new JobGroup(jobName, executionJobs, graph, scheduler);
+                execution = new JobGroup(jobName, executionJobs, graph, scheduler, listeners);
             }
 
             Job existing = executions.putIfAbsent(jobName, execution);
