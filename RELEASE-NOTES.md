@@ -1,6 +1,6 @@
 ## 0.14
 
-* #31 Provide info on currently running jobs
+* #21 Provide info on currently running jobs
 
 ## 0.13
 
