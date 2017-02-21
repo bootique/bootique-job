@@ -1,3 +1,7 @@
+## 0.14
+
+* #31 Provide info on currently running jobs
+
 ## 0.13
 
 * #11 Pass parameters to ad-hoc job executions
