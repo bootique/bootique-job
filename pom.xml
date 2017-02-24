@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>io.bootique.modules.parent</groupId>
-		<artifactId>bootique-modules-parent</artifactId>
-		<version>0.2</version>
-	</parent>
+    <parent>
+        <groupId>io.bootique.modules.parent</groupId>
+        <artifactId>bootique-modules-parent</artifactId>
+        <version>0.7</version>
+    </parent>
 
-	<groupId>io.bootique.job</groupId>
-	<artifactId>bootique-job</artifactId>
-	<version>0.14-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <groupId>io.bootique.job</groupId>
+    <artifactId>bootique-job</artifactId>
+    <version>0.14-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-	<name>bootique-job: Job framework with Bootique Integration</name>
-	<description>Provides a job execution framework with Bootique integration</description>
+    <name>bootique-job: Job framework with Bootique Integration</name>
+    <description>Provides a job execution framework with Bootique integration</description>
 
-	<properties>
-		<bootique-version>0.22-SNAPSHOT</bootique-version>
-		<bootique-curator-version>0.11</bootique-curator-version>
+    <properties>
+        <bootique-version>0.22-SNAPSHOT</bootique-version>
+        <bootique-curator-version>0.11</bootique-curator-version>
 
-		<!-- TODO: we are bringing the entire huge Spring framework to just use 
-			a few scheduling classes, and no injection -->
-		<spring-version>4.2.3.RELEASE</spring-version>
-		<slf4j-version>1.7.13</slf4j-version>
-	</properties>
+        <!-- TODO: we are bringing the entire huge Spring framework to just use
+            a few scheduling classes, and no injection -->
+        <spring-version>4.2.3.RELEASE</spring-version>
+    </properties>
 
-	<scm>
+    <scm>
         <developerConnection>scm:git:ssh://git@github.com/bootique/bootique-job</developerConnection>
         <url>https://github.com/bootique/bootique-job</url>
         <tag>HEAD</tag>
@@ -40,124 +40,128 @@
         </repository>
     </distributionManagement>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>io.bootique</groupId>
-				<artifactId>bootique</artifactId>
-				<version>${bootique-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.bootique</groupId>
-				<artifactId>bootique-test</artifactId>
-				<version>${bootique-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.bootique.curator</groupId>
-				<artifactId>bootique-curator</artifactId>
-				<version>${bootique-curator-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-context</artifactId>
-				<version>${spring-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-core</artifactId>
-				<version>${spring-version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>jcl-over-slf4j</artifactId>
-				<version>${slf4j-version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.bootique</groupId>
+                <artifactId>bootique</artifactId>
+                <version>${bootique-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.bootique</groupId>
+                <artifactId>bootique-test</artifactId>
+                <version>${bootique-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.bootique.curator</groupId>
+                <artifactId>bootique-curator</artifactId>
+                <version>${bootique-curator-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring-version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-	<dependencies>
+    <dependencies>
 
-		<!-- Unit test dependencies -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.bootique</groupId>
-			<artifactId>bootique-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>${slf4j-version}</version>
-			<scope>test</scope>
-		</dependency>
+        <!-- Unit test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.bootique</groupId>
+            <artifactId>bootique-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<!-- Compile dependencies -->
-		<dependency>
-			<groupId>io.bootique</groupId>
-			<artifactId>bootique</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<scope>compile</scope>
-		</dependency>
+        <!-- Compile dependencies -->
+        <dependency>
+            <groupId>io.bootique</groupId>
+            <artifactId>bootique</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
-		<!-- Optional compile dependencies -->
-		<dependency>
-			<groupId>io.bootique.curator</groupId>
-			<artifactId>bootique-curator</artifactId>
-			<scope>compile</scope>
-			<optional>true</optional>
-		</dependency>
-	</dependencies>
+        <!-- Optional compile dependencies -->
+        <dependency>
+            <groupId>io.bootique.curator</groupId>
+            <artifactId>bootique-curator</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 
-	<!-- Optional profile used to sign artifacts -->
-	<profiles>
-		<profile>
-			<id>gpg</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+    <!-- Optional profile used to sign artifacts -->
+    <profiles>
+        <profile>
+            <id>gpg</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
