@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>io.bootique.modules.parent</groupId>
         <artifactId>bootique-modules-parent</artifactId>
@@ -10,12 +9,16 @@
     </parent>
 
     <groupId>io.bootique.job</groupId>
-    <artifactId>bootique-job</artifactId>
+    <artifactId>bootique-job-parent</artifactId>
     <version>0.14-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>bootique-job: Job framework with Bootique Integration</name>
     <description>Provides a job execution framework with Bootique integration</description>
+
+    <modules>
+        <module>bootique-job</module>
+    </modules>
 
     <properties>
         <bootique-version>0.22-SNAPSHOT</bootique-version>
@@ -85,61 +88,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <dependencies>
-
-        <!-- Unit test dependencies -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.bootique</groupId>
-            <artifactId>bootique-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Compile dependencies -->
-        <dependency>
-            <groupId>io.bootique</groupId>
-            <artifactId>bootique</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Optional compile dependencies -->
-        <dependency>
-            <groupId>io.bootique.curator</groupId>
-            <artifactId>bootique-curator</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 
     <!-- Optional profile used to sign artifacts -->
     <profiles>
