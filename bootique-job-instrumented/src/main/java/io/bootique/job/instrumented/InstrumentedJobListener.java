@@ -13,7 +13,10 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-public class InstrumentedJobListener implements JobListener {
+/**
+ * @since 0.14
+ */
+class InstrumentedJobListener implements JobListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentedJobListener.class);
 
@@ -21,7 +24,7 @@ public class InstrumentedJobListener implements JobListener {
     private Map<String, JobMetrics> metrics;
     private ReentrantLock lock;
 
-    public InstrumentedJobListener(MetricRegistry metricRegistry) {
+    InstrumentedJobListener(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
         this.metrics = new HashMap<>();
         this.lock = new ReentrantLock();

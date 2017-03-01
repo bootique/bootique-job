@@ -16,6 +16,9 @@ import io.bootique.type.TypeRef;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @since 0.14
+ */
 public class InstrumentedJobModule extends ConfigModule {
 
     public InstrumentedJobModule() {

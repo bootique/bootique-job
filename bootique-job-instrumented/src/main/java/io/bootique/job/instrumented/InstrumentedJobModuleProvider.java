@@ -7,6 +7,9 @@ import io.bootique.job.runtime.JobModule;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * @since 0.14
+ */
 public class InstrumentedJobModuleProvider implements BQModuleProvider {
 
     @Override

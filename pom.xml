@@ -13,7 +13,7 @@
     <version>0.14-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>bootique-job: Job framework with Bootique Integration</name>
+    <name>bootique-job-parent: Job framework with Bootique Integration</name>
     <description>Provides a job execution framework with Bootique integration</description>
 
     <modules>

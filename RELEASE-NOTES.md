@@ -2,6 +2,7 @@
 
 * #21 Provide info on currently running jobs
 * #32 Upgrade to bootique 0.22 , implement own "extend" API
+* #33 Instrumented jobs module
 
 ## 0.13
 
