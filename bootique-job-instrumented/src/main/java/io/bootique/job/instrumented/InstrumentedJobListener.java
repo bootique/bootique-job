@@ -104,7 +104,7 @@ public class InstrumentedJobListener implements JobListener {
         private Timer timer;
 
         JobMetrics(MetricRegistry metricRegistry, String jobName) {
-            this.activeCounter = metricRegistry.counter(getCompletedCounterName(jobName));
+            this.activeCounter = metricRegistry.counter(getActiveCounterName(jobName));
             this.completedCounter = metricRegistry.counter(getCompletedCounterName(jobName));
             this.successCounter = metricRegistry.counter(getSuccessCounterName(jobName));
             this.failureCounter = metricRegistry.counter(getFailureCounterName(jobName));
