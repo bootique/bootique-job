@@ -5,6 +5,7 @@ import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.config.JobDefinition;
+import io.bootique.job.config.SingleJobDefinition;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 
@@ -53,10 +54,19 @@ public class DefaultJobRegistry implements JobRegistry {
                               Set<JobListener> listeners) {
         this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
         this.jobs = mapJobs(jobs);
-        this.jobDefinitions = jobDefinitions;
+        this.jobDefinitions = collectJobDefinitions(jobDefinitions, jobs);
         this.executions = new ConcurrentHashMap<>((int)(jobDefinitions.size() / 0.75d) + 1);
         this.scheduler = scheduler;
         this.listeners = listeners;
+    }
+
+    private Map<String, JobDefinition> collectJobDefinitions(Map<String, JobDefinition> configured, Collection<Job> jobs) {
+        Map<String, JobDefinition> combined = new HashMap<>(configured);
+        // create definition for each job, that is not present in config
+        jobs.stream().filter(job -> !combined.containsKey(job.getMetadata().getName())).forEach(job -> {
+            combined.put(job.getMetadata().getName(), new SingleJobDefinition());
+        });
+        return combined;
     }
 
     private Set<String> collectJobNames(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions) {
