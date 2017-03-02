@@ -67,11 +67,14 @@ public class InstrumentedJobListener implements JobListener {
         JobMetrics metric = metrics.get(jobName);
         if (metric == null) {
             lock.lock();
-            try {
-                metric = new JobMetrics(metricRegistry, jobName);
-                metrics.put(jobName, metric);
-            } finally {
-                lock.unlock();
+            metric = metrics.get(jobName);
+            if (metric == null) {
+                try {
+                    metric = new JobMetrics(metricRegistry, jobName);
+                    metrics.put(jobName, metric);
+                } finally {
+                    lock.unlock();
+                }
             }
         }
         return metric;
