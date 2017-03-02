@@ -3,6 +3,7 @@ package io.bootique.job.instrumented;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.inject.Inject;
 import io.bootique.job.JobListener;
 import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ import java.util.function.Consumer;
 /**
  * @since 0.14
  */
-class InstrumentedJobListener implements JobListener {
+public class InstrumentedJobListener implements JobListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentedJobListener.class);
 
@@ -24,7 +25,8 @@ class InstrumentedJobListener implements JobListener {
     private Map<String, JobMetrics> metrics;
     private ReentrantLock lock;
 
-    InstrumentedJobListener(MetricRegistry metricRegistry) {
+    @Inject
+    public InstrumentedJobListener(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
         this.metrics = new HashMap<>();
         this.lock = new ReentrantLock();
