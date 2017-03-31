@@ -9,7 +9,7 @@
 
     <groupId>io.bootique.job</groupId>
     <artifactId>bootique-job-parent</artifactId>
-    <version>0.14</version>
+    <version>0.15-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>bootique-job-parent: Job framework with Bootique Integration</name>
@@ -33,7 +33,7 @@
     <scm>
         <developerConnection>scm:git:ssh://git@github.com/bootique/bootique-job</developerConnection>
         <url>https://github.com/bootique/bootique-job</url>
-        <tag>bootique-job-parent-0.14</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
