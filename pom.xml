@@ -22,9 +22,9 @@
     </modules>
 
     <properties>
-        <bootique-version>0.22-SNAPSHOT</bootique-version>
-        <bootique-curator-version>0.12-SNAPSHOT</bootique-curator-version>
-        <bootique-metrics-version>0.9-SNAPSHOT</bootique-metrics-version>
+        <bootique-version>0.22</bootique-version>
+        <bootique-curator-version>0.12</bootique-curator-version>
+        <bootique-metrics-version>0.9</bootique-metrics-version>
 
         <!-- TODO: we are bringing the entire huge Spring framework to just use
             a few scheduling classes, and no injection -->
