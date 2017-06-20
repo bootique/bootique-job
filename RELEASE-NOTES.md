@@ -1,3 +1,7 @@
+## 0.15
+
+* #35 ListCommand - sort jobs alphabetically 
+
 ## 0.14
 
 * #21 Provide info on currently running jobs
