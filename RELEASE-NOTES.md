@@ -1,6 +1,7 @@
 ## 0.15
 
 * #35 ListCommand - sort jobs alphabetically 
+* #37 ListCommand should not fail when there are no jobs
 
 ## 0.14
 

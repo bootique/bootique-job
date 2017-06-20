@@ -41,7 +41,8 @@ public class ListCommand extends CommandWithMetadata {
 				.sorted(Comparator.comparing(job -> job.getMetadata().getName(), String.CASE_INSENSITIVE_ORDER))
 				.collect(Collectors.toList());
 		if (jobs.isEmpty()) {
-			return CommandOutcome.failed(1, "No jobs are available.");
+			bootLogger.stdout("No jobs.");
+			return CommandOutcome.succeeded();
 		}
 
 		bootLogger.stdout("Available jobs:");
