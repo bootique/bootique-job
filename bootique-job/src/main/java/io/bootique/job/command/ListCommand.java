@@ -2,15 +2,16 @@ package io.bootique.job.command;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import io.bootique.job.JobRegistry;
-import io.bootique.meta.application.CommandMetadata;
 import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
 import io.bootique.job.Job;
+import io.bootique.job.JobRegistry;
 import io.bootique.log.BootLogger;
+import io.bootique.meta.application.CommandMetadata;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,9 @@ public class ListCommand extends CommandWithMetadata {
 
 		JobRegistry jobRegistry = jobRegistryProvider.get();
 		Collection<Job> jobs = jobRegistry.getAvailableJobs().stream()
-				.map(jobRegistry::getJob).collect(Collectors.toList());
+				.map(jobRegistry::getJob)
+				.sorted(Comparator.comparing(job -> job.getMetadata().getName(), String.CASE_INSENSITIVE_ORDER))
+				.collect(Collectors.toList());
 		if (jobs.isEmpty()) {
 			return CommandOutcome.failed(1, "No jobs are available.");
 		}
