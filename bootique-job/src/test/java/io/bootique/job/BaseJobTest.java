@@ -54,7 +54,7 @@ public class BaseJobTest {
         while (iter.hasNext()) {
             next = iter.next();
             assertTrue("Execution of jobs overlapped: " + collectNames(previous, next),
-                    previous.getFinishedAt() < next.getFinishedAt());
+                    previous.getFinishedAt() < next.getStartedAt());
         }
 
         try {
