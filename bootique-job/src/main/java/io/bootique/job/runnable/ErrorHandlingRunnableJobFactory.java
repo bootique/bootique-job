@@ -26,7 +26,7 @@ public class ErrorHandlingRunnableJobFactory implements RunnableJobFactory {
 				return rj.run();
 			} catch (Throwable th) {
 				LOGGER.info("Exception while running job '{}'", job.getMetadata().getName(), th);
-				return JobResult.unknown(job.getMetadata(), th);
+				return JobResult.failure(job.getMetadata(), th);
 			}
 		};
 	}
