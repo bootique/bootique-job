@@ -10,4 +10,6 @@ public interface JobRegistry {
     Set<String> getAvailableJobs();
 
     Job getJob(String jobName);
+
+    boolean allowsSimlutaneousExecutions(String jobName);
 }

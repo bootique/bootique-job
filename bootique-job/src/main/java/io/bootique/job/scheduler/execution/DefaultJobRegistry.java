@@ -4,6 +4,7 @@ import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
+import io.bootique.job.SerialJob;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJobDefinition;
 import io.bootique.job.runnable.JobResult;
@@ -112,6 +113,17 @@ public class DefaultJobRegistry implements JobRegistry {
             }
         }
         return execution;
+    }
+
+    @Override
+    public boolean allowsSimlutaneousExecutions(String jobName) {
+        if (!availableJobs.contains(jobName)) {
+            throw new IllegalArgumentException("Unknown job: " + jobName);
+        }
+        Job job = jobs.get(jobName);
+        // simultaneous executions are allowed for job groups (in this case job is null)
+        // and real jobs, that haven't been annotated with @SerialJob
+        return (job == null) || (job.getClass().getAnnotation(SerialJob.class) == null);
     }
 
     private Map<String, Job> mapJobs(Collection<Job> jobs) {

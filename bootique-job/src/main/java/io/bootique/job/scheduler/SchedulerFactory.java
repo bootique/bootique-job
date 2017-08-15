@@ -45,7 +45,7 @@ public class SchedulerFactory {
 		}
 
 		RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
+		RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler, jobRegistry);
 		RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
 		// TODO: write a builder instead of this insane constructor
