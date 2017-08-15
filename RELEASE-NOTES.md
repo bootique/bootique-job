@@ -1,3 +1,7 @@
+## 0.24
+
+* #38 SerialJob annotation has no effect
+
 ## 0.15
 
 * #35 ListCommand - sort jobs alphabetically 
