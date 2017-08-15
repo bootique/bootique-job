@@ -9,6 +9,14 @@ public class Job1 extends ExecutableJob {
     }
 
     public Job1(long runningTime) {
-        super(JobMetadata.build(Job1.class), runningTime);
+        this(JobMetadata.build(Job1.class), runningTime);
+    }
+
+    public Job1(JobMetadata metadata) {
+        this(metadata, 0);
+    }
+
+    public Job1(JobMetadata metadata, long runningTime) {
+        super(metadata, runningTime);
     }
 }

@@ -57,6 +57,11 @@
                 <version>${bootique-version}</version>
             </dependency>
             <dependency>
+                <groupId>io.bootique.logback</groupId>
+                <artifactId>bootique-logback</artifactId>
+                <version>${bootique-version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.bootique.curator</groupId>
                 <artifactId>bootique-curator</artifactId>
                 <version>${bootique-curator-version}</version>
