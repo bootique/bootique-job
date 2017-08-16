@@ -15,6 +15,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -34,6 +35,10 @@ public class SchedulerFactory {
 
 	public Scheduler createScheduler(Map<LockType, LockHandler> lockHandlers,
 									 JobRegistry jobRegistry) {
+
+		for (TriggerDescriptor trigger : triggers) {
+			Objects.requireNonNull(trigger, "Job is not specified for trigger: " + trigger.describeTrigger());
+		}
 
 		TaskScheduler taskScheduler = createTaskScheduler();
 
