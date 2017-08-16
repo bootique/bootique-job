@@ -4,7 +4,7 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import io.bootique.job.runtime.JobModule;
 
-public class TestJobModule implements Module {
+public class SerialJobTestModule implements Module {
 
     @Override
     public void configure(Binder binder) {

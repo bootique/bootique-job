@@ -2,7 +2,7 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
-import io.bootique.job.fixture.TestJobModule;
+import io.bootique.job.fixture.SerialJobTestModule;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
@@ -31,7 +31,7 @@ public class SerialJobTest {
 
     @Before
     public void setUp() {
-        runtime = Bootique.app().module(JobModule.class).module(TestJobModule.class).module(LogbackModule.class).createRuntime();
+        runtime = Bootique.app().module(JobModule.class).module(SerialJobTestModule.class).module(LogbackModule.class).createRuntime();
         executor = Executors.newCachedThreadPool(
                 r -> new Thread(r, SerialJobTest.class.getSimpleName() + "-executor [" + r.hashCode() + "]"));
     }
