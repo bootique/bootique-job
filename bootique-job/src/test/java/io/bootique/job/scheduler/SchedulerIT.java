@@ -60,9 +60,10 @@ public class SchedulerIT {
         assertFalse(scheduledJob.isScheduled());
         assertFalse(scheduledJob.getSchedule().isPresent());
 
+        sleep(1000);
+        
         listener.reset();
 
-        sleep(1000);
         assertEquals(0, listener.getAverageRate());
 
         assertTrue(scheduledJob.scheduleAtFixedRate(50, 0));
