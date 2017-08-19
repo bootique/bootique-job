@@ -1,6 +1,7 @@
 ## 0.24
 
 * #38 SerialJob annotation has no effect
+* #39 Reschedule jobs
 
 ## 0.15
 
