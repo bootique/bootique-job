@@ -1,38 +1,35 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
-import io.bootique.Bootique;
 import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.fixture.ExecutionRateListener;
-import io.bootique.job.fixture.SchedulerTestModule;
+import io.bootique.job.fixture.ScheduledJob1;
 import io.bootique.job.runtime.JobModule;
-import org.junit.After;
+import io.bootique.test.junit.BQTestFactory;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import static org.junit.Assert.*;
 
-public class SchedulerTest {
+public class SchedulerIT {
 
     private ExecutionRateListener listener;
     private BQRuntime runtime;
 
+    @Rule
+    public BQTestFactory testFactory = new BQTestFactory();
+
     @Before
     public void setUp() {
         listener = new ExecutionRateListener();
-        runtime = Bootique.app("--config=classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
+        runtime = testFactory.app("--config=classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
                 .module(JobModule.class)
-                .module(new SchedulerTestModule(Collections.singleton(listener)))
+                .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addListener(listener))
                 .createRuntime();
-    }
-
-    @After
-    public void tearDown() {
-        runtime.shutdown();
     }
 
     @Test
