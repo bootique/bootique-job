@@ -1,10 +1,10 @@
 package io.bootique.job;
 
-import io.bootique.BQRuntime;
-import io.bootique.Bootique;
 import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.job.runtime.JobModuleExtender;
+import io.bootique.test.junit.BQTestFactory;
+import org.junit.Rule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,25 +14,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-public class BaseJobTest {
+public abstract class BaseJobExecIT {
+
+    @Rule
+    public BQTestFactory testFactory = new BQTestFactory();
 
     protected void executeJobs(Collection<? extends Job> jobs, String... args) {
 
-        BQRuntime runtime = Bootique.app(args).module(new JobModule()).module(binder -> {
-            JobModuleExtender extender = JobModule.extend(binder);
-            jobs.forEach(extender::addJob);
-        }).createRuntime();
-
-        try {
-            runtime.getRunner().run();
-        } finally {
-            runtime.shutdown();
-        }
+        testFactory.app(args)
+                .module(new JobModule())
+                .module(binder -> {
+                    JobModuleExtender extender = JobModule.extend(binder);
+                    jobs.forEach(extender::addJob);
+                }).createRuntime()
+                .run();
     }
 
     protected void assertExecutedInOrder(List<ExecutableAtMostOnceJob> jobs) {
@@ -46,7 +43,7 @@ public class BaseJobTest {
         jobList.sort((j1, j2) -> {
             long diff = j1.getStartedAt() - j2.getStartedAt();
             assertNotEquals("Jobs started at the same time: " + collectNames(j1, j2), 0, diff);
-            return (int)diff;
+            return (int) diff;
         });
 
         Iterator<ExecutableAtMostOnceJob> iter = jobList.iterator();

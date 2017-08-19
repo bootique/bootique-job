@@ -12,7 +12,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-public class ExecCommandIT extends BaseJobTest {
+public class ExecCommandIT extends BaseJobExecIT {
 
     @Test
     public void testExec_SingleJob() {

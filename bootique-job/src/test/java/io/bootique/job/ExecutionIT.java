@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class ExecutionIT extends BaseJobTest {
+public class ExecutionIT extends BaseJobExecIT {
 
     @Test
     public void testExecution_SingleJob_DefaultParams() {
