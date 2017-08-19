@@ -7,12 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public abstract class ExecutableJob extends BaseJob {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutableJob.class);
+public abstract class ExecutableAtMostOnceJob extends BaseJob {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutableAtMostOnceJob.class);
 
     private final long runningTime;
     private volatile boolean executed;
@@ -21,13 +19,11 @@ public abstract class ExecutableJob extends BaseJob {
     private volatile long finishedAt;
 
     private final ReentrantLock executionLock;
-    private final Condition waitCondition;
 
-    public ExecutableJob(JobMetadata metadata, long runningTime) {
+    public ExecutableAtMostOnceJob(JobMetadata metadata, long runningTime) {
         super(metadata);
         this.runningTime = runningTime;
         this.executionLock = new ReentrantLock();
-        this.waitCondition = executionLock.newCondition();
     }
 
     @Override

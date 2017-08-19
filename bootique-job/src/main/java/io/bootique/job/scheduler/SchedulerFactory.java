@@ -2,20 +2,20 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.job.JobRegistry;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.lock.LockType;
 import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
 import io.bootique.job.runnable.LockAwareRunnableJobFactory;
 import io.bootique.job.runnable.RunnableJobFactory;
 import io.bootique.job.runnable.SimpleRunnableJobFactory;
-import io.bootique.job.JobRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-
+import java.util.Objects;
 /**
  * A configuration object that is used to setup jobs runtime.
  */
@@ -33,6 +33,10 @@ public class SchedulerFactory {
 
 	public Scheduler createScheduler(Map<LockType, LockHandler> lockHandlers,
 									 JobRegistry jobRegistry) {
+
+		for (TriggerDescriptor trigger : triggers) {
+			Objects.requireNonNull(trigger, "Job is not specified for trigger: " + trigger.describeTrigger());
+		}
 
 		TaskScheduler taskScheduler = createTaskScheduler();
 

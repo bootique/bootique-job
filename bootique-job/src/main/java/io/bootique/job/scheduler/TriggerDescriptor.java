@@ -2,9 +2,8 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
-import org.springframework.scheduling.Trigger;
-import org.springframework.scheduling.support.CronTrigger;
-import org.springframework.scheduling.support.PeriodicTrigger;
+
+import java.util.UUID;
 
 @BQConfig("Trigger of one of the following flavors: cron, periodic, fixed-rate.")
 public class TriggerDescriptor {
@@ -15,7 +14,12 @@ public class TriggerDescriptor {
 	private String cron;
 	private long fixedDelayMs;
 	private long fixedRateMs;
-	private long initialDelayMs = 10 * 1000;
+	private long initialDelayMs;
+
+	public TriggerDescriptor() {
+		this.trigger = UUID.randomUUID().toString().replace("-", ""); // 32 chars
+		this.initialDelayMs = 10 * 1000;
+	}
 
 	public String getJob() {
 		return job;
@@ -88,25 +92,6 @@ public class TriggerDescriptor {
 		} else {
 			return "no trigger";
 		}
-	}
-
-	public Trigger createTrigger() {
-		if (cron != null) {
-			return new CronTrigger(cron);
-		} else if (fixedDelayMs > 0) {
-			PeriodicTrigger pt = new PeriodicTrigger(fixedDelayMs);
-			pt.setFixedRate(false);
-			pt.setInitialDelay(initialDelayMs);
-			return pt;
-		} else if (fixedRateMs > 0) {
-			PeriodicTrigger pt = new PeriodicTrigger(fixedRateMs);
-			pt.setFixedRate(true);
-			pt.setInitialDelay(initialDelayMs);
-			return pt;
-		}
-
-		throw new IllegalStateException(
-				"Trigger is misconfigured. Either of 'cron', 'fixedDelayMs', 'fixedRateMs' must be set.");
 	}
 
 }

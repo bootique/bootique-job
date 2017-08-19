@@ -2,7 +2,7 @@ package io.bootique.job.fixture;
 
 import io.bootique.job.JobMetadata;
 
-public class ParameterizedJob2 extends ExecutableJob {
+public class ParameterizedJob2 extends ExecutableAtMostOnceJob {
 
     public ParameterizedJob2() {
         this(0);
