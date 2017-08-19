@@ -15,7 +15,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A configuration object that is used to setup jobs runtime.

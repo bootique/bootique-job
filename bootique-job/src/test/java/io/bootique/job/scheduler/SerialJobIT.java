@@ -1,14 +1,14 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
-import io.bootique.Bootique;
-import io.bootique.job.fixture.TestJobModule;
+import io.bootique.job.fixture.SerialJob1;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.logback.LogbackModule;
+import io.bootique.test.junit.BQTestFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,23 +22,31 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-public class SerialJobTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SerialJobTest.class);
+public class SerialJobIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SerialJobIT.class);
 
     private BQRuntime runtime;
     private ExecutorService executor;
 
+    @Rule
+    public BQTestFactory testFactory = new BQTestFactory();
+
     @Before
     public void setUp() {
-        runtime = Bootique.app().module(JobModule.class).module(TestJobModule.class).module(LogbackModule.class).createRuntime();
+        runtime = testFactory.app()
+                .module(JobModule.class)
+                .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
+                .createRuntime();
+
         executor = Executors.newCachedThreadPool(
-                r -> new Thread(r, SerialJobTest.class.getSimpleName() + "-executor [" + r.hashCode() + "]"));
+                r -> new Thread(r, SerialJobIT.class.getSimpleName() + "-executor [" + r.hashCode() + "]"));
     }
 
     @After
     public void tearDown() {
-        runtime.shutdown();
         executor.shutdown();
         try {
             executor.awaitTermination(5, TimeUnit.SECONDS);
@@ -51,7 +59,7 @@ public class SerialJobTest {
     }
 
     @Test
-    public void testSerialJob() {
+    public void testSerialJob() throws InterruptedException {
         String jobName = "serialjob1";
         Scheduler scheduler = runtime.getInstance(Scheduler.class);
         int count = 10;
@@ -70,15 +78,11 @@ public class SerialJobTest {
             });
         }
 
-        boolean allRun;
-        try {
-            allRun = latch.await(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Interrupted while waiting for job execution", e);
-        }
+        boolean allRun = latch.await(5, TimeUnit.SECONDS);
+
         // check if any of the job instances hanged up
         if (!allRun) {
-            throw new RuntimeException("Timeout while waiting for job execution");
+            fail("Timeout while waiting for job execution");
         }
 
         // verify that all jobs have finished execution without throwing an exception
@@ -96,9 +100,8 @@ public class SerialJobTest {
                 break;
             }
         }
-        if (!foundOneSuccessful) {
-            throw new RuntimeException("No jobs finished successfully, expected exactly one");
-        }
+
+        assertTrue("No jobs finished successfully, expected exactly one", foundOneSuccessful);
 
         for (int i = 1; i < count; i++) {
             // we expect all other simultaneous jobs to be skipped by scheduler;
