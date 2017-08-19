@@ -41,21 +41,12 @@ public class SerialJobIT {
                 .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
                 .createRuntime();
 
-        executor = Executors.newCachedThreadPool(
-                r -> new Thread(r, SerialJobIT.class.getSimpleName() + "-executor [" + r.hashCode() + "]"));
+        executor = Executors.newFixedThreadPool(10);
     }
 
     @After
     public void tearDown() {
-        executor.shutdown();
-        try {
-            executor.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Interrupted while waiting for executor shutdown", e);
-        }
-        if (!executor.isTerminated()) {
-            throw new IllegalStateException("Failed to shutdown executor");
-        }
+        executor.shutdownNow();
     }
 
     @Test
@@ -78,11 +69,11 @@ public class SerialJobIT {
             });
         }
 
-        boolean allRun = latch.await(5, TimeUnit.SECONDS);
+        boolean allRun = latch.await(10, TimeUnit.SECONDS);
 
         // check if any of the job instances hanged up
         if (!allRun) {
-            fail("Timeout while waiting for job execution");
+            fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
         }
 
         // verify that all jobs have finished execution without throwing an exception
