@@ -2,7 +2,7 @@ package io.bootique.job;
 
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
-import io.bootique.job.fixture.ExecutableJob;
+import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.job.runtime.JobModuleExtender;
 
@@ -35,22 +35,22 @@ public class BaseJobTest {
         }
     }
 
-    protected void assertExecutedInOrder(List<ExecutableJob> jobs) {
+    protected void assertExecutedInOrder(List<ExecutableAtMostOnceJob> jobs) {
         if (jobs.isEmpty()) {
             return;
         }
 
         assertExecuted(jobs);
 
-        List<ExecutableJob> jobList = new ArrayList<>(jobs);
+        List<ExecutableAtMostOnceJob> jobList = new ArrayList<>(jobs);
         jobList.sort((j1, j2) -> {
             long diff = j1.getStartedAt() - j2.getStartedAt();
             assertNotEquals("Jobs started at the same time: " + collectNames(j1, j2), 0, diff);
             return (int)diff;
         });
 
-        Iterator<ExecutableJob> iter = jobList.iterator();
-        ExecutableJob previous = iter.next(), next;
+        Iterator<ExecutableAtMostOnceJob> iter = jobList.iterator();
+        ExecutableAtMostOnceJob previous = iter.next(), next;
         while (iter.hasNext()) {
             next = iter.next();
             assertTrue("Execution of jobs overlapped: " + collectNames(previous, next),
@@ -64,11 +64,11 @@ public class BaseJobTest {
         }
     }
 
-    protected void assertExecuted(List<ExecutableJob> jobs) {
+    protected void assertExecuted(List<ExecutableAtMostOnceJob> jobs) {
         jobs.forEach(job -> assertTrue("Job was not executed: " + job.getMetadata().getName(), job.isExecuted()));
     }
 
-    protected void assertExecutedWithParams(ExecutableJob job, Map<String, Object> expectedParams) {
+    protected void assertExecutedWithParams(ExecutableAtMostOnceJob job, Map<String, Object> expectedParams) {
         assertExecuted(Collections.singletonList(job));
         assertEquals(expectedParams, job.getParams());
     }
