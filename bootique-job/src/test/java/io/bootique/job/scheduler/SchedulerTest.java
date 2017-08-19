@@ -87,6 +87,7 @@ public class SchedulerTest {
     }
 
     private void assertEqualsApprox(long lower, long upper, long actual) {
-        assertTrue(lower <= actual && upper >= actual);
+        assertTrue("Lower than expected rate: " + actual, lower <= actual);
+        assertTrue("Higher than expected rate: " + actual, upper >= actual);
     }
 }
