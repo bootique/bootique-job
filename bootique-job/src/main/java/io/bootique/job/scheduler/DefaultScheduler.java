@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +34,7 @@ public class DefaultScheduler implements Scheduler {
 	private RunnableJobFactory runnableJobFactory;
 	private JobRegistry jobRegistry;
 	private Collection<TriggerDescriptor> triggers;
-	private Collection<ScheduledJobFuture> scheduledJobs;
+	private Map<String, Collection<ScheduledJobFuture>> scheduledJobsByName;
 
 	private AtomicBoolean started;
 
@@ -45,7 +46,7 @@ public class DefaultScheduler implements Scheduler {
 		this.runnableJobFactory = runnableJobFactory;
 		this.jobRegistry = jobRegistry;
 		this.triggers = Collections.unmodifiableCollection(triggers);
-		this.scheduledJobs = new ArrayList<>();
+		this.scheduledJobsByName = new HashMap<>();
 
 		this.started = new AtomicBoolean(false);
 	}
@@ -81,7 +82,12 @@ public class DefaultScheduler implements Scheduler {
 
 			ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
 			scheduledJob.schedule(createSchedule(tc));
-			scheduledJobs.add(scheduledJob);
+			Collection<ScheduledJobFuture> futures = scheduledJobsByName.get(jobName);
+			if (futures == null) {
+				futures = new ArrayList<>();
+				scheduledJobsByName.put(jobName, futures);
+			}
+			futures.add(scheduledJob);
 		});
 
 		return triggers.size();
@@ -117,7 +123,12 @@ public class DefaultScheduler implements Scheduler {
 
 	@Override
 	public Collection<ScheduledJobFuture> getScheduledJobs() {
-		return Collections.unmodifiableCollection(scheduledJobs);
+		return scheduledJobsByName.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+	}
+
+	@Override
+	public Collection<ScheduledJobFuture> getScheduledJobs(String jobName) {
+		return scheduledJobsByName.getOrDefault(jobName, Collections.emptyList());
 	}
 
 	@Override
