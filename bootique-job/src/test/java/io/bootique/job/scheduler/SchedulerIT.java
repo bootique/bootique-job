@@ -39,10 +39,10 @@ public class SchedulerIT {
         int jobCount = scheduler.start();
         assertEquals(1, jobCount);
 
-        Collection<ScheduledJob> scheduledJobs = scheduler.getScheduledJobs();
+        Collection<ScheduledJobFuture> scheduledJobs = scheduler.getScheduledJobs();
         assertEquals(1, scheduledJobs.size());
 
-        ScheduledJob scheduledJob = scheduledJobs.iterator().next();
+        ScheduledJobFuture scheduledJob = scheduledJobs.iterator().next();
         assertEquals("scheduledjob1", scheduledJob.getJobName());
         assertTrue(scheduledJob.isScheduled());
         assertTrue(scheduledJob.getSchedule().isPresent());
@@ -60,9 +60,14 @@ public class SchedulerIT {
         assertFalse(scheduledJob.isScheduled());
         assertFalse(scheduledJob.getSchedule().isPresent());
 
+        // allow for remaining jobs to complete gracefully
+        // (Future.cancel() does not wait for actual completion)
         sleep(1000);
 
         listener.reset();
+
+        // wait for a bit to ensure that no jobs are running in the background
+        sleep(1000);
 
         assertEquals(0, listener.getAverageRate());
 

@@ -33,7 +33,7 @@ public class DefaultScheduler implements Scheduler {
 	private RunnableJobFactory runnableJobFactory;
 	private JobRegistry jobRegistry;
 	private Collection<TriggerDescriptor> triggers;
-	private Collection<ScheduledJob> scheduledJobs;
+	private Collection<ScheduledJobFuture> scheduledJobs;
 
 	private AtomicBoolean started;
 
@@ -74,12 +74,12 @@ public class DefaultScheduler implements Scheduler {
 			Job job = jobRegistry.getJob(tc.getJob());
 			String jobName = job.getMetadata().getName();
 
-			Function<Schedule, ScheduledFuture<?>> scheduler = (schedule) -> {
+			Function<Schedule, JobFuture> scheduler = (schedule) -> {
 				LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, schedule.getDescription()));
 				return schedule(job, Collections.emptyMap(), schedule.getTrigger());
 			};
 
-			ScheduledJob scheduledJob = new DefaultScheduledJob(jobName, scheduler);
+			ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
 			scheduledJob.schedule(createSchedule(tc));
 			scheduledJobs.add(scheduledJob);
 		});
@@ -116,7 +116,7 @@ public class DefaultScheduler implements Scheduler {
 	}
 
 	@Override
-	public Collection<ScheduledJob> getScheduledJobs() {
+	public Collection<ScheduledJobFuture> getScheduledJobs() {
 		return Collections.unmodifiableCollection(scheduledJobs);
 	}
 
@@ -160,7 +160,7 @@ public class DefaultScheduler implements Scheduler {
 				(rj, result) -> taskScheduler.schedule(() -> result[0] = rj.run(), new Date()));
 	}
 
-	private ScheduledFuture<?> schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
+	private JobFuture schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
 		return submit(job, parameters,
 				(rj, result) -> taskScheduler.schedule(() -> result[0] = rj.run(), trigger));
 	}

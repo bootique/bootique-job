@@ -59,5 +59,5 @@ public interface Scheduler {
     @Deprecated
     Collection<TriggerDescriptor> getTriggers();
 
-    Collection<ScheduledJob> getScheduledJobs();
+    Collection<ScheduledJobFuture> getScheduledJobs();
 }
