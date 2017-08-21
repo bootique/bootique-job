@@ -47,9 +47,9 @@ public interface Scheduler {
 
     /**
      * Schedule execution of jobs based on configured triggers.
+     * Throws an exception, if the scheduler has already been started
      *
      * @return Number of scheduled jobs, possibly zero
-     * @throws IllegalStateException, if the scheduler has already been started
      */
     int start();
 
