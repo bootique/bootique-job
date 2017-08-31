@@ -1,12 +1,12 @@
 package io.bootique.job.scheduler.execution;
 
+import io.bootique.BootiqueException;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJobDefinition;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 class Environment {
@@ -36,7 +36,12 @@ class Environment {
                 }
             }
         }
-        return Objects.requireNonNull(definition, "Unknown job: " + jobName);
+
+        if(definition == null) {
+            throw new BootiqueException(1, "No job object for name '" + jobName + "'");
+        }
+
+        return definition;
     }
 
     private SingleJobDefinition mergeDefinitions(SingleJobDefinition overriding, SingleJobDefinition overriden) {

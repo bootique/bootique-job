@@ -1,5 +1,6 @@
 package io.bootique.job.scheduler.execution;
 
+import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobParameterMetadata;
@@ -62,19 +63,25 @@ class DependencyGraph {
         String jobName = execution.getJobName();
         childExecutions.put(jobName, execution);
         ((SingleJobDefinition) jobDefinitions.getDefinition(jobName)).getDependsOn().ifPresent(parents ->
-            parents.forEach(parentName -> {
-                if (childExecutions.containsKey(parentName)) {
-                    throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
-                }
-                populateWithDependencies(parentName, execution, graph, jobDefinitions, childExecutions);
-            }));
+                parents.forEach(parentName -> {
+                    if (childExecutions.containsKey(parentName)) {
+                        throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
+                    }
+                    populateWithDependencies(parentName, execution, graph, jobDefinitions, childExecutions);
+                }));
         childExecutions.remove(jobName);
     }
 
     private JobExecution getOrCreateExecution(String jobName, SingleJobDefinition definition) {
         JobExecution execution = knownExecutions.get(jobName);
         if (execution == null) {
-            execution = new JobExecution(jobName, convertParams(jobs.get(jobName).getMetadata(), definition.getParams()));
+            Job job = jobs.get(jobName);
+
+            if (job == null) {
+                throw new BootiqueException(1, "No job object for name '" + jobName + "'");
+            }
+
+            execution = new JobExecution(jobName, convertParams(job.getMetadata(), definition.getParams()));
             knownExecutions.put(jobName, execution);
         }
         return execution;
@@ -82,14 +89,14 @@ class DependencyGraph {
 
     private Map<String, Object> convertParams(JobMetadata jobMD, Map<String, String> params) {
         // clone params map in order to preserve parameters that were not specified in metadata
-		Map<String, Object> convertedParams = new HashMap<>(params);
-		for (JobParameterMetadata<?> param : jobMD.getParameters()) {
-			String valueString = params.get(param.getName());
-			Object value = param.fromString(valueString);
-			convertedParams.put(param.getName(), value);
-		}
-		return convertedParams;
-	}
+        Map<String, Object> convertedParams = new HashMap<>(params);
+        for (JobParameterMetadata<?> param : jobMD.getParameters()) {
+            String valueString = params.get(param.getName());
+            Object value = param.fromString(valueString);
+            convertedParams.put(param.getName(), value);
+        }
+        return convertedParams;
+    }
 
     private RuntimeException createUnexpectedJobDefinitionError(JobDefinition definition) {
         return new IllegalArgumentException("Unexpected job definition type: " + definition.getClass().getName());

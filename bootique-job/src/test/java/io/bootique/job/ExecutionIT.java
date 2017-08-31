@@ -1,6 +1,7 @@
 package io.bootique.job;
 
 import io.bootique.BQCoreModule;
+import io.bootique.BootiqueException;
 import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
@@ -200,8 +201,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_ParameterizedJob1_ParametersOverriddenWithProps() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
-        testFactory.app("--exec",
-                "--job=parameterizedjob2")
+        testFactory.app("--exec", "--job=parameterizedjob2")
                 .autoLoadModules()
                 .module(b -> JobModule.extend(b).addJob(job))
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.parameterizedjob2.params.longp", "35"))
@@ -215,8 +215,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_ParameterizedJob1_ParametersOverriddenWithVars() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
-        testFactory.app("--exec",
-                "--job=parameterizedjob2")
+        testFactory.app("--exec", "--job=parameterizedjob2")
                 .autoLoadModules()
                 .module(b -> JobModule.extend(b).addJob(job))
                 .module(b -> BQCoreModule.extend(b).declareVar("jobs.parameterizedjob2.params.longp", "TEST_PARAM"))
@@ -225,6 +224,15 @@ public class ExecutionIT extends BaseJobExecIT {
                 .run();
 
         assertExecutedWithParams(job, Collections.singletonMap("longp", 35l));
+    }
+
+    @Test(expected = BootiqueException.class)
+    public void testExecution_UnregisteredJob() {
+        testFactory.app("--exec", "--job=dummy",
+                "--config=classpath:io/bootique/job/config_dummy.yml")
+                .autoLoadModules()
+                .createRuntime()
+                .run();
     }
 
     @Test
