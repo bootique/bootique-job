@@ -89,6 +89,7 @@ public class JobModule extends ConfigModule {
         JobModuleExtender extender = JobModule.extend(binder).initAllExtensions();
         jobTypes.forEach(extender::addJob);
 
+        // TODO: move this to extender API
         MapBinder<LockType, LockHandler> lockHandlers = MapBinder.newMapBinder(binder, LockType.class,
                 LockHandler.class);
         lockHandlers.addBinding(LockType.local).to(LocalLockHandler.class);
