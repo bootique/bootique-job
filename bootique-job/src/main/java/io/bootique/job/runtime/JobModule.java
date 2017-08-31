@@ -104,12 +104,15 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    protected JobRegistry createJobRegistry(Set<Job> jobs,
-                                            Set<JobListener> jobListeners,
-                                            Scheduler scheduler,
-                                            ConfigurationFactory configFactory) {
-        Map<String, JobDefinition> configuredDefinitions = configFactory.config(
-                new TypeRef<Map<String, JobDefinition>>() {}, "jobs");
+    protected JobRegistry createJobRegistry(
+            Set<Job> jobs,
+            Set<JobListener> jobListeners,
+            Scheduler scheduler,
+            ConfigurationFactory configFactory) {
+
+        TypeRef<Map<String, JobDefinition>> ref = new TypeRef<Map<String, JobDefinition>>() {
+        };
+        Map<String, JobDefinition> configuredDefinitions = configFactory.config(ref, "jobs");
 
         return new DefaultJobRegistry(jobs, configuredDefinitions, scheduler, jobListeners);
     }
