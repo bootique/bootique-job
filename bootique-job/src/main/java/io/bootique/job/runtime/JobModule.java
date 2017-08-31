@@ -71,7 +71,13 @@ public class JobModule extends ConfigModule {
         return "scheduler";
     }
 
-    // TODO: deprecate mutating a module? Jobs should be added via the "extend" mechanism..
+    /**
+     * @param jobTypes an array of job classes to register in runtime.
+     * @return this module instance.
+     * @deprecated since 0.24 use JobModule.extend(..) API to register jobs. Modules in Bootique are normally immutable
+     * and extensions are loaded via "extenders".
+     */
+    @Deprecated
     @SafeVarargs
     public final JobModule jobs(Class<? extends Job>... jobTypes) {
         Arrays.asList(jobTypes).forEach(jt -> this.jobTypes.add(jt));
