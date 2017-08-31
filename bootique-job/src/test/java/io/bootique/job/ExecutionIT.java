@@ -1,11 +1,14 @@
 package io.bootique.job;
 
+import io.bootique.BQCoreModule;
 import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
 import io.bootique.job.fixture.Job3;
 import io.bootique.job.fixture.ParameterizedJob1;
 import io.bootique.job.fixture.ParameterizedJob2;
+import io.bootique.job.runtime.JobModule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -18,7 +21,7 @@ public class ExecutionIT extends BaseJobExecIT {
     @Test
     public void testExecution_SingleJob_DefaultParams() {
         Job1 job1 = new Job1();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=job1"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=job1"};
 
         List<ExecutableAtMostOnceJob> jobs = Collections.singletonList(job1);
         executeJobs(jobs, args);
@@ -28,7 +31,7 @@ public class ExecutionIT extends BaseJobExecIT {
     @Test
     public void testExecution_Group1_SingleJob_DefaultParams() {
         Job1 job1 = new Job1();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group1"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group1"};
 
         List<ExecutableAtMostOnceJob> jobs = Collections.singletonList(job1);
         executeJobs(jobs, args);
@@ -38,7 +41,7 @@ public class ExecutionIT extends BaseJobExecIT {
     @Test
     public void testExecution_Group6_SingleJob_OverridenParams() {
         Job1 job1 = new Job1();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group6"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group6"};
 
         List<ExecutableAtMostOnceJob> jobs = Collections.singletonList(job1);
         executeJobs(jobs, args);
@@ -52,7 +55,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_Group2_MultipleJobs_Parallel_DefaultParams() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group2"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group2"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job1, job2);
         executeJobs(jobs, args);
@@ -63,7 +66,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_Group3_MultipleJobs_Parallel_OverridenParams() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group3"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group3"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job1, job2);
         executeJobs(jobs, args);
@@ -81,7 +84,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_Group4_MultipleJobs_Dependent_OverridenParams() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group4"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group4"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job2, job1);
         executeJobs(jobs, args);
@@ -94,7 +97,7 @@ public class ExecutionIT extends BaseJobExecIT {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(100000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group5"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group5"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job2, job1);
         executeJobs(jobs, args);
@@ -119,7 +122,7 @@ public class ExecutionIT extends BaseJobExecIT {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(100000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job1"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job1"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job2, job1);
         executeJobs(jobs, args);
@@ -130,7 +133,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_JobWithDependencies_2() {
         Job2 job2 = new Job2();
         Job3 job3 = new Job3(1000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job2"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job2"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job2);
         executeJobs(jobs, args);
@@ -142,7 +145,7 @@ public class ExecutionIT extends BaseJobExecIT {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(100000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group1"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group1"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job2, job1);
         executeJobs(jobs, args);
@@ -154,7 +157,7 @@ public class ExecutionIT extends BaseJobExecIT {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(100000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group2"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group2"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job2, job1);
         executeJobs(jobs, args);
@@ -165,7 +168,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_Group3_OverridenDependencies() {
         Job1 job1 = new Job1();
         Job3 job3 = new Job3(1000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group3"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group3"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job1);
         executeJobs(jobs, args);
@@ -177,7 +180,7 @@ public class ExecutionIT extends BaseJobExecIT {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2();
         Job3 job3 = new Job3(1000);
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group4"};
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group4"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job2, job1, job3);
         executeJobs(jobs, args);
@@ -187,7 +190,7 @@ public class ExecutionIT extends BaseJobExecIT {
     @Test
     public void testExecution_ParameterizedJob1_DefaultParameterValue() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
                 "--exec", "--job=parameterizedjob1"};
 
         executeJobs(Collections.singleton(job1), args);
@@ -195,9 +198,42 @@ public class ExecutionIT extends BaseJobExecIT {
     }
 
     @Test
+    public void testExecution_ParameterizedJob1_ParametersOverriddenWithProps() {
+        ParameterizedJob2 job = new ParameterizedJob2();
+
+        testFactory.app("--exec",
+                "--job=parameterizedjob2")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.parameterizedjob2.params.longp", "35"))
+                .createRuntime()
+                .run();
+
+        assertExecutedWithParams(job, Collections.singletonMap("longp", 35l));
+    }
+
+    @Test
+    @Ignore
+    // unignore when https://github.com/bootique/bootique-job/issues/41 is addressed.
+    public void testExecution_ParameterizedJob1_ParametersOverriddenWithVars() {
+        ParameterizedJob2 job = new ParameterizedJob2();
+
+        testFactory.app("--exec",
+                "--job=parameterizedjob2")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> BQCoreModule.extend(b).declareVar("jobs.parameterizedjob2.params.longp", "TEST_PARAM"))
+                .module(b -> BQCoreModule.extend(b).setVar("TEST_PARAM", "35"))
+                .createRuntime()
+                .run();
+
+        assertExecutedWithParams(job, Collections.singletonMap("longp", 35l));
+    }
+
+    @Test
     public void testExecution_Group1_ParametersConversion() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
                 "--exec", "--job=group1"};
 
         executeJobs(Collections.singleton(job1), args);
@@ -208,7 +244,7 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_Group2_ParametersConversion() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
         ParameterizedJob2 job2 = new ParameterizedJob2();
-        String[] args = new String[] {"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+        String[] args = new String[]{"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
                 "--exec", "--job=group2"};
 
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job2, job1);
