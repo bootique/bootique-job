@@ -2,6 +2,7 @@
 
 * #38 SerialJob annotation has no effect
 * #39 Reschedule jobs
+* #41 Job parameters can not be overridden with declared variables
 
 ## 0.15
 

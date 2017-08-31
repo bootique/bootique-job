@@ -8,7 +8,6 @@ import io.bootique.job.fixture.Job3;
 import io.bootique.job.fixture.ParameterizedJob1;
 import io.bootique.job.fixture.ParameterizedJob2;
 import io.bootique.job.runtime.JobModule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -213,8 +212,6 @@ public class ExecutionIT extends BaseJobExecIT {
     }
 
     @Test
-    @Ignore
-    // unignore when https://github.com/bootique/bootique-job/issues/41 is addressed.
     public void testExecution_ParameterizedJob1_ParametersOverriddenWithVars() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
