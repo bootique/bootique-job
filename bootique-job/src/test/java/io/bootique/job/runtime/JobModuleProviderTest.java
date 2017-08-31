@@ -3,7 +3,7 @@ package io.bootique.job.runtime;
 import io.bootique.test.junit.BQModuleProviderChecker;
 import org.junit.Test;
 
-public class JobModuleProviderIT {
+public class JobModuleProviderTest {
 	
 	@Test
 	public void testPresentInJar() {
