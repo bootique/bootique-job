@@ -1,5 +1,6 @@
 package io.bootique.job.scheduler;
 
+import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
@@ -67,7 +68,7 @@ public class DefaultScheduler implements Scheduler {
 				.collect(Collectors.toList());
 
 		if (badTriggers.size() > 0) {
-			throw new IllegalStateException("Jobs are not found for the following triggers: " + badTriggers);
+			throw new BootiqueException(1, "No job object(s) for trigger(s): " + badTriggers);
 		}
 
 		triggers.stream().forEach(tc -> {
