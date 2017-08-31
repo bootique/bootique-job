@@ -67,7 +67,7 @@ public class DefaultScheduler implements Scheduler {
                 .collect(Collectors.joining(", "));
 
         if (badTriggers != null && badTriggers.length() > 0) {
-            throw new BootiqueException(1, "No job object(s) for trigger(s): " + badTriggers);
+            throw new BootiqueException(1, "Trigger(s) without a job object: " + badTriggers);
         }
 
         triggers.forEach(tc -> {
@@ -101,7 +101,7 @@ public class DefaultScheduler implements Scheduler {
             return Schedule.fixedRate(fixedRateMs, initialDelayMs);
         }
 
-        throw new BootiqueException(1, 
+        throw new BootiqueException(1,
                 "Trigger is misconfigured. Either of 'cron', 'fixedDelayMs', 'fixedRateMs' must be set.");
     }
 
