@@ -4,6 +4,9 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledFuture;
 import java.util.function.Supplier;
 
+/**
+ * @since 0.24
+ */
 public class JobFutureBuilder {
 
     private String job;
