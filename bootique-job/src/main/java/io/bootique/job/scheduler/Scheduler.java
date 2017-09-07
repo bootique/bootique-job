@@ -45,8 +45,17 @@ public interface Scheduler {
      */
     JobFuture runOnce(Job job, Map<String, Object> parameters);
 
+    /**
+     * Schedule execution of jobs based on configured triggers.
+     * Throws an exception, if the scheduler has already been started
+     *
+     * @return Number of scheduled jobs, possibly zero
+     */
     int start();
 
+    /**
+     * @return true, if the scheduler has been started
+     */
     boolean isStarted();
 
     /**
@@ -59,5 +68,17 @@ public interface Scheduler {
     @Deprecated
     Collection<TriggerDescriptor> getTriggers();
 
-    Collection<ScheduledJob> getScheduledJobs();
+    /**
+     * @return Collection of scheduled job executions for all known jobs
+     * @since 0.24
+     */
+    Collection<ScheduledJobFuture> getScheduledJobs();
+
+    /**
+     * @param jobName Job name
+     * @return Scheduled job executions for a given job, or an empty collection, if the job is unknown,
+     *         triggers are not configured for this job or the scheduler has not been started yet
+     * @since 0.24
+     */
+    Collection<ScheduledJobFuture> getScheduledJobs(String jobName);
 }
