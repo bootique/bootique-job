@@ -22,9 +22,6 @@
 
     <properties>
         <bootique-version>${project.version}</bootique-version>
-        <bootique-curator-version>${project.version}</bootique-curator-version>
-        <bootique-metrics-version>${project.version}</bootique-metrics-version>
-
         <!-- TODO: we are bringing the entire huge Spring framework to just use
             a few scheduling classes, and no injection -->
         <spring-version>4.2.3.RELEASE</spring-version>
@@ -64,12 +61,12 @@
             <dependency>
                 <groupId>io.bootique.curator</groupId>
                 <artifactId>bootique-curator</artifactId>
-                <version>${bootique-curator-version}</version>
+                <version>${bootique-version}</version>
             </dependency>
             <dependency>
 				<groupId>io.bootique.metrics</groupId>
 				<artifactId>bootique-metrics</artifactId>
-				<version>${bootique-metrics-version}</version>
+				<version>${bootique-version}</version>
 			</dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
