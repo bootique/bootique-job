@@ -2,6 +2,9 @@
 
 * #43 Use non-zero exit code in ExecCommand, when some of the jobs have failed
 * #44 ScheduleCommand always returns exit code 1
+* #45 Filter scheduled triggers by jobs specified with --job arguments
+* #46 Do not start the scheduler before performing checks
+* #47 Make Scheduler DI binding a singleton
 
 ## 0.24
 

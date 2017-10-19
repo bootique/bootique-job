@@ -5,14 +5,18 @@ import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.fixture.ExecutionRateListener;
 import io.bootique.job.fixture.ScheduledJob1;
+import io.bootique.job.fixture.ScheduledJob2;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.test.junit.BQTestFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.Collections;
 
+import static io.bootique.job.Utils.sleep;
 import static org.junit.Assert.*;
 
 public class SchedulerIT {
@@ -24,7 +28,7 @@ public class SchedulerIT {
     public BQTestFactory testFactory = new BQTestFactory();
 
     @Before
-    public void setUp() {
+    public void before() {
         listener = new ExecutionRateListener();
         runtime = testFactory.app("--config=classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
                 .module(JobModule.class)
@@ -32,9 +36,58 @@ public class SchedulerIT {
                 .createRuntime();
     }
 
+    @After
+    public void after() {
+        getScheduler().getScheduledJobs().forEach(ScheduledJobFuture::cancelInterruptibly);
+    }
+
+    @Test
+    public void testScheduler_StartWithNoJobs_Exception() {
+        Scheduler scheduler = getScheduler();
+
+        Exception e = null;
+        try {
+            scheduler.start(Collections.emptyList());
+        } catch (Exception e1) {
+            e = e1;
+        }
+        assertNotNull(e);
+        assertNotNull(e.getMessage());
+        assertTrue(e.getMessage().equals("No jobs specified"));
+    }
+
+    @Test
+    public void testScheduler_StartWithUnknownJob_Exception() {
+        Scheduler scheduler = getScheduler();
+
+        Exception e = null;
+        try {
+            scheduler.start(Collections.singletonList("bogusjob123"));
+        } catch (Exception e1) {
+            e = e1;
+        }
+        assertNotNull(e);
+        assertNotNull(e.getMessage());
+        assertTrue(e.getMessage().equals("Unknown job: bogusjob123"));
+    }
+
+    @Test
+    public void testScheduler_StartAfterPreviousCallToStartFailed() {
+        Scheduler scheduler = getScheduler();
+
+        try {
+            scheduler.start(Collections.emptyList());
+        } catch (Exception e) {
+            // ignore
+        }
+
+        scheduler.start(Collections.singletonList("scheduledjob1"));
+        assertTrue(scheduler.isStarted());
+    }
+
     @Test
     public void testScheduler_Reschedule() {
-        Scheduler scheduler = runtime.getInstance(Scheduler.class);
+        Scheduler scheduler = getScheduler();
 
         int jobCount = scheduler.start();
         assertEquals(1, jobCount);
@@ -81,12 +134,8 @@ public class SchedulerIT {
         assertEqualsApprox(40, 60, listener.getAverageRate());
     }
 
-    private static void sleep(long time) {
-        try {
-            Thread.sleep(time);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unexpectedly interrupted", e);
-        }
+    private Scheduler getScheduler() {
+        return runtime.getInstance(Scheduler.class);
     }
 
     private void assertEqualsApprox(long lower, long upper, long actual) {

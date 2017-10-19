@@ -1,9 +1,11 @@
 package io.bootique.job.scheduler;
 
+import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.runnable.JobFuture;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public interface Scheduler {
@@ -52,6 +54,17 @@ public interface Scheduler {
      * @return Number of scheduled jobs, possibly zero
      */
     int start();
+
+    /**
+     * Schedule execution of jobs based on configured triggers.
+     * Throws an exception, if the scheduler has already been started
+     *
+     * @param jobNames Jobs to schedule
+     * @return Number of scheduled jobs, possibly zero
+     * @throws BootiqueException if {@code jobNames} is null or empty or some of the jobs are unknown
+     * @since 0.25
+     */
+    int start(List<String> jobNames);
 
     /**
      * @return true, if the scheduler has been started
