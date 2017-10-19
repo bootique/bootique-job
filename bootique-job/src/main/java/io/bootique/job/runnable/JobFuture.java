@@ -34,4 +34,15 @@ public interface JobFuture extends ScheduledFuture<JobResult> {
      */
     @Override
     JobResult get(long timeout, TimeUnit unit);
+
+    /**
+     * Convenient shortcut for {@link java.util.concurrent.Future#cancel(boolean)}.
+     *
+     * @return {@code false} if the task could not be cancelled,
+     * typically because it has already completed normally;
+     * {@code true} otherwise
+     */
+    default boolean cancelInterruptibly() {
+        return cancel(true);
+    }
 }
