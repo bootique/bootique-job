@@ -41,11 +41,12 @@ public class ScheduleCommand extends CommandWithMetadata {
 			try {
 				Thread.currentThread().join();
 			} catch (InterruptedException e) {
-				return CommandOutcome.failed(1, e);
+				return CommandOutcome.succeeded();
 			}
 		}
 
-		return CommandOutcome.succeeded();
+		// this line is only ever executed, if the call to scheduler.start() returned 0
+		return CommandOutcome.failed(1, "No triggers have been configured in the scheduler");
 	}
 
 }

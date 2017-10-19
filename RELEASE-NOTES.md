@@ -1,6 +1,7 @@
 ## 0.25
 
 * #43 Use non-zero exit code in ExecCommand, when some of the jobs have failed
+* #44 ScheduleCommand always returns exit code 1
 
 ## 0.24
 
