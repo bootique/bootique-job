@@ -1,5 +1,6 @@
 package io.bootique.job;
 
+import io.bootique.command.CommandOutcome;
 import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.job.runtime.JobModuleExtender;
@@ -21,15 +22,24 @@ public abstract class BaseJobExecIT {
     @Rule
     public BQTestFactory testFactory = new BQTestFactory();
 
-    protected void executeJobs(Collection<? extends Job> jobs, String... args) {
-
-        testFactory.app(args)
+    protected CommandOutcome executeJobs(Collection<? extends Job> jobs, String... args) {
+        return testFactory.app(args)
                 .module(new JobModule())
                 .module(binder -> {
                     JobModuleExtender extender = JobModule.extend(binder);
                     jobs.forEach(extender::addJob);
                 }).createRuntime()
                 .run();
+    }
+
+    protected void assertSuccess(CommandOutcome outcome) {
+        assertTrue("Execution command was expected to succeed, but hasn't", outcome.isSuccess());
+        assertEquals(0, outcome.getExitCode());
+    }
+
+    protected void assertFailed(CommandOutcome outcome) {
+        assertFalse("Execution command was expected to fail, but hasn't", outcome.isSuccess());
+        assertNotEquals(0, outcome.getExitCode());
     }
 
     protected void assertExecutedInOrder(List<ExecutableAtMostOnceJob> jobs) {
@@ -63,6 +73,10 @@ public abstract class BaseJobExecIT {
 
     protected void assertExecuted(List<ExecutableAtMostOnceJob> jobs) {
         jobs.forEach(job -> assertTrue("Job was not executed: " + job.getMetadata().getName(), job.isExecuted()));
+    }
+
+    protected void assertNotExecuted(List<ExecutableAtMostOnceJob> jobs) {
+        jobs.forEach(job -> assertFalse("Job was executed: " + job.getMetadata().getName(), job.isExecuted()));
     }
 
     protected void assertExecutedWithParams(ExecutableAtMostOnceJob job, Map<String, Object> expectedParams) {

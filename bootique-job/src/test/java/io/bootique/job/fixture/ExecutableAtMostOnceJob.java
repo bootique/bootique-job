@@ -13,6 +13,8 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutableAtMostOnceJob.class);
 
     private final long runningTime;
+    private final boolean shouldFail;
+
     private volatile boolean executed;
     private volatile Map<String, Object> params;
     private volatile long startedAt;
@@ -21,9 +23,14 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
     private final ReentrantLock executionLock;
 
     public ExecutableAtMostOnceJob(JobMetadata metadata, long runningTime) {
+        this(metadata, runningTime, false);
+    }
+
+    public ExecutableAtMostOnceJob(JobMetadata metadata, long runningTime, boolean shouldFail) {
         super(metadata);
         this.runningTime = runningTime;
         this.executionLock = new ReentrantLock();
+        this.shouldFail = shouldFail;
     }
 
     @Override
@@ -58,7 +65,7 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
         busyWait(runningTime);
         finishedAt = System.nanoTime();
         executed = true;
-        return JobResult.success(getMetadata());
+        return shouldFail ? JobResult.failure(getMetadata()) : JobResult.success(getMetadata());
     }
 
     private void busyWait(long time) {
@@ -67,8 +74,12 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
             ;
     }
 
+    public boolean shouldFail() {
+        return shouldFail;
+    }
+
     public boolean isExecuted() {
-        return finishedAt > 0;
+        return executed;
     }
 
     public long getStartedAt() {

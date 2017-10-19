@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -17,31 +18,34 @@ class Callback implements Consumer<Consumer<JobResult>> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Callback.class);
 
     static JobResult runAndNotify(Job job, Map<String, Object> parameters, Set<JobListener> listeners) {
-        if (listeners.isEmpty()) {
-            return job.run(parameters);
-        }
-
         String jobName = job.getMetadata().getName();
+        Optional<Callback> callbackOptional = listeners.isEmpty() ? Optional.empty() : Optional.of(new Callback(jobName));
 
-        Callback callback = new Callback(jobName);
-        listeners.forEach(listener -> {
-            try {
-                listener.onJobStarted(jobName, parameters, callback);
-            } catch (Exception e) {
-                LOGGER.error("Error invoking job listener for job: " + jobName, e);
-            }
+        callbackOptional.ifPresent(callback -> {
+            listeners.forEach(listener -> {
+                try {
+                    listener.onJobStarted(jobName, parameters, callback);
+                } catch (Exception e) {
+                    LOGGER.error("Error invoking job listener for job: " + jobName, e);
+                }
+            });
         });
+
         JobResult result;
         try {
             result = job.run(parameters);
         } catch (Exception e) {
-            callback.invoke(JobResult.failure(job.getMetadata(), e));
-            throw e;
+            result = JobResult.failure(job.getMetadata(), e);
+            if (callbackOptional.isPresent()) {
+                callbackOptional.get().invoke(result);
+            }
         }
         if (result == null) {
             result = JobResult.unknown(job.getMetadata());
         }
-        callback.invoke(result);
+        if (callbackOptional.isPresent()) {
+            callbackOptional.get().invoke(result);
+        }
         return result;
     }
 

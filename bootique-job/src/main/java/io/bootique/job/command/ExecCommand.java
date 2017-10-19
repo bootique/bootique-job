@@ -61,25 +61,36 @@ public class ExecCommand extends CommandWithMetadata {
 		LOGGER.info("Will run job(s): " + jobNames);
 
 		Scheduler scheduler = schedulerProvider.get();
+
+		CommandOutcome outcome;
 		if (cli.hasOption(SERIAL_OPTION)) {
-			runSerial(jobNames, scheduler);
+			outcome = runSerial(jobNames, scheduler);
 		} else {
-			runParallel(jobNames, scheduler);
+			outcome = runParallel(jobNames, scheduler);
+		}
+		return outcome;
+	}
+
+	private CommandOutcome runParallel(List<String> jobNames, Scheduler scheduler) {
+		List<JobFuture> futures = jobNames.stream().map(scheduler::runOnce).collect(Collectors.toList());
+		long failedCount = futures.stream()
+				.map(JobFuture::get)
+				.peek(this::processResult)
+				.filter(result -> !result.isSuccess())
+				.count();
+
+		return (failedCount > 0) ? CommandOutcome.failed(1, "Some of the jobs failed") : CommandOutcome.succeeded();
+	}
+
+	private CommandOutcome runSerial(List<String> jobNames, Scheduler scheduler) {
+		for (String jobName : jobNames) {
+			JobResult result = scheduler.runOnce(jobName).get();
+			processResult(result);
+			if (!result.isSuccess()) {
+				return CommandOutcome.failed(1, "One of the jobs failed");
+			}
 		}
 		return CommandOutcome.succeeded();
-	}
-
-	private void runParallel(List<String> jobNames, Scheduler scheduler) {
-		List<JobFuture> futures = jobNames.stream().map(scheduler::runOnce).collect(Collectors.toList());
-		futures.stream().map(JobFuture::get).forEach(this::processResult);
-	}
-
-	private void runSerial(List<String> jobNames, Scheduler scheduler) {
-
-		jobNames.forEach(name -> {
-			JobResult result = scheduler.runOnce(name).get();
-			processResult(result);
-		});
 	}
 
 	private void processResult(JobResult result) {
