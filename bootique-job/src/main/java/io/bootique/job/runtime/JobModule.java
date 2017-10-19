@@ -103,6 +103,7 @@ public class JobModule extends ConfigModule {
     }
 
     @Provides
+    @Singleton
     protected Scheduler createScheduler(Map<LockType, LockHandler> jobRunners,
                                         JobRegistry jobRegistry,
                                         ConfigurationFactory configFactory) {
