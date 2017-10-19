@@ -1,3 +1,7 @@
+## 0.25
+
+* #43 Use non-zero exit code in ExecCommand, when some of the jobs have failed
+
 ## 0.24
 
 * #38 SerialJob annotation has no effect
