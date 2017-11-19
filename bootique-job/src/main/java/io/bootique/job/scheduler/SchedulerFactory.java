@@ -58,7 +58,7 @@ public class SchedulerFactory {
 	protected TaskScheduler createTaskScheduler() {
 		ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
 		taskScheduler.setPoolSize(threadPoolSize);
-		taskScheduler.setThreadNamePrefix("bootique-jobs-");
+		taskScheduler.setThreadNamePrefix("bootique-job-");
 		taskScheduler.initialize();
 		return taskScheduler;
 	}
