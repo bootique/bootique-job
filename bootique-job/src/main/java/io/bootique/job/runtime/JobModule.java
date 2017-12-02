@@ -22,6 +22,7 @@ import io.bootique.job.lock.zookeeper.ZkClusterLockHandler;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
+import io.bootique.shutdown.ShutdownManager;
 import io.bootique.type.TypeRef;
 
 import java.util.Arrays;
@@ -107,8 +108,11 @@ public class JobModule extends ConfigModule {
     Scheduler createScheduler(
             Map<LockType, LockHandler> jobRunners,
             JobRegistry jobRegistry,
-            ConfigurationFactory configFactory) {
-        return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobRunners, jobRegistry);
+            ConfigurationFactory configFactory,
+            ShutdownManager shutdownManager) {
+
+        return configFactory.config(SchedulerFactory.class, configPrefix)
+                .createScheduler(jobRunners, jobRegistry, shutdownManager);
     }
 
     @Provides

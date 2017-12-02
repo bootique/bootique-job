@@ -7,6 +7,7 @@
 * #47 Make Scheduler DI binding a singleton
 * #49 Scheduler thread pool must be identifiable by name
 * #50 Non-blocking ScheduleCommand
+* #51 Scheduler is not shutdown properly
 
 ## 0.24
 
