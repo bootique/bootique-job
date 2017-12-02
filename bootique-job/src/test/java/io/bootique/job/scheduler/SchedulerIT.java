@@ -5,7 +5,6 @@ import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.fixture.ExecutionRateListener;
 import io.bootique.job.fixture.ScheduledJob1;
-import io.bootique.job.fixture.ScheduledJob2;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.test.junit.BQTestFactory;
 import org.junit.After;
@@ -16,8 +15,10 @@ import org.junit.Test;
 import java.util.Collection;
 import java.util.Collections;
 
-import static io.bootique.job.Utils.sleep;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SchedulerIT {
 
@@ -86,7 +87,7 @@ public class SchedulerIT {
     }
 
     @Test
-    public void testScheduler_Reschedule() {
+    public void testScheduler_Reschedule() throws InterruptedException {
         Scheduler scheduler = getScheduler();
 
         int jobCount = scheduler.start();
@@ -105,7 +106,7 @@ public class SchedulerIT {
         Job job = jobRegistry.getJob(scheduledJob.getJobName());
         assertNotNull(job);
 
-        sleep(1000);
+        Thread.sleep(1000);
 
         assertEqualsApprox(85, 115, listener.getAverageRate());
 
@@ -115,12 +116,12 @@ public class SchedulerIT {
 
         // allow for remaining jobs to complete gracefully
         // (Future.cancel() does not wait for actual completion)
-        sleep(1000);
+        Thread.sleep(1000);
 
         listener.reset();
 
         // wait for a bit to ensure that no jobs are running in the background
-        sleep(1000);
+        Thread.sleep(1000);
 
         assertEquals(0, listener.getAverageRate());
 
@@ -129,7 +130,7 @@ public class SchedulerIT {
         assertTrue(scheduledJob.getSchedule().isPresent());
         assertEquals("fixedRateMs: 50", scheduledJob.getSchedule().get().getDescription());
 
-        sleep(1000);
+        Thread.sleep(1000);
 
         assertEqualsApprox(40, 60, listener.getAverageRate());
     }

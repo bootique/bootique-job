@@ -10,7 +10,6 @@ import io.bootique.test.junit.BQTestFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static io.bootique.job.Utils.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -20,7 +19,7 @@ public class ScheduleCommandIT {
     public BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testScheduleCommand_AllJobs() {
+    public void testScheduleCommand_AllJobs() throws InterruptedException {
         BQRuntime runtime = testFactory.app()
                 .args("--config=classpath:io/bootique/job/fixture/scheduler_test_command.yml", "--schedule")
                 .module(JobModule.class)
@@ -33,7 +32,7 @@ public class ScheduleCommandIT {
             Thread t = new Thread(runtime::run);
             t.start();
 
-            sleep(1000);
+            Thread.sleep(1000);
 
             assertTrue(scheduler.isStarted());
             assertEquals(2, scheduler.getScheduledJobs().size());
@@ -44,7 +43,7 @@ public class ScheduleCommandIT {
     }
 
     @Test
-    public void testScheduleCommand_SelectedJobs() {
+    public void testScheduleCommand_SelectedJobs() throws InterruptedException {
         BQRuntime runtime = testFactory.app()
                 .args("--config=classpath:io/bootique/job/fixture/scheduler_test_triggers.yml", "--schedule", "--job=scheduledjob1")
                 .module(JobModule.class)
@@ -57,7 +56,7 @@ public class ScheduleCommandIT {
             Thread t = new Thread(runtime::run);
             t.start();
 
-            sleep(1000);
+            Thread.sleep(1000);
 
             assertTrue(scheduler.isStarted());
             assertEquals(1, scheduler.getScheduledJobs().size());
