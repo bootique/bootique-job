@@ -62,7 +62,10 @@ public class DefaultScheduler implements Scheduler {
                 Collectors.toMap(
                         TriggerDescriptor::getJob,
                         t -> new ArrayList<>(Collections.singleton(t)),
-                        (l1, l2) -> {l1.addAll(l2); return l1;}));
+                        (l1, l2) -> {
+                            l1.addAll(l2);
+                            return l1;
+                        }));
     }
 
     @Override
@@ -115,28 +118,29 @@ public class DefaultScheduler implements Scheduler {
 
         if (triggerCount > 0) {
             tryStart();
-
-            triggers.forEach(tc -> {
-                Job job = jobRegistry.getJob(tc.getJob());
-                String jobName = job.getMetadata().getName();
-
-                Function<Schedule, JobFuture> scheduler = (schedule) -> {
-                    LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, schedule.getDescription()));
-                    return schedule(job, Collections.emptyMap(), schedule.getTrigger());
-                };
-
-                ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
-                scheduledJob.schedule(createSchedule(tc));
-                Collection<ScheduledJobFuture> futures = scheduledJobsByName.get(jobName);
-                if (futures == null) {
-                    futures = new ArrayList<>();
-                    scheduledJobsByName.put(jobName, futures);
-                }
-                futures.add(scheduledJob);
-            });
+            triggers.forEach(this::scheduleTrigger);
         }
 
         return triggerCount;
+    }
+
+    private void scheduleTrigger(TriggerDescriptor tc) {
+        Job job = jobRegistry.getJob(tc.getJob());
+        String jobName = job.getMetadata().getName();
+
+        Function<Schedule, JobFuture> scheduler = (schedule) -> {
+            LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, schedule.getDescription()));
+            return schedule(job, Collections.emptyMap(), schedule.getTrigger());
+        };
+
+        ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
+        scheduledJob.schedule(createSchedule(tc));
+        Collection<ScheduledJobFuture> futures = scheduledJobsByName.get(jobName);
+        if (futures == null) {
+            futures = new ArrayList<>();
+            scheduledJobsByName.put(jobName, futures);
+        }
+        futures.add(scheduledJob);
     }
 
     private void tryStart() {

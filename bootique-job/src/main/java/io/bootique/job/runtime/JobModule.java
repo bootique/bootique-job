@@ -34,6 +34,13 @@ public class JobModule extends ConfigModule {
 
     private Collection<Class<? extends Job>> jobTypes = new HashSet<>();
 
+    public JobModule() {
+    }
+
+    public JobModule(String configPrefix) {
+        super(configPrefix);
+    }
+
     /**
      * Returns an instance of {@link JobModuleExtender} used by downstream modules to load custom extensions to the
      * JobModule. Should be invoked from a downstream Module's "configure" method.
@@ -56,13 +63,6 @@ public class JobModule extends ConfigModule {
     @Deprecated
     public static Multibinder<Job> contributeJobs(Binder binder) {
         return Multibinder.newSetBinder(binder, Job.class);
-    }
-
-    public JobModule() {
-    }
-
-    public JobModule(String configPrefix) {
-        super(configPrefix);
     }
 
     @Override
@@ -104,15 +104,16 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    protected Scheduler createScheduler(Map<LockType, LockHandler> jobRunners,
-                                        JobRegistry jobRegistry,
-                                        ConfigurationFactory configFactory) {
+    Scheduler createScheduler(
+            Map<LockType, LockHandler> jobRunners,
+            JobRegistry jobRegistry,
+            ConfigurationFactory configFactory) {
         return configFactory.config(SchedulerFactory.class, configPrefix).createScheduler(jobRunners, jobRegistry);
     }
 
     @Provides
     @Singleton
-    protected JobRegistry createJobRegistry(
+    JobRegistry createJobRegistry(
             Set<Job> jobs,
             Set<JobListener> jobListeners,
             Scheduler scheduler,
