@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -75,8 +76,11 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public int start(List<String> jobNames) {
-        if (jobNames == null || jobNames.isEmpty()) {
-            throw new BootiqueException(1, "No jobs specified");
+
+        Objects.requireNonNull(jobNames);
+
+        if (jobNames.isEmpty()) {
+            return 0;
         }
 
         Set<String> jobNamesSet = new TreeSet<>(jobNames);

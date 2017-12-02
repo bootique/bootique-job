@@ -1,6 +1,7 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
+import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.fixture.ExecutionRateListener;
@@ -19,19 +20,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class SchedulerIT {
 
-    private ExecutionRateListener listener;
-    private BQRuntime runtime;
-
     @Rule
     public BQTestFactory testFactory = new BQTestFactory();
+    private ExecutionRateListener listener;
+    private BQRuntime runtime;
 
     @Before
     public void before() {
         listener = new ExecutionRateListener();
-        runtime = testFactory.app("--config=classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
+        runtime = testFactory.app("-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
                 .module(JobModule.class)
                 .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addListener(listener))
                 .createRuntime();
@@ -43,45 +44,27 @@ public class SchedulerIT {
     }
 
     @Test
-    public void testScheduler_StartWithNoJobs_Exception() {
+    public void testScheduler_StartWithNoJobs() {
         Scheduler scheduler = getScheduler();
-
-        Exception e = null;
-        try {
-            scheduler.start(Collections.emptyList());
-        } catch (Exception e1) {
-            e = e1;
-        }
-        assertNotNull(e);
-        assertNotNull(e.getMessage());
-        assertTrue(e.getMessage().equals("No jobs specified"));
+        assertEquals(0, scheduler.start(Collections.emptyList()));
     }
 
     @Test
     public void testScheduler_StartWithUnknownJob_Exception() {
         Scheduler scheduler = getScheduler();
 
-        Exception e = null;
         try {
             scheduler.start(Collections.singletonList("bogusjob123"));
-        } catch (Exception e1) {
-            e = e1;
+            fail("Exception excepted on invalid job name");
+        } catch (BootiqueException e) {
+            assertTrue(e.getMessage().equals("Unknown job: bogusjob123"));
         }
-        assertNotNull(e);
-        assertNotNull(e.getMessage());
-        assertTrue(e.getMessage().equals("Unknown job: bogusjob123"));
     }
 
     @Test
     public void testScheduler_StartAfterPreviousCallToStartFailed() {
         Scheduler scheduler = getScheduler();
-
-        try {
-            scheduler.start(Collections.emptyList());
-        } catch (Exception e) {
-            // ignore
-        }
-
+        scheduler.start(Collections.emptyList());
         scheduler.start(Collections.singletonList("scheduledjob1"));
         assertTrue(scheduler.isStarted());
     }
