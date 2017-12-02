@@ -15,56 +15,48 @@ import java.util.List;
 
 public class ScheduleCommand extends CommandWithMetadata {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleCommand.class);
+    public static final String JOB_OPTION = "job";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleCommand.class);
+    private Provider<Scheduler> schedulerProvider;
 
-	public static final String JOB_OPTION = "job";
+    @Inject
+    public ScheduleCommand(Provider<Scheduler> schedulerProvider) {
+        super(createMetadata());
+        this.schedulerProvider = schedulerProvider;
+    }
 
-	private Provider<Scheduler> schedulerProvider;
+    private static OptionMetadata.Builder createJobOption() {
+        return OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to schedule. "
+                + "Available job names can be viewed using '--list' command.").valueRequired("job_name");
+    }
 
-	private static OptionMetadata.Builder createJobOption() {
-		return OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to schedule. "
-				+ "Available job names can be viewed using '--list' command.").valueRequired("job_name");
-	}
+    private static CommandMetadata createMetadata() {
+        return CommandMetadata.builder(ScheduleCommand.class)
+                .description(
+                        "Schedules and executes jobs according to configuration and '--job' arguments. Waits indefinitely on the foreground.")
+                .addOption(createJobOption())
+                .build();
+    }
 
-	private static CommandMetadata createMetadata() {
-		return CommandMetadata.builder(ScheduleCommand.class)
-				.description(
-						"Schedules and executes jobs according to configuration and '--job' arguments. Waits indefinitely on the foreground.")
-				.addOption(createJobOption())
-				.build();
-	}
+    @Override
+    public CommandOutcome run(Cli cli) {
+        Scheduler scheduler = schedulerProvider.get();
 
-	@Inject
-	public ScheduleCommand(Provider<Scheduler> schedulerProvider) {
-		super(createMetadata());
-		this.schedulerProvider = schedulerProvider;
-	}
+        int jobCount;
 
-	@Override
-	public CommandOutcome run(Cli cli) {
-		Scheduler scheduler = schedulerProvider.get();
-
-		int jobCount;
-
-		List<String> jobNames = cli.optionStrings(JOB_OPTION);
-		if (jobNames == null || jobNames.isEmpty()) {
-			LOGGER.info("Starting scheduler");
-			jobCount = scheduler.start();
-		} else {
-			LOGGER.info("Starting scheduler for jobs: " + jobNames);
-			jobCount = scheduler.start(jobNames);
-		}
-
-		if (jobCount > 0) {
-			try {
-				Thread.currentThread().join();
-			} catch (InterruptedException e) {
-				return CommandOutcome.succeeded();
-			}
-		}
-
-		// this line is only ever executed, if the call to scheduler.start() returned 0
-		return CommandOutcome.failed(1, "No triggers have been configured in the scheduler");
-	}
+        List<String> jobNames = cli.optionStrings(JOB_OPTION);
+        if (jobNames == null || jobNames.isEmpty()) {
+            LOGGER.info("Starting scheduler");
+            jobCount = scheduler.start();
+        } else {
+            LOGGER.info("Starting scheduler for jobs: " + jobNames);
+            jobCount = scheduler.start(jobNames);
+        }
+        
+        // this line is only ever executed, if the call to scheduler.start() returned 0
+        return jobCount > 0
+                ? CommandOutcome.succeededAndForkedToBackground()
+                : CommandOutcome.failed(1, "No triggers have been configured in the scheduler");
+    }
 
 }
