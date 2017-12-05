@@ -52,11 +52,9 @@ public class ScheduleCommand extends CommandWithMetadata {
             LOGGER.info("Starting scheduler for jobs: " + jobNames);
             jobCount = scheduler.start(jobNames);
         }
-        
-        // this line is only ever executed, if the call to scheduler.start() returned 0
-        return jobCount > 0
-                ? CommandOutcome.succeededAndForkedToBackground()
-                : CommandOutcome.failed(1, "No triggers have been configured in the scheduler");
+
+        LOGGER.info("Started scheduler with {} trigger(s).", jobCount);
+        return CommandOutcome.succeededAndForkedToBackground();
     }
 
 }

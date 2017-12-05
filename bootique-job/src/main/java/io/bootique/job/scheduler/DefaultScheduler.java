@@ -84,14 +84,14 @@ public class DefaultScheduler implements Scheduler {
         }
 
         Set<String> jobNamesSet = new TreeSet<>(jobNames);
-        Iterator<String> iter = jobNamesSet.iterator();
-        while (iter.hasNext()) {
-            String jobName = iter.next();
+        Iterator<String> it = jobNamesSet.iterator();
+        while (it.hasNext()) {
+            String jobName = it.next();
             if (!jobRegistry.getAvailableJobs().contains(jobName)) {
                 throw new BootiqueException(1, "Unknown job: " + jobName);
             } else if (!triggerMap.containsKey(jobName)) {
                 LOGGER.warn("No triggers configured for job: {}. Skipping...", jobName);
-                iter.remove();
+                it.remove();
             }
         }
 
@@ -105,10 +105,6 @@ public class DefaultScheduler implements Scheduler {
     private int scheduleTriggers(Collection<TriggerDescriptor> triggers) {
         int triggerCount = triggers.size();
 
-        if (triggerCount == 0) {
-            LOGGER.info("No triggers, exiting");
-            return 0;
-        }
 
         String badTriggers = triggers.stream()
                 .filter(t -> !jobRegistry.getAvailableJobs().contains(t.getJob()))
@@ -120,10 +116,8 @@ public class DefaultScheduler implements Scheduler {
         }
 
 
-        if (triggerCount > 0) {
-            tryStart();
-            triggers.forEach(this::scheduleTrigger);
-        }
+        tryStart();
+        triggers.forEach(this::scheduleTrigger);
 
         return triggerCount;
     }

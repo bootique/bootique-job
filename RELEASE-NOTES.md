@@ -8,6 +8,7 @@
 * #49 Scheduler thread pool must be identifiable by name
 * #50 Non-blocking ScheduleCommand
 * #51 Scheduler is not shutdown properly
+* #52 Allow empty schedulers to start
 
 ## 0.24
 
