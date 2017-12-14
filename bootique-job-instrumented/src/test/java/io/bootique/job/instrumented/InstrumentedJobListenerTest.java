@@ -3,6 +3,9 @@ package io.bootique.job.instrumented;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import io.bootique.job.runnable.JobResult;
+import io.bootique.metrics.mdc.SafeTransactionIdGenerator;
+import io.bootique.metrics.mdc.TransactionIdGenerator;
+import io.bootique.metrics.mdc.TransactionIdMDC;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,14 +21,27 @@ public class InstrumentedJobListenerTest {
 
     private MetricRegistry metricRegistry;
 
+    private TransactionIdMDC transactionIdMDC;
+    private TransactionIdGenerator idGenerator;
+
     @Before
     public void before() {
         this.metricRegistry = new MetricRegistry();
+        this.transactionIdMDC = new TransactionIdMDC();
+
+        int cpus = Runtime.getRuntime().availableProcessors();
+        if (cpus < 1) {
+            cpus = 1;
+        } else if (cpus > 4) {
+            cpus = 4;
+        }
+
+        this.idGenerator = new SafeTransactionIdGenerator(cpus);
     }
 
     @Test
     public void testJobsInstrumentation_ActiveCount_SuccessAndFailureResults() {
-        InstrumentedJobListener listener = new InstrumentedJobListener(metricRegistry);
+        InstrumentedJobListener listener = new InstrumentedJobListener(metricRegistry, transactionIdMDC, idGenerator);
 
         FinishEventSource f1 = new FinishEventSource();
         listener.onJobStarted("j1", Collections.emptyMap(), f1);
@@ -44,7 +60,7 @@ public class InstrumentedJobListenerTest {
 
     @Test
     public void testJobsInstrumentation_UnknownResult() {
-        InstrumentedJobListener listener = new InstrumentedJobListener(metricRegistry);
+        InstrumentedJobListener listener = new InstrumentedJobListener(metricRegistry, transactionIdMDC, idGenerator);
 
         FinishEventSource f1 = new FinishEventSource();
         listener.onJobStarted("j1", Collections.emptyMap(), f1);
@@ -58,7 +74,7 @@ public class InstrumentedJobListenerTest {
     public void testJobsInstrumentation_SuccessResult() {
         FinishEventSource finishEventSource = new FinishEventSource();
 
-        InstrumentedJobListener listener = new InstrumentedJobListener(metricRegistry);
+        InstrumentedJobListener listener = new InstrumentedJobListener(metricRegistry, transactionIdMDC, idGenerator);
         listener.onJobStarted("j1", Collections.emptyMap(), finishEventSource);
         finishEventSource.finish(JobResult.unknown(null));
 
@@ -105,5 +121,5 @@ public class InstrumentedJobListenerTest {
             finishEventListeners.forEach(l -> l.accept(result));
             finished = true;
         }
-    };
+    }
 }
