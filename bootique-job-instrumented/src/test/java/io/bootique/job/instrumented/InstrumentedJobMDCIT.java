@@ -1,72 +1,63 @@
 package io.bootique.job.instrumented;
 
-import com.codahale.metrics.MetricRegistry;
-import io.bootique.command.CommandOutcome;
-import io.bootique.job.Job;
+import io.bootique.BQRuntime;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.job.runtime.JobModuleExtender;
+import io.bootique.job.scheduler.ScheduledJobFuture;
+import io.bootique.job.scheduler.Scheduler;
 import io.bootique.logback.LogbackModule;
-import io.bootique.metrics.mdc.SafeTransactionIdGenerator;
-import io.bootique.metrics.mdc.TransactionIdGenerator;
-import io.bootique.metrics.mdc.TransactionIdMDC;
+import io.bootique.metrics.MetricsModule;
 import io.bootique.test.junit.BQTestFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class InstrumentedJobMDCIT {
 
     @Rule
     public BQTestFactory testFactory = new BQTestFactory();
 
-    private TransactionIdMDC transactionIdMDC;
-    private TransactionIdGenerator idGenerator;
+    private InstrumentedJobListener listener;
+    private BQRuntime runtime;
 
     @Before
     public void before() {
-        this.transactionIdMDC = new TransactionIdMDC();
-
-        int cpus = Runtime.getRuntime().availableProcessors();
-        if (cpus < 1) {
-            cpus = 1;
-        } else if (cpus > 4) {
-            cpus = 4;
-        }
-
-        this.idGenerator = new SafeTransactionIdGenerator(cpus);
-    }
-
-    protected CommandOutcome executeJobs(Collection<? extends Job> jobs, String... args) {
-        InstrumentedJobListener listener = new InstrumentedJobListener(new MetricRegistry(), transactionIdMDC, idGenerator);
-
-        return testFactory.app(args)
+        runtime = testFactory.app("-c", "classpath:io/bootique/job/instrumented/schedule.yml")
                 .module(new LogbackModule())
+                .module(new MetricsModule())
                 .module(new JobModule())
+                .module(new InstrumentedJobModule())
                 .module(binder -> {
-                    JobModuleExtender extender = JobModule.extend(binder).addListener(listener);
-                    jobs.forEach(extender::addJob);
-                }).createRuntime()
-                .run();
+                    JobModule.extend(binder)
+                            .addJob(ScheduledJob1.class)
+                            .addJob(ScheduledJob2.class);
+
+                }).createRuntime();
     }
 
-    protected void assertExecuted(List<Job1> jobs) {
-        jobs.forEach(job -> assertTrue("Job was not executed: " + job.getMetadata().getName(), job.isExecuted()));
+    @After
+    public void after() {
+        getScheduler().getScheduledJobs().forEach(ScheduledJobFuture::cancelInterruptibly);
     }
 
     @Test
-    public void testExecJob() {
-        Job1 job1 = new Job1();
-        String[] args = new String[]{
-                "--exec", "--job=job1", "--config=classpath:io/bootique/job/instrumented/config.yml"};
+    public void testScheduleJob() throws InterruptedException {
+        Scheduler scheduler = getScheduler();
 
-        List<Job1> jobs = Collections.singletonList(job1);
-        executeJobs(jobs, args);
-        assertExecuted(jobs);
+        int jobCount = scheduler.start();
+        assertEquals(2, jobCount);
+
+        Collection<ScheduledJobFuture> scheduledJobs = scheduler.getScheduledJobs();
+        assertEquals(2, scheduledJobs.size());
+
+        Thread.sleep(1000);
+    }
+
+    private Scheduler getScheduler() {
+        return runtime.getInstance(Scheduler.class);
     }
 }
