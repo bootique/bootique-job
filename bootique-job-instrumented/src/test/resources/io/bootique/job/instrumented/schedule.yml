@@ -5,10 +5,10 @@ scheduler:
       fixedRateMs: 100
       initialDelayMs: 0
     - job: scheduledjob2
-      fixedRateMs: 100
+      fixedRateMs: 150
       initialDelayMs: 0
 log:
   level: info
   appenders:
     - type: console
-      logFormat: '%-4r [%thread] %-5level T:%X{txid} - %msg%n'
+      logFormat: '%-4r [%thread] %-5level [%c]:%X{txid} - %msg%n'
