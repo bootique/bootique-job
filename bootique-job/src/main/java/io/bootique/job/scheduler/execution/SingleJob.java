@@ -1,13 +1,14 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,9 +18,9 @@ class SingleJob implements Job {
 
     private Job delegate;
     private JobExecution execution;
-    private Set<JobListener> listeners;
+    private Set<MappedJobListener> listeners;
 
-    SingleJob(Job delegate, JobExecution execution, Set<JobListener> listeners) {
+    SingleJob(Job delegate, JobExecution execution, Set<MappedJobListener> listeners) {
         this.delegate = delegate;
         this.execution = execution;
         this.listeners = listeners;

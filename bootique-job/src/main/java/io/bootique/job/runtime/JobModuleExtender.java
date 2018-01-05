@@ -1,10 +1,13 @@
 package io.bootique.job.runtime;
 
 import com.google.inject.Binder;
+import com.google.inject.Key;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
+import io.bootique.job.MappedJobListener;
 
 /**
  * @since 0.14
@@ -14,6 +17,7 @@ public class JobModuleExtender {
     private Binder binder;
     private Multibinder<Job> jobs;
     private Multibinder<JobListener> listeners;
+    private Multibinder<MappedJobListener> mappedListeners;
 
     JobModuleExtender(Binder binder) {
         this.binder = binder;
@@ -21,6 +25,7 @@ public class JobModuleExtender {
 
     JobModuleExtender initAllExtensions() {
         contributeListeners();
+        contributeMappedListeners();
         contributeJobs();
 
         return this;
@@ -39,6 +44,42 @@ public class JobModuleExtender {
 
     public JobModuleExtender addListener(JobListener listener) {
         contributeListeners().addBinding().toInstance(listener);
+        return this;
+    }
+
+    /**
+     * Adds a listener to the set of Job listeners.
+     *
+     * @param mappedJobListener a wrapped listener
+     * @param <T>
+     * @return this extender instance
+     */
+    public <T extends JobListener> JobModuleExtender addMappedListener(MappedJobListener<T> mappedJobListener) {
+        contributeMappedListeners().addBinding().toInstance(mappedJobListener);
+        return this;
+    }
+
+    /**
+     * Adds a listener of the specified type to the set of Job listeners.
+     *
+     * @param mappedJobListenerKey binding key
+     * @param <T>
+     * @return this extender instance
+     */
+    public <T extends JobListener> JobModuleExtender addMappedListener(Key<MappedJobListener<T>> mappedJobListenerKey) {
+        contributeMappedListeners().addBinding().to(mappedJobListenerKey);
+        return this;
+    }
+
+    /**
+     * Adds a listener of the specified type to the set of Job listeners.
+     *
+     * @param mappedJobListenerType listener type
+     * @param <T>
+     * @return this extender instance
+     */
+    public <T extends JobListener> JobModuleExtender addMappedListener(TypeLiteral<MappedJobListener<T>> mappedJobListenerType) {
+        contributeMappedListeners().addBinding().to(mappedJobListenerType);
         return this;
     }
 
@@ -62,4 +103,12 @@ public class JobModuleExtender {
         }
         return listeners;
     }
+
+    protected Multibinder<MappedJobListener> contributeMappedListeners() {
+        if (mappedListeners == null) {
+            mappedListeners = Multibinder.newSetBinder(binder, MappedJobListener.class);
+        }
+        return mappedListeners;
+    }
+
 }

@@ -4,6 +4,7 @@ import io.bootique.job.BaseJob;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
@@ -30,13 +31,13 @@ import static org.junit.Assert.assertEquals;
 public class CallbackTest {
 
     private RunnableJobFactory rjf;
-    private JobStats jobStats;
+    private MappedJobListener jobStats;
 
     private ExecutorService executor;
 
     @Before
     public void before() {
-        this.jobStats = new JobStats();
+        this.jobStats = new MappedJobListener<>(new JobStats(), Integer.MAX_VALUE);
         this.rjf = (job, parameters) -> () -> Callback.runAndNotify(job, parameters, Collections.singleton(jobStats));
         this.executor = Executors.newFixedThreadPool(50);
     }
@@ -70,8 +71,9 @@ public class CallbackTest {
         jobs.forEach(executor::execute);
         latch.await();
 
-        jobStats.assertHasResults("goodjob", Collections.singletonMap(JobOutcome.SUCCESS, 500));
-        jobStats.assertHasResults("badjob", Collections.singletonMap(JobOutcome.FAILURE, 500));
+        JobStats listener = (JobStats) jobStats.getListener();
+        listener.assertHasResults("goodjob", Collections.singletonMap(JobOutcome.SUCCESS, 500));
+        listener.assertHasResults("badjob", Collections.singletonMap(JobOutcome.FAILURE, 500));
     }
 
     private static class TestJob extends BaseJob {

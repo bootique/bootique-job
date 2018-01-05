@@ -11,6 +11,7 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.JobRegistry;
+import io.bootique.job.MappedJobListener;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
@@ -27,9 +28,11 @@ import io.bootique.type.TypeRef;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class JobModule extends ConfigModule {
 
@@ -120,6 +123,7 @@ public class JobModule extends ConfigModule {
     JobRegistry createJobRegistry(
             Set<Job> jobs,
             Set<JobListener> jobListeners,
+            Set<MappedJobListener> mappedJobListeners,
             Scheduler scheduler,
             ConfigurationFactory configFactory) {
 
@@ -127,6 +131,31 @@ public class JobModule extends ConfigModule {
         };
         Map<String, JobDefinition> configuredDefinitions = configFactory.config(ref, "jobs");
 
-        return new DefaultJobRegistry(jobs, configuredDefinitions, scheduler, jobListeners);
+        return new DefaultJobRegistry(jobs, configuredDefinitions, scheduler, allListeners(jobListeners, mappedJobListeners));
+    }
+
+    private Set<MappedJobListener> allListeners(Set<JobListener> jobListeners,
+                                                Set<MappedJobListener> mappedJobListeners) {
+        if (jobListeners.isEmpty()) {
+            return mappedJobListeners;
+        }
+
+        HashSet<MappedJobListener> mappedListenersClone = new HashSet<>(mappedJobListeners);
+
+        //  Integer.MAX_VALUE means placing bare unordered listeners after (== inside) mapped listeners
+        jobListeners.forEach(
+                listener -> {
+                    mappedListenersClone.add(new MappedJobListener<>(listener, Integer.MAX_VALUE));
+                }
+        );
+
+        return sortedListeners(mappedListenersClone);
+    }
+
+    private Set<MappedJobListener> sortedListeners(Set<MappedJobListener> unsorted) {
+        Set<MappedJobListener> sorted = new TreeSet<>(Comparator.comparing(MappedJobListener::getOrder));
+
+        sorted.addAll(unsorted);
+        return sorted;
     }
 }

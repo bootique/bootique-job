@@ -1,8 +1,8 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
@@ -32,9 +32,9 @@ class JobGroup implements Job {
     private Collection<Job> jobs;
     private DependencyGraph graph;
     private Scheduler scheduler;
-    private Set<JobListener> listeners;
+    private Set<MappedJobListener> listeners;
 
-    public JobGroup(String name, Collection<Job> jobs, DependencyGraph graph, Scheduler scheduler, Set<JobListener> listeners) {
+    public JobGroup(String name, Collection<Job> jobs, DependencyGraph graph, Scheduler scheduler, Set<MappedJobListener> listeners) {
         this.name = name;
         this.jobs = jobs;
         this.delegateSupplier = this::buildDelegate;
@@ -125,12 +125,12 @@ class JobGroup implements Job {
         Set<JobResult> failures = new HashSet<>();
         futures.stream().map(JobFuture::get).forEach(r -> {
             if (r.getThrowable() == null) {
-				LOGGER.info(String.format("Finished job '%s', result: %s, message: %s", r.getMetadata().getName(),
-						r.getOutcome(), r.getMessage()));
-			} else {
-				LOGGER.error(String.format("Finished job '%s', result: %s, message: %s", r.getMetadata().getName(),
-						r.getOutcome(), r.getMessage()), r.getThrowable());
-			}
+                LOGGER.info(String.format("Finished job '%s', result: %s, message: %s", r.getMetadata().getName(),
+                        r.getOutcome(), r.getMessage()));
+            } else {
+                LOGGER.error(String.format("Finished job '%s', result: %s, message: %s", r.getMetadata().getName(),
+                        r.getOutcome(), r.getMessage()), r.getThrowable());
+            }
             if (r.getOutcome() != JobOutcome.SUCCESS) {
                 failures.add(r);
                 // TODO: cancel jobs from the current group

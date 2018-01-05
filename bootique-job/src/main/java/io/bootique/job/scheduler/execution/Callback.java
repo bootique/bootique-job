@@ -1,12 +1,14 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobListener;
+import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,14 +19,14 @@ class Callback implements Consumer<Consumer<JobResult>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Callback.class);
 
-    static JobResult runAndNotify(Job job, Map<String, Object> parameters, Set<JobListener> listeners) {
+    static JobResult runAndNotify(Job job, Map<String, Object> parameters, Set<MappedJobListener> listeners) {
         String jobName = job.getMetadata().getName();
         Optional<Callback> callbackOptional = listeners.isEmpty() ? Optional.empty() : Optional.of(new Callback(jobName));
 
         callbackOptional.ifPresent(callback -> {
             listeners.forEach(listener -> {
                 try {
-                    listener.onJobStarted(jobName, parameters, callback);
+                    listener.getListener().onJobStarted(jobName, parameters, callback);
                 } catch (Exception e) {
                     LOGGER.error("Error invoking job listener for job: " + jobName, e);
                 }

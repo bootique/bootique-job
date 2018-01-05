@@ -1,9 +1,9 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
+import io.bootique.job.MappedJobListener;
 import io.bootique.job.SerialJob;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJobDefinition;
@@ -47,16 +47,16 @@ public class DefaultJobRegistry implements JobRegistry {
     private ConcurrentMap<String, Job> executions;
 
     private Scheduler scheduler;
-    private Set<JobListener> listeners;
+    private Set<MappedJobListener> listeners;
 
     public DefaultJobRegistry(Collection<Job> jobs,
                               Map<String, JobDefinition> jobDefinitions,
                               Scheduler scheduler,
-                              Set<JobListener> listeners) {
+                              Set<MappedJobListener> listeners) {
         this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
         this.jobs = mapJobs(jobs);
         this.jobDefinitions = collectJobDefinitions(jobDefinitions, jobs);
-        this.executions = new ConcurrentHashMap<>((int)(jobDefinitions.size() / 0.75d) + 1);
+        this.executions = new ConcurrentHashMap<>((int) (jobDefinitions.size() / 0.75d) + 1);
         this.scheduler = scheduler;
         this.listeners = listeners;
     }
@@ -71,10 +71,10 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     private Set<String> collectJobNames(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions) {
-		Set<String> jobNames = jobs.stream().map(job -> job.getMetadata().getName()).collect(Collectors.toSet());
-		jobNames.addAll(jobDefinitions.keySet());
-		return jobNames;
-	}
+        Set<String> jobNames = jobs.stream().map(job -> job.getMetadata().getName()).collect(Collectors.toSet());
+        jobNames.addAll(jobDefinitions.keySet());
+        return jobNames;
+    }
 
     @Override
     public Set<String> getAvailableJobs() {
