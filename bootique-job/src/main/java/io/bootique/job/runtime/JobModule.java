@@ -137,7 +137,7 @@ public class JobModule extends ConfigModule {
     private Set<MappedJobListener> allListeners(Set<JobListener> jobListeners,
                                                 Set<MappedJobListener> mappedJobListeners) {
         if (jobListeners.isEmpty()) {
-            return mappedJobListeners;
+            return sortedListeners(mappedJobListeners);
         }
 
         HashSet<MappedJobListener> mappedListenersClone = new HashSet<>(mappedJobListeners);
