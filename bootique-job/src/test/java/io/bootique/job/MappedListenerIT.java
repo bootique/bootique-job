@@ -12,7 +12,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
@@ -46,7 +45,7 @@ public class MappedListenerIT {
                 .run();
 
         assertTrue(job1.isExecuted());
-        assertEquals("_L1_started_L2_started_L3_started", SharedState.getAndReset());
+        assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
@@ -67,7 +66,7 @@ public class MappedListenerIT {
                 .run();
 
         assertTrue(job1.isExecuted());
-        assertEquals("_L1_started_L2_started_L3_started", SharedState.getAndReset());
+        assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
@@ -82,13 +81,13 @@ public class MappedListenerIT {
                     jobs.forEach(extender::addJob);
 
                     extender.addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                            .addListener(new Listener3())
-                            .addMappedListener(new MappedJobListener<>(new Listener2(), 2));
+                            .addListener(new Listener2())
+                            .addMappedListener(new MappedJobListener<>(new Listener3(), 2));
                 }).createRuntime()
                 .run();
 
         assertTrue(job1.isExecuted());
-        assertEquals("_L1_started_L2_started_L3_started", SharedState.getAndReset());
+        assertEquals("_L1_started_L3_started_L2_started_L2_finished_L3_finished_L1_finished", SharedState.getAndReset());
     }
 
     public static class SharedState {
@@ -110,15 +109,10 @@ public class MappedListenerIT {
     }
 
     public static class Listener1 implements JobListener {
-        private Map<String, Set<JobResult>> allResults;
-
-        public Listener1() {
-            this.allResults = new ConcurrentHashMap<>();
-        }
-
         @Override
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
             finishEventSource.accept(result -> {
+                SharedState.append("_L1_finished");
             });
 
             SharedState.append("_L1_started");
@@ -129,6 +123,9 @@ public class MappedListenerIT {
 
         @Override
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+            finishEventSource.accept(result -> {
+                SharedState.append("_L2_finished");
+            });
             SharedState.append("_L2_started");
         }
     }
@@ -137,6 +134,9 @@ public class MappedListenerIT {
 
         @Override
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+            finishEventSource.accept(result -> {
+                SharedState.append("_L3_finished");
+            });
             SharedState.append("_L3_started");
         }
     }

@@ -6,10 +6,8 @@ import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -52,7 +50,7 @@ class Callback implements Consumer<Consumer<JobResult>> {
     }
 
     private String jobName;
-    private List<Consumer<JobResult>> callbacks;
+    private LinkedList<Consumer<JobResult>> callbacks;
 
     public Callback(String jobName) {
         this.jobName = jobName;
@@ -61,18 +59,19 @@ class Callback implements Consumer<Consumer<JobResult>> {
     @Override
     public void accept(Consumer<JobResult> callback) {
         if (callbacks == null) {
-            callbacks = new ArrayList<>();
+            callbacks = new LinkedList<>();
         }
         callbacks.add(callback);
     }
 
     public void invoke(JobResult result) {
-        callbacks.forEach(cb -> {
+        Iterator<Consumer<JobResult>> itr = callbacks.descendingIterator();
+        while (itr.hasNext()) {
             try {
-                cb.accept(result);
+                itr.next().accept(result);
             } catch (Exception e) {
                 LOGGER.error("Error invoking completion callback for job: " + jobName, e);
             }
-        });
+        }
     }
 }
