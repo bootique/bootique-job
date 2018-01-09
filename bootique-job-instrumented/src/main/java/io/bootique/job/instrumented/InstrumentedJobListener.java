@@ -3,11 +3,8 @@ package io.bootique.job.instrumented;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.inject.Inject;
 import io.bootique.job.JobListener;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.metrics.mdc.TransactionIdGenerator;
-import io.bootique.metrics.mdc.TransactionIdMDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,24 +24,14 @@ public class InstrumentedJobListener implements JobListener {
     private Map<String, JobMetrics> metrics;
     private ReentrantLock lock;
 
-    private TransactionIdMDC transactionIdMDC;
-    private TransactionIdGenerator idGenerator;
-
-    @Inject
-    public InstrumentedJobListener(MetricRegistry metricRegistry,
-                                   TransactionIdMDC transactionIdMDC,
-                                   TransactionIdGenerator idGenerator) {
+    public InstrumentedJobListener(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
         this.metrics = new HashMap<>();
         this.lock = new ReentrantLock();
-        this.transactionIdMDC = transactionIdMDC;
-        this.idGenerator = idGenerator;
     }
 
     @Override
     public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
-        String id = idGenerator.nextId();
-        transactionIdMDC.reset(id);
 
         JobMetrics metric = getOrCreateMetrics(jobName);
 

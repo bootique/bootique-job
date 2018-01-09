@@ -3,6 +3,7 @@ package io.bootique.job.runtime;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 import io.bootique.BQCoreModule;
@@ -10,6 +11,7 @@ import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
+import io.bootique.job.JobLogListener;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.command.ExecCommand;
@@ -35,6 +37,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class JobModule extends ConfigModule {
+
+    // TX ID listener is usually the outermost listener in any app. It is a good idea to order your other listeners
+    // relative to this one , using higher ordering values.
+    public static final int BUSINESS_TX_LISTENER_ORDER = Integer.MIN_VALUE + 800;
+
+    // goes inside BUSINESS_TX_LISTENER
+    public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
 
     private Collection<Class<? extends Job>> jobTypes = new HashSet<>();
 
@@ -104,6 +113,9 @@ public class JobModule extends ConfigModule {
                 LockHandler.class);
         lockHandlers.addBinding(LockType.local).to(LocalLockHandler.class);
         lockHandlers.addBinding(LockType.clustered).to(ZkClusterLockHandler.class);
+
+        extender.addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {
+        });
     }
 
     @Provides
@@ -132,6 +144,12 @@ public class JobModule extends ConfigModule {
         Map<String, JobDefinition> configuredDefinitions = configFactory.config(ref, "jobs");
 
         return new DefaultJobRegistry(jobs, configuredDefinitions, scheduler, allListeners(jobListeners, mappedJobListeners));
+    }
+
+    @Singleton
+    @Provides
+    public MappedJobListener<JobLogListener> provideJobLogListener() {
+        return new MappedJobListener<>(new JobLogListener(), LOG_LISTENER_ORDER);
     }
 
     private Set<MappedJobListener> allListeners(Set<JobListener> jobListeners,

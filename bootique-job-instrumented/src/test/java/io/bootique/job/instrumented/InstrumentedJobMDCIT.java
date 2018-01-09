@@ -21,7 +21,6 @@ public class InstrumentedJobMDCIT {
     @Rule
     public BQTestFactory testFactory = new BQTestFactory();
 
-    private InstrumentedJobListener listener;
     private BQRuntime runtime;
 
     @Before

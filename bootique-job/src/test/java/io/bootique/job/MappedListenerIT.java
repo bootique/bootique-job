@@ -1,5 +1,8 @@
 package io.bootique.job;
 
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
+import io.bootique.BQRuntime;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
@@ -90,6 +93,34 @@ public class MappedListenerIT {
         assertEquals("_L1_started_L3_started_L2_started_L2_finished_L3_finished_L1_finished", SharedState.getAndReset());
     }
 
+    @Test
+    public void testEmbeddedLogListener_Ordering() {
+        Job1 job1 = new Job1(0);
+        Set<? extends Job> jobs = Collections.singleton(job1);
+
+        BQRuntime runtime = testFactory.app("--exec", "--job=job1")
+                .module(new JobModule())
+                .module(binder -> {
+                    JobModuleExtender extender = JobModule.extend(binder);
+                    jobs.forEach(extender::addJob);
+
+                    extender.addListener(new Listener3())
+                            .addMappedListener(new MappedJobListener<>(new Listener2(), 1));
+                }).createRuntime();
+
+        runtime.run();
+
+        assertTrue(job1.isExecuted());
+        assertEquals("_L2_started_L3_started_L3_finished_L2_finished", SharedState.getAndReset());
+
+        Set<MappedJobListener> listeners = runtime.getInstance(Key.get(new TypeLiteral<Set<MappedJobListener>>() {
+        }));
+        assertTrue(listeners.size() == 2);
+        assertEquals(1, listeners.stream()
+                .filter(l -> l.getListener() instanceof JobLogListener)
+                .count());
+    }
+
     public static class SharedState {
         private static StringBuilder BUFFER;
 
@@ -140,5 +171,4 @@ public class MappedListenerIT {
             SharedState.append("_L3_started");
         }
     }
-
 }

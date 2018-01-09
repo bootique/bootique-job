@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,11 +33,12 @@ class SingleJob implements Job {
     @Override
     public JobResult run(Map<String, Object> parameters) {
         Map<String, Object> mergedParams = mergeParams(parameters, execution.getParams());
-        LOGGER.info(String.format("job '%s' started with params %s", getMetadata().getName(), mergedParams));
+
         try {
             return Callback.runAndNotify(delegate, mergedParams, listeners);
-        } finally {
-            LOGGER.info(String.format("job '%s' finished", getMetadata().getName()));
+        } catch (Exception e) {
+            LOGGER.error(delegate.getMetadata().getName() + "failed to run.", e);
+            return JobResult.failure(delegate.getMetadata());
         }
     }
 
