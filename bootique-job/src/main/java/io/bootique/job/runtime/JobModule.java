@@ -26,13 +26,15 @@ import io.bootique.job.scheduler.execution.DefaultJobRegistry;
 import io.bootique.shutdown.ShutdownManager;
 import io.bootique.type.TypeRef;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class JobModule extends ConfigModule {
 
@@ -131,31 +133,26 @@ public class JobModule extends ConfigModule {
         };
         Map<String, JobDefinition> configuredDefinitions = configFactory.config(ref, "jobs");
 
-        return new DefaultJobRegistry(jobs, configuredDefinitions, scheduler, allListeners(jobListeners, mappedJobListeners));
+        List<MappedJobListener> allListeners = allListeners(jobListeners, mappedJobListeners);
+        return new DefaultJobRegistry(jobs, configuredDefinitions, scheduler, allListeners);
     }
 
-    private Set<MappedJobListener> allListeners(Set<JobListener> jobListeners,
-                                                Set<MappedJobListener> mappedJobListeners) {
-        if (jobListeners.isEmpty()) {
-            return sortedListeners(mappedJobListeners);
-        }
+    private List<MappedJobListener> allListeners(
+            Set<JobListener> jobListeners,
+            Set<MappedJobListener> mappedJobListeners) {
 
-        HashSet<MappedJobListener> mappedListenersClone = new HashSet<>(mappedJobListeners);
+        // not checking for dupes between MappedJobListener and JobListener collections. Is that a problem?
+        List<MappedJobListener> localListeners = new ArrayList<>(mappedJobListeners.size() + jobListeners.size());
+
+        localListeners.addAll(mappedJobListeners);
 
         //  Integer.MAX_VALUE means placing bare unordered listeners after (== inside) mapped listeners
         jobListeners.forEach(
-                listener -> {
-                    mappedListenersClone.add(new MappedJobListener<>(listener, Integer.MAX_VALUE));
-                }
+                listener -> localListeners.add(new MappedJobListener<>(listener, Integer.MAX_VALUE))
         );
 
-        return sortedListeners(mappedListenersClone);
-    }
+        Collections.sort(localListeners, Comparator.comparing(MappedJobListener::getOrder));
 
-    private Set<MappedJobListener> sortedListeners(Set<MappedJobListener> unsorted) {
-        Set<MappedJobListener> sorted = new TreeSet<>(Comparator.comparing(MappedJobListener::getOrder));
-
-        sorted.addAll(unsorted);
-        return sorted;
+        return localListeners;
     }
 }

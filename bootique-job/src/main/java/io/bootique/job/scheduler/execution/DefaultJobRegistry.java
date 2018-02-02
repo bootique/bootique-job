@@ -47,12 +47,12 @@ public class DefaultJobRegistry implements JobRegistry {
     private ConcurrentMap<String, Job> executions;
 
     private Scheduler scheduler;
-    private Set<MappedJobListener> listeners;
+    private Collection<MappedJobListener> listeners;
 
     public DefaultJobRegistry(Collection<Job> jobs,
                               Map<String, JobDefinition> jobDefinitions,
                               Scheduler scheduler,
-                              Set<MappedJobListener> listeners) {
+                              Collection<MappedJobListener> listeners) {
         this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
         this.jobs = mapJobs(jobs);
         this.jobDefinitions = collectJobDefinitions(jobDefinitions, jobs);
