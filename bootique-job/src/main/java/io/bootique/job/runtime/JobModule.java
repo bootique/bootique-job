@@ -106,8 +106,11 @@ public class JobModule extends ConfigModule {
                 .addCommand(ListCommand.class)
                 .addCommand(ScheduleCommand.class);
 
-        // trigger extension points creation and provide default contributions
-        JobModuleExtender extender = JobModule.extend(binder).initAllExtensions();
+        JobModuleExtender extender = JobModule
+                .extend(binder)
+                .initAllExtensions()
+                .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {});
+
         jobTypes.forEach(extender::addJob);
 
         // TODO: move this to extender API
@@ -115,9 +118,6 @@ public class JobModule extends ConfigModule {
                 LockHandler.class);
         lockHandlers.addBinding(LockType.local).to(LocalLockHandler.class);
         lockHandlers.addBinding(LockType.clustered).to(ZkClusterLockHandler.class);
-
-        extender.addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {
-        });
     }
 
     @Provides
