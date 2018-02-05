@@ -3,7 +3,6 @@ package io.bootique.job.instrumented;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.inject.Inject;
 import io.bootique.job.JobListener;
 import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
@@ -25,7 +24,6 @@ public class InstrumentedJobListener implements JobListener {
     private Map<String, JobMetrics> metrics;
     private ReentrantLock lock;
 
-    @Inject
     public InstrumentedJobListener(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
         this.metrics = new HashMap<>();
@@ -34,6 +32,7 @@ public class InstrumentedJobListener implements JobListener {
 
     @Override
     public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+
         JobMetrics metric = getOrCreateMetrics(jobName);
 
         metric.getActiveCounter().inc();
@@ -41,12 +40,12 @@ public class InstrumentedJobListener implements JobListener {
 
         LOGGER.info("started job: '{}'", jobName);
 
-		finishEventSource.accept(result -> {
+        finishEventSource.accept(result -> {
             metric.getActiveCounter().dec();
             metric.getCompletedCounter().inc();
             // Timer.Context#stop also updates aggregate running time of all instances of <jobName>
             long timeNanos = requestTimerContext.stop();
-			LOGGER.info("finished job '{}' in {} ms", jobName, timeNanos / 1000000);
+            LOGGER.info("finished job '{}' in {} ms", jobName, timeNanos / 1000000);
 
             switch (result.getOutcome()) {
                 case SUCCESS: {

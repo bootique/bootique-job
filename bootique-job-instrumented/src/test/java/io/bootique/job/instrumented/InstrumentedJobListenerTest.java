@@ -105,5 +105,5 @@ public class InstrumentedJobListenerTest {
             finishEventListeners.forEach(l -> l.accept(result));
             finished = true;
         }
-    };
+    }
 }
