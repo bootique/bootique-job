@@ -5,6 +5,7 @@
 * #45 Filter scheduled triggers by jobs specified with --job arguments
 * #46 Do not start the scheduler before performing checks
 * #47 Make Scheduler DI binding a singleton
+* #48 Integrate "business transaction" ids in job-instrumented
 * #49 Scheduler thread pool must be identifiable by name
 * #50 Non-blocking ScheduleCommand
 * #51 Scheduler is not shutdown properly
