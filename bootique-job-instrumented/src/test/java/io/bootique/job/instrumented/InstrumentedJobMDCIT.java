@@ -53,6 +53,8 @@ public class InstrumentedJobMDCIT {
         Collection<ScheduledJobFuture> scheduledJobs = scheduler.getScheduledJobs();
         assertEquals(2, scheduledJobs.size());
 
+        // sleep here to let the jobs run and generate some logs
+        // TODO: can we make any assertions here? Otherwise this test can only be checked visually
         Thread.sleep(1000);
     }
 
