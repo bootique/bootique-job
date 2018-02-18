@@ -6,7 +6,7 @@ import org.junit.Test;
 public class JobModuleProviderTest {
 	
 	@Test
-	public void testPresentInJar() {
-		BQModuleProviderChecker.testPresentInJar(JobModuleProvider.class);
+	public void testAutoLoadable() {
+		BQModuleProviderChecker.testAutoLoadable(JobModuleProvider.class);
 	}
 }

@@ -15,8 +15,8 @@ public class InstrumentedJobModuleProviderIT {
     public BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testPresentInJar() {
-        BQModuleProviderChecker.testPresentInJar(InstrumentedJobModuleProvider.class);
+    public void testAutoLoadable() {
+        BQModuleProviderChecker.testAutoLoadable(InstrumentedJobModuleProvider.class);
     }
 
     @Test
