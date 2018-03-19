@@ -11,6 +11,7 @@
 * #51 Scheduler is not shutdown properly
 * #52 Allow empty schedulers to start
 * #54 Support for listener ordering
+* #57 Upgrade to bootique-modules-parent 0.8
 
 ## 0.24
 
