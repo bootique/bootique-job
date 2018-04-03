@@ -1,3 +1,7 @@
+## 0.26
+
+* #58 Cleaning up APIs deprecated since <= 0.25
+
 ## 0.25
 
 * #43 Use non-zero exit code in ExecCommand, when some of the jobs have failed

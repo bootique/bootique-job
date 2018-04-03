@@ -5,7 +5,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.Multibinder;
 import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
@@ -29,11 +28,8 @@ import io.bootique.shutdown.ShutdownManager;
 import io.bootique.type.TypeRef;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,9 +42,7 @@ public class JobModule extends ConfigModule {
 
     // goes inside BUSINESS_TX_LISTENER
     public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
-
-    private Collection<Class<? extends Job>> jobTypes = new HashSet<>();
-
+    
     public JobModule() {
     }
 
@@ -68,35 +62,10 @@ public class JobModule extends ConfigModule {
         return new JobModuleExtender(binder);
     }
 
-    /**
-     * @param binder DI binder passed to the Module that invokes this method.
-     * @return returns a {@link Multibinder} for contributed jobs.
-     * @since 0.11
-     * @deprecated since 0.14 use {@link #extend(Binder)} to get an extender object, and
-     * then call {@link JobModuleExtender#addJob(Job)} or similar.
-     */
-    @Deprecated
-    public static Multibinder<Job> contributeJobs(Binder binder) {
-        return Multibinder.newSetBinder(binder, Job.class);
-    }
-
     @Override
     protected String defaultConfigPrefix() {
         // main config sets up Scheduler , so renaming default config prefix
         return "scheduler";
-    }
-
-    /**
-     * @param jobTypes an array of job classes to register in runtime.
-     * @return this module instance.
-     * @deprecated since 0.24 use JobModule.extend(..) API to register jobs. Modules in Bootique are normally immutable
-     * and extensions are loaded via "extenders".
-     */
-    @Deprecated
-    @SafeVarargs
-    public final JobModule jobs(Class<? extends Job>... jobTypes) {
-        Arrays.asList(jobTypes).forEach(jt -> this.jobTypes.add(jt));
-        return this;
     }
 
     @Override
@@ -110,8 +79,6 @@ public class JobModule extends ConfigModule {
                 .extend(binder)
                 .initAllExtensions()
                 .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {});
-
-        jobTypes.forEach(extender::addJob);
 
         // TODO: move this to extender API
         MapBinder<LockType, LockHandler> lockHandlers = MapBinder.newMapBinder(binder, LockType.class,

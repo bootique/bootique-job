@@ -171,11 +171,6 @@ public class DefaultScheduler implements Scheduler {
     }
 
     @Override
-    public Collection<TriggerDescriptor> getTriggers() {
-        return triggers;
-    }
-
-    @Override
     public Collection<ScheduledJobFuture> getScheduledJobs() {
         return scheduledJobsByName.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
     }

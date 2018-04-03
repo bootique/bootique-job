@@ -72,16 +72,6 @@ public interface Scheduler {
     boolean isStarted();
 
     /**
-     * Returns a collection of triggers, configured for this scheduler.
-     *
-     * @return Collection of triggers, configured for this scheduler.
-     * @since 0.13
-     * @deprecated since 0.24 in favor of {@link #getScheduledJobs()}
-     */
-    @Deprecated
-    Collection<TriggerDescriptor> getTriggers();
-
-    /**
      * @return Collection of scheduled job executions for all known jobs
      * @since 0.24
      */
