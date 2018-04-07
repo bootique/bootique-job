@@ -42,7 +42,7 @@ public class JobModule extends ConfigModule {
 
     // goes inside BUSINESS_TX_LISTENER
     public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
-    
+
     public JobModule() {
     }
 

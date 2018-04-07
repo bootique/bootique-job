@@ -84,6 +84,7 @@ public abstract class BaseJobExecIT {
         assertEquals(expectedParams, job.getParams());
     }
 
+    @SafeVarargs
     private static <T extends Job> String collectNames(T... jobs) {
         return collectNames(Arrays.asList(jobs));
     }
