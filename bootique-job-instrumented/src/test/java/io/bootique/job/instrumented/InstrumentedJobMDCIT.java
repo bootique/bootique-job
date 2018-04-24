@@ -29,7 +29,7 @@ public class InstrumentedJobMDCIT {
                 .module(new LogbackModule())
                 .module(new MetricsModule())
                 .module(new JobModule())
-                .module(new InstrumentedJobModule())
+                .module(new JobInstrumentedModule())
                 .module(binder -> {
                     JobModule.extend(binder)
                             .addJob(ScheduledJob1.class)

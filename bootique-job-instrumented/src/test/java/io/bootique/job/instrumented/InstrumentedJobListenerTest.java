@@ -71,19 +71,19 @@ public class InstrumentedJobListenerTest {
                                   int completed,
                                   int success,
                                   int failure) {
-        Counter activeCounter = metricRegistry.getCounters().get(InstrumentedJobListener.getActiveCounterName(jobName));
+        Counter activeCounter = metricRegistry.getCounters().get(InstrumentedJobListener.activeCounterMetric(jobName));
         assertNotNull(activeCounter);
         assertEquals(active, activeCounter.getCount());
 
-        Counter completedCounter = metricRegistry.getCounters().get(InstrumentedJobListener.getCompletedCounterName(jobName));
+        Counter completedCounter = metricRegistry.getCounters().get(InstrumentedJobListener.completedCounterMetric(jobName));
         assertNotNull(completedCounter);
         assertEquals(completed, completedCounter.getCount());
 
-        Counter successCounter = metricRegistry.getCounters().get(InstrumentedJobListener.getSuccessCounterName(jobName));
+        Counter successCounter = metricRegistry.getCounters().get(InstrumentedJobListener.successCounterMetric(jobName));
         assertNotNull(successCounter);
         assertEquals(success, successCounter.getCount());
 
-        Counter failureCounter = metricRegistry.getCounters().get(InstrumentedJobListener.getFailureCounterName(jobName));
+        Counter failureCounter = metricRegistry.getCounters().get(InstrumentedJobListener.failureCounterMetric(jobName));
         assertNotNull(failureCounter);
         assertEquals(failure, failureCounter.getCount());
     }

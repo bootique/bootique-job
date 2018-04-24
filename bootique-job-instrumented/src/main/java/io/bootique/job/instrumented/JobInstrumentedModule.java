@@ -17,15 +17,15 @@ import static io.bootique.job.runtime.JobModule.LOG_LISTENER_ORDER;
 /**
  * @since 0.14
  */
-public class InstrumentedJobModule extends ConfigModule {
+public class JobInstrumentedModule extends ConfigModule {
 
     public static final int JOB_LISTENER_ORDER = LOG_LISTENER_ORDER + 200;
 
-    public InstrumentedJobModule() {
+    public JobInstrumentedModule() {
 
     }
 
-    public InstrumentedJobModule(String configPrefix) {
+    public JobInstrumentedModule(String configPrefix) {
         super(configPrefix);
     }
 

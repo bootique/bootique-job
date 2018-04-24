@@ -1,6 +1,7 @@
 ## 0.26
 
 * #58 Cleaning up APIs deprecated since <= 0.25
+* #58 Metrics renaming to follow naming convention
 
 ## 0.25
 

@@ -5,12 +5,12 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import io.bootique.job.JobListener;
 import io.bootique.job.runnable.JobResult;
+import io.bootique.metrics.MetricNaming;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -20,14 +20,34 @@ public class InstrumentedJobListener implements JobListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentedJobListener.class);
 
+    private static final MetricNaming NAMING = MetricNaming.forModule(JobInstrumentedModule.class);
+
     private MetricRegistry metricRegistry;
     private Map<String, JobMetrics> metrics;
-    private ReentrantLock lock;
 
     public InstrumentedJobListener(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        this.metrics = new HashMap<>();
-        this.lock = new ReentrantLock();
+        this.metrics = new ConcurrentHashMap<>();
+    }
+
+    static String activeCounterMetric(String jobName) {
+        return NAMING.name(jobName, "Active");
+    }
+
+    static String completedCounterMetric(String jobName) {
+        return NAMING.name(jobName, "Completed");
+    }
+
+    static String successCounterMetric(String jobName) {
+        return NAMING.name(jobName, "Success");
+    }
+
+    static String failureCounterMetric(String jobName) {
+        return NAMING.name(jobName, "Failure");
+    }
+
+    static String timerMetric(String jobName) {
+        return NAMING.name(jobName, "Time");
     }
 
     @Override
@@ -61,49 +81,8 @@ public class InstrumentedJobListener implements JobListener {
         });
     }
 
-    // using explicit synchronization as the metric registry does not prevent data race
     private JobMetrics getOrCreateMetrics(String jobName) {
-        JobMetrics metric = metrics.get(jobName);
-        if (metric == null) {
-            lock.lock();
-            metric = metrics.get(jobName);
-            if (metric == null) {
-                try {
-                    metric = new JobMetrics(metricRegistry, jobName);
-                    metrics.put(jobName, metric);
-                } finally {
-                    lock.unlock();
-                }
-            }
-        }
-        return metric;
-    }
-
-    static String getActiveCounterName(String jobName) {
-        return getCounterName(jobName, "active");
-    }
-
-    static String getCompletedCounterName(String jobName) {
-        return getCounterName(jobName, "completed");
-    }
-
-    static String getSuccessCounterName(String jobName) {
-        return getCounterName(jobName, "success");
-    }
-
-    static String getFailureCounterName(String jobName) {
-        return getCounterName(jobName, "failure");
-    }
-
-    /**
-     * @param aspect What's being counted
-     */
-    private static String getCounterName(String jobName, String aspect) {
-        return MetricRegistry.name(InstrumentedJobListener.class, jobName + "-" + aspect + "-counter");
-    }
-
-    static String getTimerName(String jobName) {
-        return MetricRegistry.name(InstrumentedJobListener.class, jobName + "-timer");
+        return metrics.computeIfAbsent(jobName, n -> new JobMetrics(metricRegistry, jobName));
     }
 
     private static class JobMetrics {
@@ -111,11 +90,11 @@ public class InstrumentedJobListener implements JobListener {
         private Timer timer;
 
         JobMetrics(MetricRegistry metricRegistry, String jobName) {
-            this.activeCounter = metricRegistry.counter(getActiveCounterName(jobName));
-            this.completedCounter = metricRegistry.counter(getCompletedCounterName(jobName));
-            this.successCounter = metricRegistry.counter(getSuccessCounterName(jobName));
-            this.failureCounter = metricRegistry.counter(getFailureCounterName(jobName));
-            this.timer = metricRegistry.timer(getTimerName(jobName));
+            this.activeCounter = metricRegistry.counter(activeCounterMetric(jobName));
+            this.completedCounter = metricRegistry.counter(completedCounterMetric(jobName));
+            this.successCounter = metricRegistry.counter(successCounterMetric(jobName));
+            this.failureCounter = metricRegistry.counter(failureCounterMetric(jobName));
+            this.timer = metricRegistry.timer(timerMetric(jobName));
         }
 
         Counter getActiveCounter() {
