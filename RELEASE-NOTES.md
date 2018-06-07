@@ -3,6 +3,7 @@
 * #58 Cleaning up APIs deprecated since <= 0.25
 * #59 Metrics renaming to follow naming convention
 * #61 Typo in JobRegistry.allowsSimlutaneousExecutions() method name 
+* #62 Remove circular dependency DefaultJobRegistry <-> Scheduler
 
 ## 0.25
 

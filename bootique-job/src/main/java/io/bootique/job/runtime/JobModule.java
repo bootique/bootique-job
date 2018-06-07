@@ -1,6 +1,7 @@
 package io.bootique.job.runtime;
 
 import com.google.inject.Binder;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
@@ -105,7 +106,7 @@ public class JobModule extends ConfigModule {
             Set<Job> jobs,
             Set<JobListener> jobListeners,
             Set<MappedJobListener> mappedJobListeners,
-            Scheduler scheduler,
+            Provider<Scheduler> schedulerProvider,
             ConfigurationFactory configFactory) {
 
         TypeRef<Map<String, JobDefinition>> ref = new TypeRef<Map<String, JobDefinition>>() {
@@ -113,7 +114,7 @@ public class JobModule extends ConfigModule {
         Map<String, JobDefinition> configuredDefinitions = configFactory.config(ref, "jobs");
 
         List<MappedJobListener> allListeners = allListeners(jobListeners, mappedJobListeners);
-        return new DefaultJobRegistry(jobs, configuredDefinitions, scheduler, allListeners);
+        return new DefaultJobRegistry(jobs, configuredDefinitions, schedulerProvider, allListeners);
     }
 
     @Singleton

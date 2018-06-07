@@ -1,5 +1,6 @@
 package io.bootique.job.scheduler.execution;
 
+import com.google.inject.Provider;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
@@ -46,18 +47,18 @@ public class DefaultJobRegistry implements JobRegistry {
      */
     private ConcurrentMap<String, Job> executions;
 
-    private Scheduler scheduler;
+    private Provider<Scheduler> schedulerProvider;
     private Collection<MappedJobListener> listeners;
 
     public DefaultJobRegistry(Collection<Job> jobs,
                               Map<String, JobDefinition> jobDefinitions,
-                              Scheduler scheduler,
+                              Provider<Scheduler> schedulerProvider,
                               Collection<MappedJobListener> listeners) {
         this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
         this.jobs = mapJobs(jobs);
         this.jobDefinitions = collectJobDefinitions(jobDefinitions, jobs);
         this.executions = new ConcurrentHashMap<>((int) (jobDefinitions.size() / 0.75d) + 1);
-        this.scheduler = scheduler;
+        this.schedulerProvider = schedulerProvider;
         this.listeners = listeners;
     }
 
@@ -104,7 +105,7 @@ public class DefaultJobRegistry implements JobRegistry {
                 };
                 execution = new SingleJob(delegate, graph.topSort().get(0).iterator().next(), listeners);
             } else {
-                execution = new JobGroup(jobName, executionJobs, graph, scheduler, listeners);
+                execution = new JobGroup(jobName, executionJobs, graph, schedulerProvider.get(), listeners);
             }
 
             Job existing = executions.putIfAbsent(jobName, execution);
