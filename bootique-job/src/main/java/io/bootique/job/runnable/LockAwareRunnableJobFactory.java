@@ -24,8 +24,8 @@ public class LockAwareRunnableJobFactory implements RunnableJobFactory {
 	public RunnableJob runnable(Job job, Map<String, Object> parameters) {
 
 		RunnableJob rj = delegate.runnable(job, parameters);
-		boolean allowsSimlutaneousExecutions = jobRegistry.allowsSimlutaneousExecutions(job.getMetadata().getName());
-		return allowsSimlutaneousExecutions ? rj : serialJobRunner.lockingJob(rj, job.getMetadata());
+		boolean allowsSimultaneousExecutions = jobRegistry.allowsSimultaneousExecutions(job.getMetadata().getName());
+		return allowsSimultaneousExecutions ? rj : serialJobRunner.lockingJob(rj, job.getMetadata());
 	}
 
 }

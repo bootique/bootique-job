@@ -11,5 +11,14 @@ public interface JobRegistry {
 
     Job getJob(String jobName);
 
+    /**
+     * @deprecated since 0.26 use correctly named {@link #allowsSimultaneousExecutions(String)} method
+     */
+    @Deprecated
     boolean allowsSimlutaneousExecutions(String jobName);
+
+    /**
+     * @since 0.26
+     */
+    boolean allowsSimultaneousExecutions(String jobName);
 }

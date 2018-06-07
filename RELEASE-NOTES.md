@@ -1,7 +1,8 @@
 ## 0.26
 
 * #58 Cleaning up APIs deprecated since <= 0.25
-* #58 Metrics renaming to follow naming convention
+* #59 Metrics renaming to follow naming convention
+* #61 Typo in JobRegistry.allowsSimlutaneousExecutions() method name 
 
 ## 0.25
 

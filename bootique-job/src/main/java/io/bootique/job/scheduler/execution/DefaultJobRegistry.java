@@ -115,15 +115,24 @@ public class DefaultJobRegistry implements JobRegistry {
         return execution;
     }
 
+    @Deprecated
     @Override
     public boolean allowsSimlutaneousExecutions(String jobName) {
+        return allowsSimultaneousExecutions(jobName);
+    }
+
+    /**
+     * @since 0.26
+     */
+    @Override
+    public boolean allowsSimultaneousExecutions(String jobName) {
         if (!availableJobs.contains(jobName)) {
             throw new IllegalArgumentException("Unknown job: " + jobName);
         }
         Job job = jobs.get(jobName);
         // simultaneous executions are allowed for job groups (in this case job is null)
         // and real jobs, that haven't been annotated with @SerialJob
-        return (job == null) || (job.getClass().getAnnotation(SerialJob.class) == null);
+        return (job == null) || !job.getClass().isAnnotationPresent(SerialJob.class);
     }
 
     private Map<String, Job> mapJobs(Collection<Job> jobs) {
