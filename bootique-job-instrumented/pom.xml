@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>bootique-job-parent</artifactId>
         <groupId>io.bootique.job</groupId>
         <version>0.26-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
     <artifactId>bootique-job-instrumented</artifactId>
     <name>bootique-job-instrumented: a module to run jobs on Bootique with metrics</name>
     <description>Provides a job execution framework with Bootique integration, including metrics</description>
 
     <dependencies>
+
+        <!-- Compile dependencies -->
+        <dependency>
+            <groupId>io.bootique.job</groupId>
+            <artifactId>bootique-job</artifactId>
+            <scope>compile</scope>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.bootique.metrics</groupId>
+            <artifactId>bootique-metrics</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Unit test dependencies -->
         <dependency>
@@ -33,19 +48,6 @@
             <groupId>io.bootique.logback</groupId>
             <artifactId>bootique-logback</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <!-- Compile dependencies -->
-        <dependency>
-            <groupId>io.bootique.job</groupId>
-            <artifactId>bootique-job</artifactId>
-            <scope>compile</scope>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.bootique.metrics</groupId>
-            <artifactId>bootique-metrics</artifactId>
-            <scope>compile</scope>
         </dependency>
 
     </dependencies>
