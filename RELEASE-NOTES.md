@@ -4,6 +4,7 @@
 * #59 Metrics renaming to follow naming convention
 * #61 Typo in JobRegistry.allowsSimlutaneousExecutions() method name 
 * #62 Remove circular dependency DefaultJobRegistry <-> Scheduler
+* #65 Changed cron type from String to value object.
 
 ## 0.25
 

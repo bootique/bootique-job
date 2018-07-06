@@ -30,7 +30,7 @@ public class TriggerDescriptor {
 	private String job;
 	private String trigger;
 
-	private String cron;
+	private Cron cron;
 	private long fixedDelayMs;
 	private long fixedRateMs;
 	private long initialDelayMs;
@@ -58,13 +58,13 @@ public class TriggerDescriptor {
 		this.trigger = triggerName;
 	}
 
-	public String getCron() {
+	public Cron getCron() {
 		return cron;
 	}
 
 	@BQConfigProperty("Cron expression.")
 	public void setCron(String cronExpression) {
-		this.cron = cronExpression;
+		this.cron = new Cron(cronExpression);
 	}
 
 	public long getFixedDelayMs() {
