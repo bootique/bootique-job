@@ -21,6 +21,7 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.value.Duration;
 
 import java.util.UUID;
 
@@ -34,6 +35,10 @@ public class TriggerDescriptor {
 	private long fixedDelayMs;
 	private long fixedRateMs;
 	private long initialDelayMs;
+
+	private Duration fixedDelay;
+	private Duration fixedRate;
+	private Duration initialDelay;
 
 	public TriggerDescriptor() {
 		this.trigger = UUID.randomUUID().toString().replace("-", ""); // 32 chars
@@ -67,32 +72,64 @@ public class TriggerDescriptor {
 		this.cron = cronExpression;
 	}
 
+	@Deprecated
 	public long getFixedDelayMs() {
 		return fixedDelayMs;
 	}
 
-	@BQConfigProperty("Delay between job executions in millis." +
-			" New job instances will be scheduled to run in D milliseconds after the completion of the preceding instance.")
+	@Deprecated
+	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
 	public void setFixedDelayMs(long fixedDelayMs) {
 		this.fixedDelayMs = fixedDelayMs;
 	}
 
+	@Deprecated
 	public long getFixedRateMs() {
 		return fixedRateMs;
 	}
 
-	@BQConfigProperty("Fixed rate in millis. New job instances will be run exactly every R milliseconds.")
+	@Deprecated
+	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
 	public void setFixedRateMs(long fixedRateMs) {
 		this.fixedRateMs = fixedRateMs;
 	}
 
+	@Deprecated
 	public long getInitialDelayMs() {
 		return initialDelayMs;
 	}
 
-	@BQConfigProperty("Initial delay in millis. Applies to periodic and fixed-rate triggers.")
+	@Deprecated
+	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
 	public void setInitialDelayMs(long initialDelayMs) {
 		this.initialDelayMs = initialDelayMs;
+	}
+
+	public Duration getFixedDelay() {
+		return fixedDelay;
+	}
+
+	@BQConfigProperty("Duration String.")
+	public void setFixedDelay(Duration fixedDelay) {
+		this.fixedDelay = fixedDelay;
+	}
+
+	public Duration getFixedRate() {
+		return fixedRate;
+	}
+
+	@BQConfigProperty("Duration String.")
+	public void setFixedRate(Duration fixedRate) {
+		this.fixedRate = fixedRate;
+	}
+
+	public Duration getInitialDelay() {
+		return initialDelay;
+	}
+
+	@BQConfigProperty("Duration String.")
+	public void setInitialDelay(Duration initialDelay) {
+		this.initialDelay = initialDelay;
 	}
 
 	/**
@@ -112,5 +149,4 @@ public class TriggerDescriptor {
 			return "no trigger";
 		}
 	}
-
 }

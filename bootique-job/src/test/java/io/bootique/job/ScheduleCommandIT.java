@@ -55,6 +55,23 @@ public class ScheduleCommandIT {
     }
 
     @Test
+    public void testScheduleCommand_AllJobs_New() {
+        BQRuntime runtime = testFactory.app()
+                .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command1.yml")
+                .module(JobModule.class)
+                .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
+                .createRuntime();
+
+        Scheduler scheduler = runtime.getInstance(Scheduler.class);
+        assertFalse(scheduler.isStarted());
+
+        runtime.run();
+
+        assertTrue(scheduler.isStarted());
+        assertEquals(2, scheduler.getScheduledJobs().size());
+    }
+
+    @Test
     public void testScheduleCommand_SelectedJobs() {
         BQRuntime runtime = testFactory.app()
                 .args("--schedule", "--job=scheduledjob1", "-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")

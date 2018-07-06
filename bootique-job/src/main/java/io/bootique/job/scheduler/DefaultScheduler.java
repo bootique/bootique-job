@@ -27,6 +27,7 @@ import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.value.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -168,9 +169,13 @@ public class DefaultScheduler implements Scheduler {
 
     private Schedule createSchedule(TriggerDescriptor tc) {
         String cron = tc.getCron();
-        long fixedDelayMs = tc.getFixedDelayMs();
-        long fixedRateMs = tc.getFixedRateMs();
-        long initialDelayMs = tc.getInitialDelayMs();
+        Duration fixedDelay = tc.getFixedDelay();
+        Duration fixedRate = tc.getFixedRate();
+        Duration initialDelay = tc.getInitialDelay();
+
+        long fixedDelayMs = fixedDelay != null ? fixedDelay.getDuration().toMillis(): tc.getFixedDelayMs();
+        long fixedRateMs = fixedRate != null ? fixedRate.getDuration().toMillis() : tc.getFixedRateMs();
+        long initialDelayMs = initialDelay != null ? initialDelay.getDuration().toMillis() : tc.getInitialDelayMs();
 
         if (cron != null) {
             return Schedule.cron(cron);
