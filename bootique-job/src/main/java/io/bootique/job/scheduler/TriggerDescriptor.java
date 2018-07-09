@@ -69,7 +69,7 @@ public class TriggerDescriptor {
 	}
 
 	/**
-	 * @deprecated since 0.26 use {@link #getFixedDelay()} constructor.
+	 * @deprecated since 0.26 use {@link #getFixedDelay()}.
 	 */
 	@Deprecated
 	public long getFixedDelayMs() {
@@ -80,7 +80,7 @@ public class TriggerDescriptor {
 	}
 
 	/**
-	 * @deprecated since 0.26 use {@link #setFixedDelay(Duration)} constructor.
+	 * @deprecated since 0.26 use {@link #setFixedDelay(Duration)}.
 	 */
 	@Deprecated
 	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
@@ -89,7 +89,7 @@ public class TriggerDescriptor {
 	}
 
 	/**
-	 * @deprecated since 0.26 use {@link #getFixedRate()} constructor.
+	 * @deprecated since 0.26 use {@link #getFixedRate()}.
 	 */
 	@Deprecated
 	public long getFixedRateMs() {
@@ -100,7 +100,7 @@ public class TriggerDescriptor {
 	}
 
 	/**
-	 * @deprecated since 0.26 use {@link #setFixedRate(Duration)} constructor.
+	 * @deprecated since 0.26 use {@link #setFixedRate(Duration)}.
 	 */
 	@Deprecated
 	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
@@ -109,7 +109,7 @@ public class TriggerDescriptor {
 	}
 
 	/**
-	 * @deprecated since 0.26 use {@link #getInitialDelay()} constructor.
+	 * @deprecated since 0.26 use {@link #getInitialDelay()}.
 	 */
 	@Deprecated
 	public long getInitialDelayMs() {
@@ -120,7 +120,7 @@ public class TriggerDescriptor {
 	}
 
 	/**
-	 * @deprecated since 0.26 use {@link #setInitialDelay(Duration)} constructor.
+	 * @deprecated since 0.26 use {@link #setInitialDelay(Duration)}.
 	 */
 	@Deprecated
 	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
