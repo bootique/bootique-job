@@ -168,17 +168,17 @@ public class DefaultScheduler implements Scheduler {
     }
 
     private Schedule createSchedule(TriggerDescriptor tc) {
-        String cron = tc.getCron();
+        Cron cron = tc.getCron();
         Duration fixedDelay = tc.getFixedDelay();
         Duration fixedRate = tc.getFixedRate();
         Duration initialDelay = tc.getInitialDelay();
 
-        long fixedDelayMs = fixedDelay != null ? fixedDelay.getDuration().toMillis(): tc.getFixedDelayMs();
-        long fixedRateMs = fixedRate != null ? fixedRate.getDuration().toMillis() : tc.getFixedRateMs();
-        long initialDelayMs = initialDelay != null ? initialDelay.getDuration().toMillis() : tc.getInitialDelayMs();
+        long fixedDelayMs = fixedDelay != null && fixedDelay.getDuration() != null ? fixedDelay.getDuration().toMillis() : 0;
+        long fixedRateMs = fixedRate != null && fixedRate.getDuration() != null ? fixedRate.getDuration().toMillis() : 0;
+        long initialDelayMs = initialDelay != null  && initialDelay.getDuration() != null ? initialDelay.getDuration().toMillis() : 0;
 
         if (cron != null) {
-            return Schedule.cron(cron);
+            return Schedule.cron(cron.getExpression());
         } else if (fixedDelayMs > 0) {
             return Schedule.fixedDelay(fixedDelayMs, initialDelayMs);
         } else if (fixedRateMs > 0) {

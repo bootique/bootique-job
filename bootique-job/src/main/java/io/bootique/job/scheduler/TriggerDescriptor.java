@@ -31,18 +31,14 @@ public class TriggerDescriptor {
 	private String job;
 	private String trigger;
 
-	private String cron;
-	private long fixedDelayMs;
-	private long fixedRateMs;
-	private long initialDelayMs;
-
+	private Cron cron;
 	private Duration fixedDelay;
 	private Duration fixedRate;
 	private Duration initialDelay;
 
 	public TriggerDescriptor() {
 		this.trigger = UUID.randomUUID().toString().replace("-", ""); // 32 chars
-		this.initialDelayMs = 10 * 1000;
+		this.initialDelay = new Duration(10 * 1000);
 	}
 
 	public String getJob() {
@@ -63,46 +59,73 @@ public class TriggerDescriptor {
 		this.trigger = triggerName;
 	}
 
-	public String getCron() {
+	public Cron getCron() {
 		return cron;
 	}
 
 	@BQConfigProperty("Cron expression.")
-	public void setCron(String cronExpression) {
+	public void setCron(Cron cronExpression) {
 		this.cron = cronExpression;
 	}
 
+	/**
+	 * @deprecated since 0.26 use {@link #getFixedDelay()} constructor.
+	 */
 	@Deprecated
 	public long getFixedDelayMs() {
-		return fixedDelayMs;
+		if (fixedDelay != null && fixedDelay.getDuration() != null) {
+			return fixedDelay.getDuration().toMillis();
+		}
+		return 0;
 	}
 
+	/**
+	 * @deprecated since 0.26 use {@link #setFixedDelay(Duration)} constructor.
+	 */
 	@Deprecated
 	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
 	public void setFixedDelayMs(long fixedDelayMs) {
-		this.fixedDelayMs = fixedDelayMs;
+		this.fixedDelay = new Duration(fixedDelayMs);
 	}
 
+	/**
+	 * @deprecated since 0.26 use {@link #getFixedRate()} constructor.
+	 */
 	@Deprecated
 	public long getFixedRateMs() {
-		return fixedRateMs;
+		if (fixedRate != null && fixedRate.getDuration() != null) {
+			return fixedRate.getDuration().toMillis();
+		}
+		return 0;
 	}
 
+	/**
+	 * @deprecated since 0.26 use {@link #setFixedRate(Duration)} constructor.
+	 */
 	@Deprecated
 	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
 	public void setFixedRateMs(long fixedRateMs) {
-		this.fixedRateMs = fixedRateMs;
+		this.fixedRate = new Duration(fixedRateMs);
 	}
 
+	/**
+	 * @deprecated since 0.26 use {@link #getInitialDelay()} constructor.
+	 */
 	@Deprecated
 	public long getInitialDelayMs() {
-		return initialDelayMs;
+		if (initialDelay != null && initialDelay.getDuration() != null) {
+			return initialDelay.getDuration().toMillis();
+		}
+		return 0;
 	}
 
+	/**
+	 * @deprecated since 0.26 use {@link #setInitialDelay(Duration)} constructor.
+	 */
 	@Deprecated
 	@BQConfigProperty("deprecated, Long, internally converted to Duration.")
 	public void setInitialDelayMs(long initialDelayMs) {
-		this.initialDelayMs = initialDelayMs;
+		this.initialDelay = new Duration(initialDelayMs);
 	}
 
 	public Duration getFixedDelay() {
@@ -139,12 +162,12 @@ public class TriggerDescriptor {
 	 * @return A human-readable String with trigger parameters description.
 	 */
 	public String describeTrigger() {
-		if (cron != null) {
-			return "cron: " + cron;
-		} else if (fixedDelayMs > 0) {
-			return "fixedDelayMs: " + fixedDelayMs;
-		} else if (fixedRateMs > 0) {
-			return "fixedRateMs: " + fixedRateMs;
+		if (cron != null && cron.getExpression() != null) {
+			return "cron: " + cron.getExpression();
+		} else if (fixedDelay != null && fixedDelay.getDuration() != null && fixedDelay.getDuration().toMillis() > 0) {
+			return "fixedDelay" + fixedDelay.getDuration().toMillis();
+		} else if(fixedRate != null && fixedRate.getDuration() != null && fixedRate.getDuration().toMillis() > 0) {
+			return "fixedRate" + fixedRate.getDuration().toMillis();
 		} else {
 			return "no trigger";
 		}
