@@ -37,6 +37,8 @@
     <modules>
         <module>bootique-job</module>
         <module>bootique-job-instrumented</module>
+        <module>bootique-job-consul</module>
+        <module>bootique-job-zookeeper</module>
     </modules>
 
     <properties>
