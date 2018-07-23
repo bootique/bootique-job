@@ -23,7 +23,6 @@ import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.lock.LockType;
 import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
 import io.bootique.job.runnable.LockAwareRunnableJobFactory;
 import io.bootique.job.runnable.RunnableJobFactory;
@@ -34,7 +33,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -45,7 +43,6 @@ public class SchedulerFactory {
 
     private Collection<TriggerDescriptor> triggers;
     private int threadPoolSize;
-    private boolean clusteredLocks;
 
     public SchedulerFactory() {
         this.triggers = new ArrayList<>();
@@ -53,7 +50,7 @@ public class SchedulerFactory {
     }
 
     public Scheduler createScheduler(
-            Map<LockType, LockHandler> lockHandlers,
+            LockHandler serialJobRunner,
             JobRegistry jobRegistry,
             ShutdownManager shutdownManager) {
 
@@ -63,15 +60,8 @@ public class SchedulerFactory {
 
         TaskScheduler taskScheduler = createTaskScheduler(shutdownManager);
 
-        LockType lockType = clusteredLocks ? LockType.clustered : LockType.local;
-        LockHandler lockHandler = lockHandlers.get(lockType);
-
-        if (lockHandler == null) {
-            throw new IllegalStateException("No LockHandler for lock type: " + lockType);
-        }
-
         RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-        RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler, jobRegistry);
+        RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, serialJobRunner, jobRegistry);
         RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
 
         // TODO: do we need to shutdown anything in the scheduler (we already do shutdown of the underlying TaskScheduler)
@@ -97,10 +87,5 @@ public class SchedulerFactory {
             " Should be 1 or higher. Default value is 1.")
     public void setThreadPoolSize(int threadPoolSize) {
         this.threadPoolSize = threadPoolSize;
-    }
-
-    @BQConfigProperty("Determines whether the lock handlers will be aware of the Zookeeper cluster.")
-    public void setClusteredLocks(boolean clusteredLocks) {
-        this.clusteredLocks = clusteredLocks;
     }
 }
