@@ -63,8 +63,8 @@ public class TriggerDescriptor {
 	}
 
 	@BQConfigProperty("Cron expression.")
-	public void setCron(String cronExpression) {
-		this.cron = new Cron(cronExpression);
+	public void setCron(Cron cron) {
+		this.cron = cron;
 	}
 
 	public long getFixedDelayMs() {
