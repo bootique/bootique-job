@@ -29,34 +29,31 @@ import java.util.Objects;
  */
 public class Cron {
 
-	private String expression;
+    private String expression;
 
-	public Cron(String expression) {
-		this.expression = expression;
-	}
+    public Cron(String expression) {
+        this.expression = expression;
+    }
 
-	public String getExpression() {
-		return expression;
-	}
+    public String getExpression() {
+        return expression;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		Cron cron = (Cron) o;
-		return Objects.equals(expression, cron.expression);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cron cron = (Cron) o;
+        return Objects.equals(expression, cron.expression);
+    }
 
-	@Override
-	public int hashCode() {
+    @Override
+    public int hashCode() {
+        return Objects.hash(expression);
+    }
 
-		return Objects.hash(expression);
-	}
-
-	@Override
-	public String toString() {
-		return "Cron{" +
-				"expression='" + expression + '\'' +
-				'}';
-	}
+    @Override
+    public String toString() {
+        return expression;
+    }
 }
