@@ -11,7 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
+/**
+ * @since 0.26
+ */
 public class ConsulLockHandler implements LockHandler {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsulLockHandler.class);
 
     private final KeyValueClient kvClient;

@@ -7,6 +7,9 @@ import io.bootique.job.consul.ConsulSession;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
+/**
+ * @since 0.26
+ */
 public class ConsulLockHandlerProvider implements Provider<LockHandler> {
 
     private final String host;

@@ -7,6 +7,9 @@ import com.orbitz.consul.model.session.SessionCreatedResponse;
 
 import java.util.Optional;
 
+/**
+ * @since 0.26
+ */
 public class ConsulSession {
 
     private final SessionClient sessionClient;

@@ -3,11 +3,14 @@ package io.bootique.job.consul;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 
+/**
+ * @since 0.26
+ */
 @BQConfig("Consul jobs configuration")
 public class ConsulJobConfig {
 
     private String consulHost;
-    private Integer consulPort;
+    private int consulPort;
     private String dataCenter;
     private String serviceGroup;
 
@@ -22,7 +25,7 @@ public class ConsulJobConfig {
     }
 
     @BQConfigProperty
-    public void setConsulPort(Integer consulPort) {
+    public void setConsulPort(int consulPort) {
         this.consulPort = consulPort;
     }
 
@@ -40,7 +43,7 @@ public class ConsulJobConfig {
         return consulHost;
     }
 
-    public Integer getConsulPort() {
+    public int getConsulPort() {
         return consulPort;
     }
 

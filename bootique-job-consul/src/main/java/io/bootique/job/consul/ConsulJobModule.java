@@ -10,7 +10,9 @@ import io.bootique.job.consul.lock.ConsulLockHandlerProvider;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
-@SuppressWarnings("unused")
+/**
+ * @since 0.26
+ */
 public class ConsulJobModule extends ConfigModule {
 
     public ConsulJobModule() {
@@ -37,7 +39,11 @@ public class ConsulJobModule extends ConfigModule {
 
         ConsulJobConfig config = configFactory.config(ConsulJobConfig.class, configPrefix);
 
-        return new ConsulLockHandlerProvider(config.getConsulHost(), config.getConsulPort(), config.getDataCenter(),
-                config.getServiceGroup(), shutdownManager);
+        return new ConsulLockHandlerProvider(
+                config.getConsulHost(),
+                config.getConsulPort(),
+                config.getDataCenter(),
+                config.getServiceGroup(),
+                shutdownManager);
     }
 }
