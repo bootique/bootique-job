@@ -21,6 +21,7 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.job.value.Cron;
 import io.bootique.value.Duration;
 
 import java.util.UUID;

@@ -27,6 +27,7 @@ import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.job.value.Cron;
 import io.bootique.value.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,11 +154,7 @@ public class DefaultScheduler implements Scheduler {
 
         ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
         scheduledJob.schedule(createSchedule(tc));
-        Collection<ScheduledJobFuture> futures = scheduledJobsByName.get(jobName);
-        if (futures == null) {
-            futures = new ArrayList<>();
-            scheduledJobsByName.put(jobName, futures);
-        }
+        Collection<ScheduledJobFuture> futures = scheduledJobsByName.computeIfAbsent(jobName, k -> new ArrayList<>());
         futures.add(scheduledJob);
     }
 

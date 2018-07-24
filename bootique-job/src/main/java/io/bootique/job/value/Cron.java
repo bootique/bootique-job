@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler;
+package io.bootique.job.value;
 
 import java.util.Objects;
 
@@ -46,6 +46,9 @@ public class Cron {
 
 	@Override
 	public int hashCode() {
+		if (expression == null) {
+			return 0;
+		}
 
 		return Objects.hash(expression);
 	}
