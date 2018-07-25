@@ -1,11 +1,6 @@
 package io.bootique.job.scheduler;
 
-import io.bootique.BQRuntime;
-import io.bootique.config.ConfigurationFactory;
-import io.bootique.job.runtime.JobModule;
-import io.bootique.job.runtime.JobModuleProvider;
 import io.bootique.test.junit.BQTestFactory;
-import io.bootique.test.junit.BQTestRuntimeBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -51,16 +46,5 @@ public class TriggerDescriptorTest {
         assertEquals(triggerDescriptor.getInitialDelayMs(), triggerDescriptor.getInitialDelay().getDuration().toMillis());
         assertEquals(4000, triggerDescriptor.getInitialDelay().getDuration().toMillis());
     }
-
-//    @Test
-//    public void mappingTest() {
-//        BQRuntime runtime = testFactory
-//                .app("--config=classpath:io/bootique/job/cron.yml")
-//                .module(new JobModuleProvider())
-//                .createRuntime();
-//
-//        TriggerDescriptor instance = runtime.getInstance(TriggerDescriptor.class);
-//
-//    }
 
 }

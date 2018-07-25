@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.lock.zookeeper;
+package io.bootique.job.zookeeper.lock;
 
 import java.util.concurrent.TimeUnit;
 

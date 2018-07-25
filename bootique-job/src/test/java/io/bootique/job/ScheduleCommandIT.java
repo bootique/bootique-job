@@ -37,10 +37,15 @@ public class ScheduleCommandIT {
     @Rule
     public BQTestFactory testFactory = new BQTestFactory();
 
+    /**
+     * @deprecated since 0.26. This is test for old TriggerDescriptor configuration,
+     * for new configuration please see {@link #testScheduleCommand_AllJobs()}
+     */
+    @Deprecated
     @Test
-    public void testScheduleCommand_AllJobs() {
+    public void testScheduleCommand_AllJobs_Deprecated() {
         BQRuntime runtime = testFactory.app()
-                .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command.yml")
+                .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command_deprecated.yml")
                 .module(JobModule.class)
                 .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
                 .createRuntime();
@@ -54,10 +59,33 @@ public class ScheduleCommandIT {
         assertEquals(2, scheduler.getScheduledJobs().size());
     }
 
+    /**
+     * @deprecated since 0.26. This is test for old TriggerDescriptor configuration,
+     * for new configuration please see {@link #testScheduleCommand_SelectedJobs()}
+     */
+    @Deprecated
     @Test
-    public void testScheduleCommand_AllJobs_New() {
+    public void testScheduleCommand_SelectedJobs_Deprecated() {
         BQRuntime runtime = testFactory.app()
-                .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command1.yml")
+                .args("--schedule", "--job=scheduledjob1", "-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers_deprecated.yml")
+                .module(JobModule.class)
+                .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
+                .createRuntime();
+
+        Scheduler scheduler = runtime.getInstance(Scheduler.class);
+
+        runtime.run();
+
+        assertTrue(scheduler.isStarted());
+        assertEquals(1, scheduler.getScheduledJobs().size());
+        assertEquals("scheduledjob1", scheduler.getScheduledJobs().iterator().next().getJobName());
+    }
+
+
+    @Test
+    public void testScheduleCommand_AllJobs() {
+        BQRuntime runtime = testFactory.app()
+                .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command.yml")
                 .module(JobModule.class)
                 .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
                 .createRuntime();

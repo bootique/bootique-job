@@ -23,7 +23,7 @@
     <parent>
         <groupId>io.bootique.modules.parent</groupId>
         <artifactId>bootique-modules-parent</artifactId>
-        <version>0.12</version>
+        <version>0.13</version>
     </parent>
 
     <groupId>io.bootique.job</groupId>
@@ -37,6 +37,8 @@
     <modules>
         <module>bootique-job</module>
         <module>bootique-job-instrumented</module>
+        <module>bootique-job-consul</module>
+        <module>bootique-job-zookeeper</module>
     </modules>
 
     <properties>

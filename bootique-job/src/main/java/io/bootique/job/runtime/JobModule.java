@@ -24,7 +24,6 @@ import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.MapBinder;
 import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
@@ -39,8 +38,6 @@ import io.bootique.job.command.ScheduleCommand;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.lock.LockType;
-import io.bootique.job.lock.zookeeper.ZkClusterLockHandler;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
@@ -95,28 +92,27 @@ public class JobModule extends ConfigModule {
                 .addCommand(ListCommand.class)
                 .addCommand(ScheduleCommand.class);
 
-        JobModuleExtender extender = JobModule
-                .extend(binder)
-                .initAllExtensions()
-                .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {});
+        JobModule.extend(binder)
+                 .initAllExtensions()
+                 .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {});
+    }
 
-        // TODO: move this to extender API
-        MapBinder<LockType, LockHandler> lockHandlers = MapBinder.newMapBinder(binder, LockType.class,
-                LockHandler.class);
-        lockHandlers.addBinding(LockType.local).to(LocalLockHandler.class);
-        lockHandlers.addBinding(LockType.clustered).to(ZkClusterLockHandler.class);
+    @Provides
+    @Singleton
+    LockHandler provideLocalLockHandler() {
+        return new LocalLockHandler();
     }
 
     @Provides
     @Singleton
     Scheduler createScheduler(
-            Map<LockType, LockHandler> jobRunners,
+            LockHandler serialJobRunner,
             JobRegistry jobRegistry,
             ConfigurationFactory configFactory,
             ShutdownManager shutdownManager) {
 
         return configFactory.config(SchedulerFactory.class, configPrefix)
-                .createScheduler(jobRunners, jobRegistry, shutdownManager);
+                .createScheduler(serialJobRunner, jobRegistry, shutdownManager);
     }
 
     @Provides
