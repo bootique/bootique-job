@@ -48,7 +48,7 @@ class DefaultScheduledJobFuture implements ScheduledJobFuture {
     }
 
     @Override
-    public boolean schedule(String cron) {
+    public boolean schedule(Cron cron) {
         return schedule(Schedule.cron(cron));
     }
 

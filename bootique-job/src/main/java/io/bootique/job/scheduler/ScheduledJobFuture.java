@@ -37,7 +37,7 @@ public interface ScheduledJobFuture extends JobFuture {
      * @see #isScheduled()
      * @since 0.24
      */
-    boolean schedule(String cron);
+    boolean schedule(Cron cron);
 
     /**
      * Re-schedule this job to run at fixed rate, indepedent of whether the preceding execution has finished or not.

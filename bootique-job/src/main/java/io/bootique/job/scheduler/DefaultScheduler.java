@@ -173,7 +173,7 @@ public class DefaultScheduler implements Scheduler {
         long initialDelayMs = tc.getInitialDelayMs();
 
         if (cron != null) {
-            return Schedule.cron(cron.getExpression());
+            return Schedule.cron(cron);
         } else if (fixedDelayMs > 0) {
             return Schedule.fixedDelay(fixedDelayMs, initialDelayMs);
         } else if (fixedRateMs > 0) {

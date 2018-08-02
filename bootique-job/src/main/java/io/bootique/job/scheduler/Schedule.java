@@ -35,8 +35,8 @@ public class Schedule {
      * @return Schedule
      * @since 0.24
      */
-    public static Schedule cron(String cron) {
-        return new Schedule(new CronTrigger(cron), "cron: " + cron);
+    public static Schedule cron(Cron cron) {
+        return new Schedule(new CronTrigger(cron.getExpression()), "cron: " + cron);
     }
 
     /**
