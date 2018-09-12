@@ -27,6 +27,10 @@ import io.bootique.job.runnable.RunnableJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
@@ -39,11 +43,13 @@ public class ConsulLockHandler implements LockHandler {
     private final KeyValueClient kvClient;
     private final Supplier<String> consulSessionSupplier;
     private final String serviceGroup;
+    private final ConcurrentMap<String, Lock> localLocks;
 
     public ConsulLockHandler(KeyValueClient kvClient, Supplier<String> consulSessionSupplier, String serviceGroup) {
         this.kvClient = kvClient;
         this.consulSessionSupplier = consulSessionSupplier;
         this.serviceGroup = serviceGroup;
+        this.localLocks = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -54,6 +60,14 @@ public class ConsulLockHandler implements LockHandler {
             String sessionId = consulSessionSupplier.get();
 
             LOGGER.info("Attempting to lock '{}'", lockName);
+            Lock lock = getLock(lockName);
+
+            if (!lock.tryLock()) {
+                LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
+                return new JobResult(metadata, JobOutcome.SKIPPED, null,
+                        "Another job instance owns the lock. Skipping execution");
+            }
+
             boolean acquired = kvClient.acquireLock(lockName, sessionId);
             if (!acquired) {
                 LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
@@ -69,6 +83,10 @@ public class ConsulLockHandler implements LockHandler {
                 }
             }
         };
+    }
+
+    private Lock getLock(String lockName) {
+        return localLocks.computeIfAbsent(lockName, k -> new ReentrantLock());
     }
 
     private String getLockName(JobMetadata metadata) {

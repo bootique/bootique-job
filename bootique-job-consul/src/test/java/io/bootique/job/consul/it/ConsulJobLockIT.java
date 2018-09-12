@@ -24,7 +24,6 @@ public class ConsulJobLockIT extends AbstractConsulTest {
     }
 
     @Test
-    // Test on 2 clients and 1 Consul agent (Cluster lock)
     public void testConsulClusterJobLocking() throws InterruptedException {
         Scheduler scheduler_1 = getSchedulerFromRuntime(CONFIG_PATH);
         Scheduler scheduler_2 = getSchedulerFromRuntime(CONFIG_PATH);
@@ -35,13 +34,11 @@ public class ConsulJobLockIT extends AbstractConsulTest {
     }
 
     @Test
-    // Test on 1 client and 1 Consul agent (Local lock)
     public void testConsulLocalJobLocking() throws InterruptedException {
         Scheduler scheduler = getSchedulerFromRuntime(CONFIG_PATH);
         scheduler.runOnce(new LockJob(), callsCount);
         scheduler.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
-        // Expected 1 job execution, but actually we have 2 executions
         Assert.assertEquals(1, callsCount.get(CALLS_COUNT));
     }
 }
