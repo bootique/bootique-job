@@ -21,6 +21,7 @@ package io.bootique.job.command;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import io.bootique.job.runtime.JobModule;
 import io.bootique.meta.application.CommandMetadata;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.cli.Cli;
@@ -39,15 +40,15 @@ public class ExecCommand extends CommandWithMetadata {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExecCommand.class);
 
+	/**
+	 * @deprecated since 0.26 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
+	 */
+	@Deprecated
 	public static final String JOB_OPTION = "job";
+
 	public static final String SERIAL_OPTION = "serial";
 
 	private Provider<Scheduler> schedulerProvider;
-
-	private static OptionMetadata.Builder createJobOption() {
-		return OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to run with '--exec'. "
-				+ "Available job names can be viewed using '--list' command.").valueRequired("job_name");
-	}
 
 	private static OptionMetadata.Builder createSerialOption() {
 		return OptionMetadata.builder(SERIAL_OPTION).description("Enforces sequential execution of the jobs, " +
@@ -57,7 +58,6 @@ public class ExecCommand extends CommandWithMetadata {
 	private static CommandMetadata createMetadata() {
 		return CommandMetadata.builder(ExecCommand.class)
 				.description("Executes one or more jobs. Jobs are specified with '--job' options")
-				.addOption(createJobOption())
 				.addOption(createSerialOption()).build();
 	}
 
@@ -71,10 +71,10 @@ public class ExecCommand extends CommandWithMetadata {
 	@Override
 	public CommandOutcome run(Cli cli) {
 
-		List<String> jobNames = cli.optionStrings(JOB_OPTION);
+		List<String> jobNames = cli.optionStrings(JobModule.JOB_OPTION);
 		if (jobNames == null || jobNames.isEmpty()) {
 			return CommandOutcome.failed(1,
-					String.format("No jobs specified. Use '--%s' option to provide job names", JOB_OPTION));
+					String.format("No jobs specified. Use '--%s' option to provide job names", JobModule.JOB_OPTION));
 		}
 
 		LOGGER.info("Will run job(s): " + jobNames);
