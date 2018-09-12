@@ -17,9 +17,6 @@
  * under the License.
  */
 
-/**
- * @since 0.26
- */
 package io.bootique.job.scheduler;
 
 import java.util.Objects;
@@ -39,7 +36,7 @@ import java.util.Objects;
  *     <li>"0 0 0 25 12 ?" - every Christmas Day at midnight</li>
  * </ul>
  *
- * @since 0.26
+ * @since 1.0.RC1
  */
 public class Cron {
 

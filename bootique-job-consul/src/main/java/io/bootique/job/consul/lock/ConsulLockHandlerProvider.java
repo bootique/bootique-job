@@ -26,7 +26,7 @@ import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
 /**
- * @since 0.26
+ * @since 1.0.RC1
  */
 public class ConsulLockHandlerProvider implements Provider<LockHandler> {
 

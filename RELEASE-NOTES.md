@@ -1,4 +1,4 @@
-## 0.26
+## 1.0.RC1
 
 * #58 Cleaning up APIs deprecated since <= 0.25
 * #59 Metrics renaming to follow naming convention
