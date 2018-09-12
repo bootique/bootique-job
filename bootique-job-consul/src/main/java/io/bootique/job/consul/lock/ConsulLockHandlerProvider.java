@@ -22,6 +22,7 @@ import com.google.common.net.HostAndPort;
 import com.google.inject.Provider;
 import com.orbitz.consul.Consul;
 import io.bootique.job.consul.ConsulSession;
+import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
@@ -51,6 +52,12 @@ public class ConsulLockHandlerProvider implements Provider<LockHandler> {
         Consul consul = Consul.builder().withHostAndPort(hostAndPort).build();
         ConsulSession session = new ConsulSession(consul.sessionClient(), dataCenter);
         shutdownManager.addShutdownHook(session::destroySessionIfPresent);
-        return new ConsulLockHandler(consul.keyValueClient(), session::getOrCreateSession, serviceGroup);
+        LockHandler localLockHandler = new LocalLockHandler();
+        LockHandler consulLockHandler = new ConsulLockHandler(
+                consul.keyValueClient(),
+                session::getOrCreateSession,
+                serviceGroup
+        );
+        return new CompositeConsulLockHandler(localLockHandler, consulLockHandler);
     }
 }

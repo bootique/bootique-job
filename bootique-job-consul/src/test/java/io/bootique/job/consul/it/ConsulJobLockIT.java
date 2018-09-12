@@ -29,7 +29,7 @@ public class ConsulJobLockIT extends AbstractConsulTest {
         Scheduler scheduler_2 = getSchedulerFromRuntime(CONFIG_PATH);
         scheduler_1.runOnce(new LockJob(), callsCount);
         scheduler_2.runOnce(new LockJob(), callsCount);
-        Thread.sleep(WAIT_TIME); // Wait all jobs
+        Thread.sleep(WAIT_TIME);
         Assert.assertEquals(1, callsCount.get(CALLS_COUNT));
     }
 
