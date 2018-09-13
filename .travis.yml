@@ -15,6 +15,10 @@
 
 language: java
 
+sudo: required
+services:
+  - docker
+
 jobs:
   include:
     - stage: build
