@@ -18,7 +18,6 @@
   -->
 
 [![Build Status](https://travis-ci.org/bootique/bootique-job.svg)](https://travis-ci.org/bootique/bootique-job)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.bootique.job/bootique-job/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.bootique.job/bootique-job/)
 [![Maven Central](https://img.shields.io/maven-central/v/io.bootique.job/bootique-job.svg?colorB=brightgreen)](https://search.maven.org/artifact/io.bootique.job/bootique-job/)
 
 # bootique-job
