@@ -6,6 +6,7 @@
 * #62 Remove circular dependency DefaultJobRegistry <-> Scheduler
 * #64 Consul-based job locks
 * #65 Changed cron type from String to value object.
+* #66 Switch TriggerDescriptor properties to value objects
 
 ## 0.25
 
