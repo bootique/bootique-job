@@ -19,6 +19,7 @@
 
 package io.bootique.job.scheduler;
 
+import io.bootique.job.value.Cron;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.PeriodicTrigger;

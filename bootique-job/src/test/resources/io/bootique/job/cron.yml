@@ -14,8 +14,10 @@
 # limitations under the License.
 
 scheduler:
-  threadPoolSize: 2
+  threadPoolSize: 1
   triggers:
-    - job: scheduledjob1
-      fixedRate: "100 ms"
-      initialDelay: "0 ms"
+    - job: scheduledjob2
+      cron: "* * * * * *"
+      fixedRate: 10 sec
+      initialDelay: 0 ms
+      fixedDelay: 2 min

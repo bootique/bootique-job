@@ -17,9 +17,9 @@ scheduler:
   threadPoolSize: 2
   triggers:
     - job: scheduledjob1
-      fixedRateMs: 100
-      initialDelayMs: 0
+      fixedRate: 100 hours
+      initialDelay: 0 days
     - job: scheduledjob2
-      cron: "* * * * * *"
-      fixedRateMs: 100
-      initialDelayMs: 0
+      fixedDelay: 15 d
+      fixedRate: 100 ms
+      initialDelay: 0 sec

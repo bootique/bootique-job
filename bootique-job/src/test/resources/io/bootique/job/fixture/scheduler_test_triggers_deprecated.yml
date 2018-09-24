@@ -17,5 +17,5 @@ scheduler:
   threadPoolSize: 2
   triggers:
     - job: scheduledjob1
-      fixedRate: "100 ms"
-      initialDelay: "0 ms"
+      fixedRateMs: 100
+      initialDelayMs: 0
