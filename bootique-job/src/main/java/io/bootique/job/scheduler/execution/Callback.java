@@ -53,13 +53,12 @@ class Callback implements Consumer<Consumer<JobResult>> {
             result = job.run(parameters);
         } catch (Exception e) {
             result = JobResult.failure(job.getMetadata(), e);
-            if (callbackOptional.isPresent()) {
-                callbackOptional.get().invoke(result);
-            }
         }
+        
         if (result == null) {
             result = JobResult.unknown(job.getMetadata());
         }
+
         if (callbackOptional.isPresent()) {
             callbackOptional.get().invoke(result);
         }

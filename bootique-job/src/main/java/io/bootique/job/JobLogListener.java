@@ -36,7 +36,13 @@ public class JobLogListener implements JobListener {
     public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
         LOGGER.info(String.format("job '%s' started with params %s", jobName, parameters));
         finishEventSource.accept(result -> {
-            LOGGER.info(String.format("job '%s' finished", jobName));
+
+            if(result.isSuccess()) {
+                LOGGER.info("job '{}' finished", jobName);
+            }
+            else {
+                LOGGER.warn("job '{}' finished: {} - {} ", jobName, result.getOutcome(), result.getMessage());
+            }
         });
     }
 }
