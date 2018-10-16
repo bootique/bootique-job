@@ -37,11 +37,19 @@ public class JobLogListener implements JobListener {
         LOGGER.info(String.format("job '%s' started with params %s", jobName, parameters));
         finishEventSource.accept(result -> {
 
-            if(result.isSuccess()) {
+            if (result.isSuccess()) {
                 LOGGER.info("job '{}' finished", jobName);
-            }
-            else {
-                LOGGER.warn("job '{}' finished: {} - {} ", jobName, result.getOutcome(), result.getMessage());
+            } else {
+                String message = result.getMessage();
+                if (message == null && result.getThrowable() != null) {
+                    message = result.getThrowable().getMessage();
+                }
+
+                if (message == null) {
+                    message = "";
+                }
+
+                LOGGER.warn("job '{}' finished: {} - {} ", jobName, result.getOutcome(), message);
             }
         });
     }
