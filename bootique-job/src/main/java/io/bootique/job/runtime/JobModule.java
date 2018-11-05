@@ -92,14 +92,18 @@ public class JobModule extends ConfigModule {
     public void configure(Binder binder) {
 
         BQCoreModule.extend(binder).addCommand(ExecCommand.class)
-                .addOption(OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to schedule. "
-                        + "Available job names can be viewed using '--list' command.").valueRequired("job_name").build())
+                .addOption(OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to execute or schedule. "
+                        + "Used in conjunction with '--execute' or '--schedule' commands. "
+                        + "Available job names can be viewed using '--list' command.")
+                        .valueRequired("job_name")
+                        .build())
                 .addCommand(ListCommand.class)
                 .addCommand(ScheduleCommand.class);
 
         JobModule.extend(binder)
-                 .initAllExtensions()
-                 .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {});
+                .initAllExtensions()
+                .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {
+                });
     }
 
     @Provides

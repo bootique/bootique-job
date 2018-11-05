@@ -41,7 +41,7 @@ public class ExecCommand extends CommandWithMetadata {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExecCommand.class);
 
 	/**
-	 * @deprecated since 0.26 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
+	 * @deprecated since 1.0.RC1 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
 	 */
 	@Deprecated
 	public static final String JOB_OPTION = "job";

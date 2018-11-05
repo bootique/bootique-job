@@ -38,7 +38,7 @@ public class ScheduleCommand extends CommandWithMetadata {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleCommand.class);
 
     /**
-     * @deprecated since 0.26 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
+     * @deprecated since 1.0.RC1 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
      */
     @Deprecated
     public static final String JOB_OPTION = "job";
@@ -53,8 +53,7 @@ public class ScheduleCommand extends CommandWithMetadata {
 
     private static CommandMetadata createMetadata() {
         return CommandMetadata.builder(ScheduleCommand.class)
-                .description(
-                        "Schedules and executes jobs according to configuration and '--job' arguments. Waits indefinitely on the foreground.")
+                .description("Starts a job scheduler that will execute job(s) periodically according to configuration and an optional '--job' arguments.")
                 .build();
     }
 
