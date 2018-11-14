@@ -142,7 +142,7 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     /**
-     * @since 0.26
+     * @since 1.0.RC1
      */
     @Override
     public boolean allowsSimultaneousExecutions(String jobName) {

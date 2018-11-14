@@ -28,7 +28,7 @@
 
     <groupId>io.bootique.job</groupId>
     <artifactId>bootique-job-parent</artifactId>
-    <version>0.26-SNAPSHOT</version>
+    <version>1.0.RC1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>bootique-job-parent: Job framework with Bootique Integration</name>
@@ -45,7 +45,7 @@
         <bootique.version>${project.version}</bootique.version>
         <!-- TODO: we are bringing the entire huge Spring framework to just use
             a few scheduling classes, and no injection -->
-        <spring-version>4.2.3.RELEASE</spring-version>
+        <spring-version>4.3.20.RELEASE</spring-version>
         <testcontainers.version>1.8.3</testcontainers.version>
     </properties>
 

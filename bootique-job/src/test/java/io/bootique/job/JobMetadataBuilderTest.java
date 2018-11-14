@@ -27,8 +27,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.bootique.job.JobMetadata;
-import io.bootique.job.JobParameterMetadata;
 import org.junit.Test;
 
 public class JobMetadataBuilderTest {

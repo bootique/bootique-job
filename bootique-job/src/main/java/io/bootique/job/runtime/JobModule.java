@@ -41,6 +41,7 @@ import io.bootique.job.lock.LockHandler;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
+import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
 import io.bootique.type.TypeRef;
 
@@ -52,6 +53,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class JobModule extends ConfigModule {
+
+    public static final String JOB_OPTION = "job";
 
     // TX ID listener is usually the outermost listener in any app. It is a good idea to order your other listeners
     // relative to this one , using higher ordering values.
@@ -89,12 +92,18 @@ public class JobModule extends ConfigModule {
     public void configure(Binder binder) {
 
         BQCoreModule.extend(binder).addCommand(ExecCommand.class)
+                .addOption(OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to execute or schedule. "
+                        + "Used in conjunction with '--execute' or '--schedule' commands. "
+                        + "Available job names can be viewed using '--list' command.")
+                        .valueRequired("job_name")
+                        .build())
                 .addCommand(ListCommand.class)
                 .addCommand(ScheduleCommand.class);
 
         JobModule.extend(binder)
-                 .initAllExtensions()
-                 .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {});
+                .initAllExtensions()
+                .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {
+                });
     }
 
     @Provides

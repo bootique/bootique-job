@@ -81,7 +81,18 @@ public class JobResult {
 
 	@Override
 	public String toString() {
-		// TODO: a better result String
-		return String.valueOf(outcome);
+
+		String message = this.message;
+
+		if (message == null && throwable != null) {
+			message = throwable.getMessage();
+		}
+
+		StringBuilder buffer = new StringBuilder().append("[").append(outcome);
+		if (message != null) {
+			buffer.append(": ").append(message);
+		}
+
+		return buffer.append("]").toString();
 	}
 }

@@ -16,27 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.consul;
+package io.bootique.job.consul.lock;
 
-import com.google.inject.Module;
-import io.bootique.BQModuleProvider;
-import io.bootique.job.runtime.JobModule;
-
-import java.util.Collection;
-import java.util.Collections;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.lock.LockHandler;
+import io.bootique.job.runnable.RunnableJob;
 
 /**
- * @since 1.0.RC1
+ * @since 0.26
  */
-public class ConsulJobModuleProvider implements BQModuleProvider {
+public class CompositeConsulLockHandler implements LockHandler {
 
-    @Override
-    public Module module() {
-        return new ConsulJobModule();
+    private LockHandler localLockHandler;
+    private LockHandler consulLockHandler;
+
+    public CompositeConsulLockHandler(LockHandler localLockHandler, LockHandler consulLockHandler) {
+        this.localLockHandler = localLockHandler;
+        this.consulLockHandler = consulLockHandler;
     }
 
     @Override
-    public Collection<Class<? extends Module>> overrides() {
-        return Collections.singleton(JobModule.class);
+    public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
+        return localLockHandler.lockingJob(consulLockHandler.lockingJob(executable, metadata), metadata);
     }
 }

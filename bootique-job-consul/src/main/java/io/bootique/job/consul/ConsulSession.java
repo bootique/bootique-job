@@ -26,7 +26,7 @@ import com.orbitz.consul.model.session.SessionCreatedResponse;
 import java.util.Optional;
 
 /**
- * @since 0.26
+ * @since 1.0.RC1
  */
 public class ConsulSession {
 

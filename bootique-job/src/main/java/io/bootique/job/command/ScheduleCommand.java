@@ -24,18 +24,25 @@ import com.google.inject.Provider;
 import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
+import io.bootique.job.runtime.JobModule;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.meta.application.CommandMetadata;
-import io.bootique.meta.application.OptionMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+
 public class ScheduleCommand extends CommandWithMetadata {
 
-    public static final String JOB_OPTION = "job";
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleCommand.class);
+
+    /**
+     * @deprecated since 1.0.RC1 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
+     */
+    @Deprecated
+    public static final String JOB_OPTION = "job";
+
     private Provider<Scheduler> schedulerProvider;
 
     @Inject
@@ -44,16 +51,9 @@ public class ScheduleCommand extends CommandWithMetadata {
         this.schedulerProvider = schedulerProvider;
     }
 
-    private static OptionMetadata.Builder createJobOption() {
-        return OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to schedule. "
-                + "Available job names can be viewed using '--list' command.").valueRequired("job_name");
-    }
-
     private static CommandMetadata createMetadata() {
         return CommandMetadata.builder(ScheduleCommand.class)
-                .description(
-                        "Schedules and executes jobs according to configuration and '--job' arguments. Waits indefinitely on the foreground.")
-                .addOption(createJobOption())
+                .description("Starts a job scheduler that will execute job(s) periodically according to configuration and an optional '--job' arguments.")
                 .build();
     }
 
@@ -63,7 +63,7 @@ public class ScheduleCommand extends CommandWithMetadata {
 
         int jobCount;
 
-        List<String> jobNames = cli.optionStrings(JOB_OPTION);
+        List<String> jobNames = cli.optionStrings(JobModule.JOB_OPTION);
         if (jobNames == null || jobNames.isEmpty()) {
             LOGGER.info("Starting scheduler");
             jobCount = scheduler.start();

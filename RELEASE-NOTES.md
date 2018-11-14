@@ -1,11 +1,15 @@
-## 0.26
+## 1.0.RC1
 
 * #58 Cleaning up APIs deprecated since <= 0.25
 * #59 Metrics renaming to follow naming convention
 * #61 Typo in JobRegistry.allowsSimlutaneousExecutions() method name 
 * #62 Remove circular dependency DefaultJobRegistry <-> Scheduler
 * #64 Consul-based job locks
-* #65 Changed cron type from String to value object.
+* #65 Value object: Cron
+* #66 Switch TriggerDescriptor properties to value objects
+* #71 ConsulLockHandler local job locking
+* #72 Double --job option
+* #76 Scheduled job exceptions are not reported 
 
 ## 0.25
 

@@ -27,6 +27,8 @@ import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.job.value.Cron;
+import io.bootique.value.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -152,11 +154,7 @@ public class DefaultScheduler implements Scheduler {
 
         ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
         scheduledJob.schedule(createSchedule(tc));
-        Collection<ScheduledJobFuture> futures = scheduledJobsByName.get(jobName);
-        if (futures == null) {
-            futures = new ArrayList<>();
-            scheduledJobsByName.put(jobName, futures);
-        }
+        Collection<ScheduledJobFuture> futures = scheduledJobsByName.computeIfAbsent(jobName, k -> new ArrayList<>());
         futures.add(scheduledJob);
     }
 
@@ -168,9 +166,13 @@ public class DefaultScheduler implements Scheduler {
 
     private Schedule createSchedule(TriggerDescriptor tc) {
         Cron cron = tc.getCron();
-        long fixedDelayMs = tc.getFixedDelayMs();
-        long fixedRateMs = tc.getFixedRateMs();
-        long initialDelayMs = tc.getInitialDelayMs();
+        Duration fixedDelay = tc.getFixedDelay();
+        Duration fixedRate = tc.getFixedRate();
+        Duration initialDelay = tc.getInitialDelay();
+
+        long fixedDelayMs = fixedDelay != null && fixedDelay.getDuration() != null ? fixedDelay.getDuration().toMillis() : 0;
+        long fixedRateMs = fixedRate != null && fixedRate.getDuration() != null ? fixedRate.getDuration().toMillis() : 0;
+        long initialDelayMs = initialDelay != null  && initialDelay.getDuration() != null ? initialDelay.getDuration().toMillis() : 0;
 
         if (cron != null) {
             return Schedule.cron(cron);
