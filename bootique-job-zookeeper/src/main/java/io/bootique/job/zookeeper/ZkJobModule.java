@@ -19,7 +19,7 @@ public class ZkJobModule extends ConfigModule {
 
     @Override
     protected String defaultConfigPrefix() {
-        return "job-consul";
+        return "job-zookeeper";
     }
 
     @Provides
