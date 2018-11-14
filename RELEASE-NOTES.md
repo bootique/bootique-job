@@ -9,6 +9,7 @@
 * #66 Switch TriggerDescriptor properties to value objects
 * #71 ConsulLockHandler local job locking
 * #72 Double --job option
+* #74 Add integration tests for bootique-job-zookeeper
 * #76 Scheduled job exceptions are not reported 
 
 ## 0.25
