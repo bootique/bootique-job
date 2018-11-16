@@ -38,7 +38,7 @@ public class ScheduleCommandIT {
     public BQTestFactory testFactory = new BQTestFactory();
 
     /**
-     * @deprecated since 0.26. This is test for old TriggerDescriptor configuration,
+     * @deprecated since 1.0.RC1. This is test for old TriggerDescriptor configuration,
      * for new configuration please see {@link #testScheduleCommand_AllJobs()}
      */
     @Deprecated
@@ -60,7 +60,7 @@ public class ScheduleCommandIT {
     }
 
     /**
-     * @deprecated since 0.26. This is test for old TriggerDescriptor configuration,
+     * @deprecated since 1.0.RC1. This is test for old TriggerDescriptor configuration,
      * for new configuration please see {@link #testScheduleCommand_SelectedJobs()}
      */
     @Deprecated
