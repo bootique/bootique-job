@@ -27,6 +27,7 @@ import com.google.inject.TypeLiteral;
 import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
+import io.bootique.help.ValueObjectDescriptor;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.JobLogListener;
@@ -41,6 +42,7 @@ import io.bootique.job.lock.LockHandler;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
+import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
 import io.bootique.type.TypeRef;
@@ -98,7 +100,8 @@ public class JobModule extends ConfigModule {
                         .valueRequired("job_name")
                         .build())
                 .addCommand(ListCommand.class)
-                .addCommand(ScheduleCommand.class);
+                .addCommand(ScheduleCommand.class)
+                .addValueObjectDescriptor(Cron.class, new ValueObjectDescriptor("percent expression, e.g. '0 0 * * * *'"));
 
         JobModule.extend(binder)
                 .initAllExtensions()
