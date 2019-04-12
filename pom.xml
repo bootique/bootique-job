@@ -28,7 +28,7 @@
 
     <groupId>io.bootique.job</groupId>
     <artifactId>bootique-job-parent</artifactId>
-    <version>1.0.RC2-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>bootique-job-parent: Job framework with Bootique Integration</name>
