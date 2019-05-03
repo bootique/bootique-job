@@ -23,7 +23,7 @@
     <parent>
         <groupId>io.bootique.job</groupId>
         <artifactId>bootique-job-parent</artifactId>
-        <version>1.0</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>bootique-job</artifactId>
