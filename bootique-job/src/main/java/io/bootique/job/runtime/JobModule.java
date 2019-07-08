@@ -48,7 +48,6 @@ import io.bootique.shutdown.ShutdownManager;
 import io.bootique.type.TypeRef;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -164,7 +163,7 @@ public class JobModule extends ConfigModule {
                 listener -> localListeners.add(new MappedJobListener<>(listener, Integer.MAX_VALUE))
         );
 
-        Collections.sort(localListeners, Comparator.comparing(MappedJobListener::getOrder));
+        localListeners.sort(Comparator.comparing(MappedJobListener::getOrder));
 
         return localListeners;
     }
