@@ -55,7 +55,7 @@ public class ConsulJobModule extends ConfigModule {
     public ConsulLockHandlerProvider provideConsulLockHandlerProvider(
             ConfigurationFactory configFactory, ShutdownManager shutdownManager) {
 
-        ConsulJobConfig config = configFactory.config(ConsulJobConfig.class, configPrefix);
+        ConsulJobConfig config = config(ConsulJobConfig.class, configFactory);
 
         return new ConsulLockHandlerProvider(
                 config.getConsulHost(),

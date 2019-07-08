@@ -123,7 +123,7 @@ public class JobModule extends ConfigModule {
             ConfigurationFactory configFactory,
             ShutdownManager shutdownManager) {
 
-        return configFactory.config(SchedulerFactory.class, configPrefix)
+        return config(SchedulerFactory.class, configFactory)
                 .createScheduler(serialJobRunner, jobRegistry, shutdownManager);
     }
 
