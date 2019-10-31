@@ -31,7 +31,7 @@ public class ZkJobLockIT extends AbstractZkIT {
 
     private static final String CONFIG_PATH = "--config=classpath:io/bootique/job/zookeeper/it/job-lock.yml";
     public static final String CALLS_COUNT = "count";
-    private static final int WAIT_TIME = 8_000;
+    private static final int WAIT_TIME = 15_000;
 
     private Map<String, Object> callsCount;
 
