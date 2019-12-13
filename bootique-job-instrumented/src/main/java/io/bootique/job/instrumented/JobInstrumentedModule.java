@@ -19,12 +19,13 @@
 
 package io.bootique.job.instrumented;
 
+import javax.inject.Singleton;
+
 import com.codahale.metrics.MetricRegistry;
-import com.google.inject.Binder;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 import io.bootique.ConfigModule;
+import io.bootique.di.Binder;
+import io.bootique.di.Provides;
+import io.bootique.di.TypeLiteral;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.metrics.mdc.TransactionIdGenerator;

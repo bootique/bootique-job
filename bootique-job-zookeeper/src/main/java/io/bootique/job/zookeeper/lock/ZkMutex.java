@@ -21,10 +21,9 @@ package io.bootique.job.zookeeper.lock;
 
 import java.util.concurrent.TimeUnit;
 
+import io.bootique.di.Injector;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
-
-import com.google.inject.Injector;
 
 /**
  * Wraps Curator InterProcessMutex, so that {@link ZkClusterLockHandler} does

@@ -19,14 +19,12 @@
 
 package io.bootique.job.runtime;
 
-import com.google.inject.Binder;
-import com.google.inject.Provider;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
+import io.bootique.di.Binder;
+import io.bootique.di.Provides;
+import io.bootique.di.TypeLiteral;
 import io.bootique.help.ValueObjectDescriptor;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
@@ -52,6 +50,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 
 public class JobModule extends ConfigModule {
 

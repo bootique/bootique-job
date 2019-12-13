@@ -19,8 +19,8 @@
 
 package io.bootique.job.instrumented;
 
-import com.google.inject.Module;
 import io.bootique.BQModuleProvider;
+import io.bootique.di.BQModule;
 import io.bootique.job.runtime.JobModuleProvider;
 import io.bootique.metrics.MetricsModuleProvider;
 
@@ -34,7 +34,7 @@ import static java.util.Arrays.asList;
 public class JobInstrumentedModuleProvider implements BQModuleProvider {
 
     @Override
-    public Module module() {
+    public BQModule module() {
         return new JobInstrumentedModule();
     }
 

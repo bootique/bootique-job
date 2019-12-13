@@ -19,8 +19,6 @@
 
 package io.bootique.job.command;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.meta.application.CommandMetadata;
 import io.bootique.meta.application.OptionMetadata;
@@ -35,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 public class ExecCommand extends CommandWithMetadata {
 

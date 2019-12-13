@@ -18,8 +18,9 @@
  */
 package io.bootique.job.consul.lock;
 
+import javax.inject.Provider;
+
 import com.google.common.net.HostAndPort;
-import com.google.inject.Provider;
 import com.orbitz.consul.Consul;
 import io.bootique.job.consul.ConsulSession;
 import io.bootique.job.lock.LocalLockHandler;

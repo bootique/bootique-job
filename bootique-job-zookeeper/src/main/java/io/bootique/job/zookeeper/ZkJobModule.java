@@ -1,9 +1,10 @@
 package io.bootique.job.zookeeper;
 
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import javax.inject.Singleton;
+
 import io.bootique.ConfigModule;
+import io.bootique.di.Injector;
+import io.bootique.di.Provides;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.zookeeper.lock.ZkClusterLockHandler;
 

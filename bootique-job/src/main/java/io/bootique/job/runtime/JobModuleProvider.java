@@ -19,8 +19,8 @@
 
 package io.bootique.job.runtime;
 
-import com.google.inject.Module;
 import io.bootique.BQModuleProvider;
+import io.bootique.di.BQModule;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.type.TypeRef;
@@ -32,7 +32,7 @@ import java.util.Map;
 public class JobModuleProvider implements BQModuleProvider {
 
     @Override
-    public Module module() {
+    public BQModule module() {
         return new JobModule();
     }
 

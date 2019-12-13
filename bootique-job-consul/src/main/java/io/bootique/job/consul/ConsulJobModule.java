@@ -18,12 +18,13 @@
  */
 package io.bootique.job.consul;
 
-import com.google.inject.Binder;
-import com.google.inject.Key;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import javax.inject.Singleton;
+
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
+import io.bootique.di.Binder;
+import io.bootique.di.Key;
+import io.bootique.di.Provides;
 import io.bootique.job.consul.lock.ConsulLockHandlerProvider;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;

@@ -19,8 +19,6 @@
 
 package io.bootique.job.command;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
 import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
@@ -33,6 +31,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 public class ListCommand extends CommandWithMetadata {
 

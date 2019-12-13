@@ -19,14 +19,15 @@
 
 package io.bootique.job.zookeeper.lock;
 
+import javax.inject.Inject;
+
+import io.bootique.di.Injector;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.RunnableJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runnable.JobResult;
 

@@ -64,7 +64,7 @@ public class JobMetadataBuilderTest {
 		assertEquals("ssv", params.get(1).fromString(null));
 
 		assertEquals("ll", params.get(2).getName());
-		assertEquals(new Long(34556775), params.get(2).fromString(null));
+		assertEquals(34556775L, params.get(2).fromString(null));
 
 	}
 }

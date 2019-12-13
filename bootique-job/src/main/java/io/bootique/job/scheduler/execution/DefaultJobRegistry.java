@@ -19,7 +19,6 @@
 
 package io.bootique.job.scheduler.execution;
 
-import com.google.inject.Provider;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
@@ -38,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import javax.inject.Provider;
 
 /**
  * @since 0.13

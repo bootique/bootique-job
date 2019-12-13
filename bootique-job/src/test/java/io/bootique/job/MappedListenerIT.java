@@ -19,9 +19,9 @@
 
 package io.bootique.job;
 
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
 import io.bootique.BQRuntime;
+import io.bootique.di.Key;
+import io.bootique.di.TypeLiteral;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;

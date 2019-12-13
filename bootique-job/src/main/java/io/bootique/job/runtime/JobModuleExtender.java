@@ -19,11 +19,10 @@
 
 package io.bootique.job.runtime;
 
-import com.google.inject.Binder;
-import com.google.inject.Key;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
+import io.bootique.di.Binder;
+import io.bootique.di.Key;
+import io.bootique.di.SetBuilder;
+import io.bootique.di.TypeLiteral;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.MappedJobListener;
@@ -34,9 +33,9 @@ import io.bootique.job.MappedJobListener;
 public class JobModuleExtender {
 
     private Binder binder;
-    private Multibinder<Job> jobs;
-    private Multibinder<JobListener> listeners;
-    private Multibinder<MappedJobListener> mappedListeners;
+    private SetBuilder<Job> jobs;
+    private SetBuilder<JobListener> listeners;
+    private SetBuilder<MappedJobListener> mappedListeners;
 
     JobModuleExtender(Binder binder) {
         this.binder = binder;
@@ -51,18 +50,18 @@ public class JobModuleExtender {
     }
 
     public JobModuleExtender addJob(Job job) {
-        contributeJobs().addBinding().toInstance(job);
+        contributeJobs().add(job);
         return this;
     }
 
     public JobModuleExtender addJob(Class<? extends Job> jobType) {
         // TODO: what does singleton scope means when adding to collection?
-        contributeJobs().addBinding().to(jobType).in(Singleton.class);
+        contributeJobs().add(jobType);
         return this;
     }
 
     public JobModuleExtender addListener(JobListener listener) {
-        contributeListeners().addBinding().toInstance(listener);
+        contributeListeners().add(listener);
         return this;
     }
 
@@ -74,7 +73,7 @@ public class JobModuleExtender {
      * @return this extender instance
      */
     public <T extends JobListener> JobModuleExtender addMappedListener(MappedJobListener<T> mappedJobListener) {
-        contributeMappedListeners().addBinding().toInstance(mappedJobListener);
+        contributeMappedListeners().add(mappedJobListener);
         return this;
     }
 
@@ -86,7 +85,7 @@ public class JobModuleExtender {
      * @return this extender instance
      */
     public <T extends JobListener> JobModuleExtender addMappedListener(Key<MappedJobListener<T>> mappedJobListenerKey) {
-        contributeMappedListeners().addBinding().to(mappedJobListenerKey);
+        contributeMappedListeners().add(mappedJobListenerKey);
         return this;
     }
 
@@ -98,34 +97,34 @@ public class JobModuleExtender {
      * @return this extender instance
      */
     public <T extends JobListener> JobModuleExtender addMappedListener(TypeLiteral<MappedJobListener<T>> mappedJobListenerType) {
-        contributeMappedListeners().addBinding().to(mappedJobListenerType);
+        contributeMappedListeners().add(Key.get(mappedJobListenerType));
         return this;
     }
 
     public JobModuleExtender addListener(Class<? extends JobListener> listenerType) {
         // TODO: what does singleton scope means when adding to collection?
-        contributeListeners().addBinding().to(listenerType).in(Singleton.class);
+        contributeListeners().add(listenerType);
         return this;
     }
 
-    protected Multibinder<Job> contributeJobs() {
+    protected SetBuilder<Job> contributeJobs() {
         if (jobs == null) {
-            jobs = Multibinder.newSetBinder(binder, Job.class);
+            jobs = binder.bindSet(Job.class);
         }
 
         return jobs;
     }
 
-    protected Multibinder<JobListener> contributeListeners() {
+    protected SetBuilder<JobListener> contributeListeners() {
         if (listeners == null) {
-            listeners = Multibinder.newSetBinder(binder, JobListener.class);
+            listeners = binder.bindSet(JobListener.class);
         }
         return listeners;
     }
 
-    protected Multibinder<MappedJobListener> contributeMappedListeners() {
+    protected SetBuilder<MappedJobListener> contributeMappedListeners() {
         if (mappedListeners == null) {
-            mappedListeners = Multibinder.newSetBinder(binder, MappedJobListener.class);
+            mappedListeners = binder.bindSet(MappedJobListener.class);
         }
         return mappedListeners;
     }
