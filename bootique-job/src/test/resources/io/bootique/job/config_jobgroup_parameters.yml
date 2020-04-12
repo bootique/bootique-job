@@ -1,0 +1,10 @@
+jobs:
+  group1:
+    type: group
+    jobs:
+      parameterizedjob3:
+        params:
+          longp: 3
+      serialjob1:
+        dependsOn:
+          - parameterizedjob3

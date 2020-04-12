@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,7 @@ class JobGroup implements Job {
             @Override
             public JobResult run(Map<String, Object> parameters) {
                 traverseExecution(jobExecutions -> {
-                    Set<JobResult> results = execute(jobExecutions, jobMap);
+                    Set<JobResult> results = execute(jobExecutions, jobMap, parameters);
                     results.forEach(result -> {
                         if (result.getOutcome() != JobOutcome.SUCCESS) {
                             String message = "Failed to execute job: " + result.getMetadata().getName();
@@ -129,7 +130,7 @@ class JobGroup implements Job {
         executions.forEach(visitor::accept);
     }
 
-    private Set<JobResult> execute(Set<JobExecution> jobExecutions, Map<String, Job> jobs) {
+    private Set<JobResult> execute(Set<JobExecution> jobExecutions, Map<String, Job> jobs, Map<String, Object> params) {
         if (jobExecutions.isEmpty()) {
             JobResult.failure(getMetadata(), "No jobs");
         }
@@ -137,7 +138,7 @@ class JobGroup implements Job {
         List<JobFuture> futures = jobExecutions.stream()
                 .map(jobExecution -> {
                     Job job = jobs.get(jobExecution.getJobName());
-                    return scheduler.runOnce(job, jobExecution.getParams());
+                    return scheduler.runOnce(job, mergeParams(params, jobExecution.getParams()));
                 })
                 .collect(Collectors.toList());
 
@@ -158,4 +159,9 @@ class JobGroup implements Job {
         return failures;
     }
 
+    private Map<String, Object> mergeParams(Map<String, Object> overridingParams, Map<String, Object> defaultParams) {
+        Map<String, Object> merged = new HashMap<>(defaultParams);
+        merged.putAll(overridingParams);
+        return merged;
+    }
 }
