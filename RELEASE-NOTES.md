@@ -1,3 +1,7 @@
+## 2.0
+
+#77 JobGroup feature doesn't pass incoming parameters to job executions 
+
 ## 1.0.RC1
 
 * #58 Cleaning up APIs deprecated since <= 0.25
