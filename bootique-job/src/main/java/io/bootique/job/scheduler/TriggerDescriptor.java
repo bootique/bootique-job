@@ -24,6 +24,8 @@ import io.bootique.annotation.BQConfigProperty;
 import io.bootique.job.value.Cron;
 import io.bootique.value.Duration;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 @BQConfig("Trigger of one of the following flavors: cron, periodic, fixed-rate.")
@@ -36,6 +38,8 @@ public class TriggerDescriptor {
     private Duration fixedDelay;
     private Duration fixedRate;
     private Duration initialDelay;
+
+    private Map<String, Object> params = Collections.emptyMap();
 
     public TriggerDescriptor() {
         this.trigger = UUID.randomUUID().toString().replace("-", ""); // 32 chars
@@ -163,5 +167,14 @@ public class TriggerDescriptor {
         } else {
             return "no trigger";
         }
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
+    }
+
+    @BQConfigProperty
+    public void setParams(Map<String, Object> params) {
+        this.params = params;
     }
 }
