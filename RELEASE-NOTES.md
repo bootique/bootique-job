@@ -1,6 +1,7 @@
 ## 1.2
 
 * #77 JobGroup feature doesn't pass incoming parameters to job executions 
+* #81 a few triggers for the same job with different set of parameters - 1.x
 
 ## 1.0.RC1
 
