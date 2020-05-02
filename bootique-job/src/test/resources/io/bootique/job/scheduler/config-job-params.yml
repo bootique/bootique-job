@@ -1,0 +1,12 @@
+jobs:
+  j1:
+    params:
+      a : "b"
+
+scheduler:
+  threadPoolSize: 2
+  triggers:
+    - job: j1
+      trigger: t1
+      fixedDelayMs: 10000
+      initialDelayMs: 0

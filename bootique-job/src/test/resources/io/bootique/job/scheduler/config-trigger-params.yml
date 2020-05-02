@@ -1,0 +1,23 @@
+jobs:
+  j1:
+    params:
+      a : "b"
+      b : "c"
+      c : "d"
+  g1:
+    type: group
+    jobs:
+      j1:
+        params:
+          b: "e"
+          c: "f"
+
+scheduler:
+  threadPoolSize: 2
+  triggers:
+    - job: g1
+      trigger: t1
+      fixedDelayMs: 10000
+      initialDelayMs: 0
+      params:
+        c: "g"
