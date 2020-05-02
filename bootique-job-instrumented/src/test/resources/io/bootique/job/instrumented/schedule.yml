@@ -17,11 +17,11 @@ scheduler:
   threadPoolSize: 2
   triggers:
     - job: scheduledjob1
-      fixedRateMs: 100
-      initialDelayMs: 0
+      fixedRate: 100ms
+      initialDelay: 0ms
     - job: scheduledjob2
-      fixedRateMs: 150
-      initialDelayMs: 0
+      fixedRate: 150ms
+      initialDelay: 0ms
 log:
   level: info
   appenders:

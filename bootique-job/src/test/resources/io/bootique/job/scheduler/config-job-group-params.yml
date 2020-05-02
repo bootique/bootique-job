@@ -15,5 +15,5 @@ scheduler:
   triggers:
     - job: g1
       trigger: t1
-      fixedDelayMs: 10000
-      initialDelayMs: 0
+      fixedDelay: 10s
+      initialDelay: 0s

@@ -28,20 +28,14 @@ import io.bootique.meta.application.CommandMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.List;
 
 
 public class ScheduleCommand extends CommandWithMetadata {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleCommand.class);
-
-    /**
-     * @deprecated since 1.0.RC1 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
-     */
-    @Deprecated
-    public static final String JOB_OPTION = "job";
 
     private Provider<Scheduler> schedulerProvider;
 

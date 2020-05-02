@@ -74,33 +74,6 @@ public class TriggerDescriptor {
     }
 
     /**
-     * @deprecated since 1.0.RC1 use {@link #setFixedDelay(Duration)}.
-     */
-    @Deprecated
-    @BQConfigProperty("deprecated, Long, internally converted to Duration.")
-    public void setFixedDelayMs(long fixedDelayMs) {
-        this.fixedDelay = new Duration(fixedDelayMs);
-    }
-
-    /**
-     * @deprecated since 1.0.RC1 use {@link #setFixedRate(Duration)}.
-     */
-    @Deprecated
-    @BQConfigProperty("deprecated, Long, internally converted to Duration.")
-    public void setFixedRateMs(long fixedRateMs) {
-        this.fixedRate = new Duration(fixedRateMs);
-    }
-
-    /**
-     * @deprecated since 1.0.RC1 use {@link #setInitialDelay(Duration)}.
-     */
-    @Deprecated
-    @BQConfigProperty("deprecated, Long, internally converted to Duration.")
-    public void setInitialDelayMs(long initialDelayMs) {
-        this.initialDelay = new Duration(initialDelayMs);
-    }
-
-    /**
      * @return a Duration corresponding to the fixed delay
      * @since 1.0.RC1
      */

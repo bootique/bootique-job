@@ -29,6 +29,7 @@ import io.bootique.job.config.SingleJobDefinition;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 
+import javax.inject.Provider;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,7 +38,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-import javax.inject.Provider;
 
 /**
  * @since 0.13
@@ -133,12 +133,6 @@ public class DefaultJobRegistry implements JobRegistry {
             }
         }
         return execution;
-    }
-
-    @Deprecated
-    @Override
-    public boolean allowsSimlutaneousExecutions(String jobName) {
-        return allowsSimultaneousExecutions(jobName);
     }
 
     /**

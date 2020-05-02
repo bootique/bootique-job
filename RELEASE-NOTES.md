@@ -2,6 +2,7 @@
 
 * #77 JobGroup feature doesn't pass incoming parameters to job executions 
 * #79 a few triggers for the same job with different set of parameters 
+* #82 Removing API deprecated prior to 1.0
 
 ## 1.0.RC1
 

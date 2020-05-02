@@ -19,32 +19,26 @@
 
 package io.bootique.job.command;
 
-import io.bootique.job.runtime.JobModule;
-import io.bootique.meta.application.CommandMetadata;
-import io.bootique.meta.application.OptionMetadata;
 import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
+import io.bootique.job.runtime.JobModule;
 import io.bootique.job.scheduler.Scheduler;
+import io.bootique.meta.application.CommandMetadata;
+import io.bootique.meta.application.OptionMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExecCommand extends CommandWithMetadata {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ExecCommand.class);
-
-	/**
-	 * @deprecated since 1.0.RC1 use {@value io.bootique.job.runtime.JobModule#JOB_OPTION}
-	 */
-	@Deprecated
-	public static final String JOB_OPTION = "job";
 
 	public static final String SERIAL_OPTION = "serial";
 
