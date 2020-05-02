@@ -1,6 +1,6 @@
 ## 2.0
 
-#77 JobGroup feature doesn't pass incoming parameters to job executions 
+* #77 JobGroup feature doesn't pass incoming parameters to job executions 
 
 ## 1.0.RC1
 

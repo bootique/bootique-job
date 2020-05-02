@@ -169,11 +169,17 @@ public class TriggerDescriptor {
         }
     }
 
+    /**
+     * @since 2.0
+     */
     public Map<String, Object> getParams() {
         return params;
     }
 
-    @BQConfigProperty
+    /**
+     * @since 2.0
+     */
+    @BQConfigProperty("Optional job parameters specific to this trigger")
     public void setParams(Map<String, Object> params) {
         this.params = params;
     }
