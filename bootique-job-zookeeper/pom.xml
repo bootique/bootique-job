@@ -22,7 +22,7 @@
     <parent>
         <artifactId>bootique-job-parent</artifactId>
         <groupId>io.bootique.job</groupId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>bootique-job-zookeeper</artifactId>
