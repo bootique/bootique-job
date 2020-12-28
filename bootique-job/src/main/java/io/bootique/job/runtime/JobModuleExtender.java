@@ -50,7 +50,7 @@ public class JobModuleExtender {
     }
 
     public JobModuleExtender addJob(Job job) {
-        contributeJobs().add(job);
+        contributeJobs().addInstance(job);
         return this;
     }
 
@@ -61,7 +61,7 @@ public class JobModuleExtender {
     }
 
     public JobModuleExtender addListener(JobListener listener) {
-        contributeListeners().add(listener);
+        contributeListeners().addInstance(listener);
         return this;
     }
 
@@ -73,7 +73,7 @@ public class JobModuleExtender {
      * @return this extender instance
      */
     public <T extends JobListener> JobModuleExtender addMappedListener(MappedJobListener<T> mappedJobListener) {
-        contributeMappedListeners().add(mappedJobListener);
+        contributeMappedListeners().addInstance(mappedJobListener);
         return this;
     }
 
