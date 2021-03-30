@@ -17,7 +17,7 @@
   under the License.
   -->
 
-[![Build Status](https://travis-ci.org/bootique/bootique-job.svg)](https://travis-ci.org/bootique/bootique-job)
+[![build test deploy 1.x](https://github.com/bootique/bootique-job/actions/workflows/maven-1x.yml/badge.svg)](https://github.com/bootique/bootique-job/actions/workflows/maven-1x.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.bootique.job/bootique-job.svg?colorB=brightgreen)](https://search.maven.org/artifact/io.bootique.job/bootique-job/)
 
 # bootique-job
