@@ -49,6 +49,10 @@ public class JobLogListener implements JobListener {
                     message = "";
                 }
 
+                if (result.getThrowable() != null) {
+                    LOGGER.warn("job exception", result.getThrowable());
+                }
+
                 LOGGER.warn("job '{}' finished: {} - {} ", jobName, result.getOutcome(), message);
             }
         });
