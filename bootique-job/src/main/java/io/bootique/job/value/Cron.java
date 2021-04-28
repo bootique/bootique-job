@@ -21,6 +21,8 @@ package io.bootique.job.value;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * Encapsulates a cron expression compatible with Spring CronSequenceGenerator. The pattern is a list of six single
  * space-separated fields representing second, minute, hour, day, month, weekday. Month and weekday names can be
@@ -46,6 +48,7 @@ public class Cron {
 		this.expression = expression;
 	}
 
+	@JsonValue
 	public String getExpression() {
 		return expression;
 	}
