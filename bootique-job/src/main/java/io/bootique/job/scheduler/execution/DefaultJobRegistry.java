@@ -103,36 +103,35 @@ public class DefaultJobRegistry implements JobRegistry {
 
     @Override
     public Job getJob(String jobName) {
-        Job execution = executions.get(jobName);
-        if (execution == null) {
-            DependencyGraph graph = new DependencyGraph(jobName, jobDefinitions, jobs);
-            Collection<Job> executionJobs = collectJobs(graph);
-            if (executionJobs.size() == 1) {
-                // do not create a full-fledged execution for standalone jobs
-                Job job = executionJobs.iterator().next();
-                JobMetadata jobMetadata = cloneMetadata(jobName, job.getMetadata());
-                Job delegate = new Job() {
-                    @Override
-                    public JobMetadata getMetadata() {
-                        return jobMetadata;
-                    }
+        return executions.computeIfAbsent(jobName, this::createJob);
+    }
 
-                    @Override
-                    public JobResult run(Map<String, Object> parameters) {
-                        return job.run(parameters);
-                    }
-                };
-                execution = new SingleJob(delegate, graph.topSort().get(0).iterator().next(), listeners);
-            } else {
-                execution = new JobGroup(jobName, executionJobs, graph, schedulerProvider.get(), listeners);
-            }
+    /**
+     * @since 3.0
+     */
+    protected Job createJob(String jobName) {
+        DependencyGraph graph = new DependencyGraph(jobName, jobDefinitions, jobs);
+        Collection<Job> executionJobs = collectJobs(graph);
 
-            Job existing = executions.putIfAbsent(jobName, execution);
-            if (existing != null) {
-                execution = existing;
-            }
+        if (executionJobs.size() != 1) {
+            return new JobGroup(jobName, executionJobs, graph, schedulerProvider.get(), listeners);
         }
-        return execution;
+
+        // do not create a full-fledged execution for standalone jobs
+        Job job = executionJobs.iterator().next();
+        JobMetadata jobMetadata = cloneMetadata(jobName, job.getMetadata());
+        Job delegate = new Job() {
+            @Override
+            public JobMetadata getMetadata() {
+                return jobMetadata;
+            }
+
+            @Override
+            public JobResult run(Map<String, Object> parameters) {
+                return job.run(parameters);
+            }
+        };
+        return new SingleJob(delegate, graph.topSort().get(0).iterator().next(), listeners);
     }
 
     /**
