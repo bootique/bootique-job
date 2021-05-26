@@ -39,9 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-/**
- * @since 0.13
- */
 public class DefaultJobRegistry implements JobRegistry {
 
     /**
@@ -134,9 +131,6 @@ public class DefaultJobRegistry implements JobRegistry {
         return new SingleJob(delegate, graph.topSort().get(0).iterator().next(), listeners);
     }
 
-    /**
-     * @since 1.0.RC1
-     */
     @Override
     public boolean allowsSimultaneousExecutions(String jobName) {
         if (!availableJobs.contains(jobName)) {

@@ -21,9 +21,7 @@ package io.bootique.job.consul;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 
-/**
- * @since 1.0.RC1
- */
+
 @BQConfig("Consul jobs configuration")
 public class ConsulJobConfig {
 

@@ -28,9 +28,6 @@ import java.util.Collection;
 
 import static java.util.Arrays.asList;
 
-/**
- * @since 0.14
- */
 public class JobInstrumentedModuleProvider implements BQModuleProvider {
 
     @Override

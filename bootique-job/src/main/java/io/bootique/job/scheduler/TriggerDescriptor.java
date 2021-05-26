@@ -75,7 +75,6 @@ public class TriggerDescriptor {
 
     /**
      * @return a Duration corresponding to the fixed delay
-     * @since 1.0.RC1
      */
     public Duration getFixedDelay() {
         return fixedDelay;
@@ -83,7 +82,6 @@ public class TriggerDescriptor {
 
     /**
      * @param fixedDelay
-     * @since 1.0.RC1
      */
     @BQConfigProperty("Delay between job executions in some time units." +
             " New job executions will be scheduled to run in D units after the completion of the preceding instance.")
@@ -93,7 +91,6 @@ public class TriggerDescriptor {
 
     /**
      * @return a Duration corresponding to the trigger "fixed rate".
-     * @since 1.0.RC1
      */
     public Duration getFixedRate() {
         return fixedRate;
@@ -101,7 +98,6 @@ public class TriggerDescriptor {
 
     /**
      * @param fixedRate
-     * @since 1.0.RC1
      */
     @BQConfigProperty("Fixed rate in some time units. New job instances will be run exactly every R units.")
     public void setFixedRate(Duration fixedRate) {
@@ -110,7 +106,6 @@ public class TriggerDescriptor {
 
     /**
      * @return a delay used before the trigger starts.
-     * @since 1.0.RC1
      */
     public Duration getInitialDelay() {
         return initialDelay;
@@ -118,7 +113,6 @@ public class TriggerDescriptor {
 
     /**
      * @param initialDelay
-     * @since 1.0.RC1
      */
     @BQConfigProperty("Initial delay in some time units. Applies to periodic and fixed-rate triggers.")
     public void setInitialDelay(Duration initialDelay) {

@@ -39,7 +39,6 @@ public class JobMetadata {
      *
      * @param name Job name
      * @return newly created {@link JobMetadata}.
-     * @since 0.9
      */
     public static JobMetadata build(String name) {
         return builder(name).build();
@@ -50,7 +49,6 @@ public class JobMetadata {
      *
      * @param jobType A class that implements {@link Job}.
      * @return newly created {@link JobMetadata}.
-     * @since 0.9
      */
     public static JobMetadata build(Class<?> jobType) {
         return builder(jobType).build();
@@ -59,7 +57,6 @@ public class JobMetadata {
     /**
      * @param name symbolic name of the job.
      * @return a new instance of a metadata builder.
-     * @since 0.9
      */
     public static Builder builder(String name) {
         return new Builder(name);
@@ -68,7 +65,6 @@ public class JobMetadata {
     /**
      * @param jobType Java class of a job in question. Used to generate a default name for the job.
      * @return a new instance of a metadata builder.
-     * @since 0.9
      */
     public static Builder builder(Class<?> jobType) {
         return builder(toName(jobType));

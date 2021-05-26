@@ -19,9 +19,9 @@
 
 package io.bootique.job.value;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Objects;
 
 /**
  * Encapsulates a cron expression compatible with Spring CronSequenceGenerator. The pattern is a list of six single
@@ -37,8 +37,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *     <li>"0 0 9-17 * * MON-FRI" - on the hour nine-to-five weekdays</li>
  *     <li>"0 0 0 25 12 ?" - every Christmas Day at midnight</li>
  * </ul>
- *
- * @since 1.0.RC1
  */
 public class Cron {
 

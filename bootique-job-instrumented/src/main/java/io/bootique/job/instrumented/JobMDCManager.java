@@ -27,9 +27,6 @@ import io.bootique.metrics.mdc.TransactionIdMDC;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/**
- * @since 0.25
- */
 public class JobMDCManager implements JobListener {
     private TransactionIdGenerator idGenerator;
     private TransactionIdMDC transactionIdMDC;

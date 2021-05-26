@@ -32,9 +32,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-/**
- * @since 0.14
- */
 public class InstrumentedJobListener implements JobListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentedJobListener.class);

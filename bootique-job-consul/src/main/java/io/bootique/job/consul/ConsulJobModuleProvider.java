@@ -25,9 +25,7 @@ import io.bootique.job.runtime.JobModule;
 import java.util.Collection;
 import java.util.Collections;
 
-/**
- * @since 1.0.RC1
- */
+
 public class ConsulJobModuleProvider implements BQModuleProvider {
 
     @Override

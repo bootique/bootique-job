@@ -27,9 +27,6 @@ import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.MappedJobListener;
 
-/**
- * @since 0.14
- */
 public class JobModuleExtender {
 
     private Binder binder;

@@ -24,9 +24,6 @@ import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.PeriodicTrigger;
 
-/**
- * @since 0.24
- */
 public class Schedule {
 
     /**
@@ -34,7 +31,6 @@ public class Schedule {
      *
      * @param cron Cron expression
      * @return Schedule
-     * @since 0.24
      */
     public static Schedule cron(Cron cron) {
         return new Schedule(new CronTrigger(cron.getExpression()), "cron: " + cron);
@@ -46,7 +42,6 @@ public class Schedule {
      * @param fixedDelayMs Fixed delay in millis
      * @param initialDelayMs Initial delay in millis
      * @return Schedule
-     * @since 0.24
      * @see ScheduledJobFuture#scheduleWithFixedDelay(long, long)
      */
     public static Schedule fixedDelay(long fixedDelayMs, long initialDelayMs) {
@@ -62,7 +57,6 @@ public class Schedule {
      * @param fixedRateMs Fixed rate in millis
      * @param initialDelayMs Initial delay in millis
      * @return Schedule
-     * @since 0.24
      * @see ScheduledJobFuture#scheduleAtFixedRate(long, long)
      */
     public static Schedule fixedRate(long fixedRateMs, long initialDelayMs) {
@@ -87,7 +81,6 @@ public class Schedule {
 
     /**
      * @return Textual (human-readable) description of this schedule
-     * @since 0.24
      */
     public String getDescription() {
         return description;

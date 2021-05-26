@@ -27,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-/**
- * @since 0.24
- */
 public class DefaultJobFuture implements JobFuture {
 
 	private String jobName;

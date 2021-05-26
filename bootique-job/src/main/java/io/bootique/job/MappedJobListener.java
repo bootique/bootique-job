@@ -24,7 +24,6 @@ package io.bootique.job;
  * Lower ordering means an outer listener, higher - inner.
  *
  * @param <T>
- * @since 0.25
  */
 public class MappedJobListener<T extends JobListener> {
     private T listener;

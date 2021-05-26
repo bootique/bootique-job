@@ -43,7 +43,6 @@ public interface Scheduler {
      * @param jobName    the name of the job to execute.
      * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
      * @return a Future to track job progress.
-     * @since 0.13
      */
     JobFuture runOnce(String jobName, Map<String, Object> parameters);
 
@@ -52,7 +51,6 @@ public interface Scheduler {
      *
      * @param job Job to execute
      * @return a Future to track job progress.
-     * @since 0.13
      */
     JobFuture runOnce(Job job);
 
@@ -62,7 +60,6 @@ public interface Scheduler {
      * @param job Job to execute
      * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
      * @return a Future to track job progress.
-     * @since 0.13
      */
     JobFuture runOnce(Job job, Map<String, Object> parameters);
 
@@ -81,7 +78,6 @@ public interface Scheduler {
      * @param jobNames Jobs to schedule
      * @return Number of scheduled jobs, possibly zero
      * @throws BootiqueException if {@code jobNames} is null or empty or some of the jobs are unknown
-     * @since 0.25
      */
     int start(List<String> jobNames);
 
@@ -92,7 +88,6 @@ public interface Scheduler {
 
     /**
      * @return Collection of scheduled job executions for all known jobs
-     * @since 0.24
      */
     Collection<ScheduledJobFuture> getScheduledJobs();
 
@@ -100,7 +95,6 @@ public interface Scheduler {
      * @param jobName Job name
      * @return Scheduled job executions for a given job, or an empty collection, if the job is unknown,
      *         triggers are not configured for this job or the scheduler has not been started yet
-     * @since 0.24
      */
     Collection<ScheduledJobFuture> getScheduledJobs(String jobName);
 }

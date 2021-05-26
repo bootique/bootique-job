@@ -29,9 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
-/**
- * @since 1.0.RC1
- */
+
 public class ConsulLockHandler implements LockHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsulLockHandler.class);

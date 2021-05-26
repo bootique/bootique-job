@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * @since 0.13
- */
 @BQConfig("Standalone job with optional dependencies.")
 @JsonTypeName("single")
 public class SingleJobDefinition implements JobDefinition {

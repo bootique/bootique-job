@@ -29,9 +29,7 @@ import io.bootique.job.consul.lock.ConsulLockHandlerProvider;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
-/**
- * @since 1.0.RC1
- */
+
 public class ConsulJobModule extends ConfigModule {
 
     public ConsulJobModule() {

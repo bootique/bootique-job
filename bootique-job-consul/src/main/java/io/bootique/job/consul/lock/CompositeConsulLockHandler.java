@@ -22,9 +22,7 @@ import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runnable.RunnableJob;
 
-/**
- * @since 1.0.RC1
- */
+
 public class CompositeConsulLockHandler implements LockHandler {
 
     private LockHandler localLockHandler;

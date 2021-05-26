@@ -24,9 +24,6 @@ import io.bootique.job.value.Cron;
 
 import java.util.Optional;
 
-/**
- * @since 0.24
- */
 public interface ScheduledJobFuture extends JobFuture {
 
     /**
@@ -36,7 +33,6 @@ public interface ScheduledJobFuture extends JobFuture {
      * @param cron Cron expression
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
-     * @since 0.24
      */
     boolean schedule(Cron cron);
 
@@ -48,7 +44,6 @@ public interface ScheduledJobFuture extends JobFuture {
      * @param initialDelayMs Initial delay in millis
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
-     * @since 0.24
      */
     boolean scheduleAtFixedRate(long fixedRateMs, long initialDelayMs);
 
@@ -60,7 +55,6 @@ public interface ScheduledJobFuture extends JobFuture {
      * @param initialDelayMs Initial delay in millis
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
-     * @since 0.24
      */
     boolean scheduleWithFixedDelay(long fixedDelayMs, long initialDelayMs);
 
@@ -71,19 +65,16 @@ public interface ScheduledJobFuture extends JobFuture {
      * @param schedule Schedule object
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
-     * @since 0.24
      */
     boolean schedule(Schedule schedule);
 
     /**
      * @return true, if this has been scheduled and has not finished or been cancelled yet
-     * @since 0.24
      */
     boolean isScheduled();
 
     /**
      * @return Schedule, or {@link Optional#empty()}, if {@link #isScheduled()} is false
-     * @since 0.24
      */
     Optional<Schedule> getSchedule();
 }

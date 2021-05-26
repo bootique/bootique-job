@@ -21,17 +21,11 @@ package io.bootique.job;
 
 import java.util.Set;
 
-/**
- * @since 0.13
- */
 public interface JobRegistry {
 
     Set<String> getAvailableJobs();
 
     Job getJob(String jobName);
 
-    /**
-     * @since 1.0.RC1
-     */
     boolean allowsSimultaneousExecutions(String jobName);
 }

@@ -26,11 +26,7 @@ import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.di.TypeLiteral;
 import io.bootique.help.ValueObjectDescriptor;
-import io.bootique.job.Job;
-import io.bootique.job.JobListener;
-import io.bootique.job.JobLogListener;
-import io.bootique.job.JobRegistry;
-import io.bootique.job.MappedJobListener;
+import io.bootique.job.*;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
@@ -45,13 +41,9 @@ import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
 import io.bootique.type.TypeRef;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.util.*;
 
 public class JobModule extends ConfigModule {
 
@@ -77,7 +69,6 @@ public class JobModule extends ConfigModule {
      *
      * @param binder DI binder passed to the Module that invokes this method.
      * @return an instance of {@link JobModuleExtender} that can be used to load custom extensions to the JobModule.
-     * @since 0.14
      */
     public static JobModuleExtender extend(Binder binder) {
         return new JobModuleExtender(binder);

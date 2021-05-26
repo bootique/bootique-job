@@ -27,8 +27,6 @@ import java.util.function.Consumer;
 /**
  * A listener that will be notified of every started job. When a job is started the listener may optionally decide to
  * get notified when this particular job is finished by registering a callback function with provided event source.
- *
- * @since 0.14
  */
 public interface JobListener {
 
