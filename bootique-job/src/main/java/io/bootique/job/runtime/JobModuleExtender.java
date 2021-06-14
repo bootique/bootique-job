@@ -19,6 +19,7 @@
 
 package io.bootique.job.runtime;
 
+import io.bootique.ModuleExtender;
 import io.bootique.di.Binder;
 import io.bootique.di.Key;
 import io.bootique.di.SetBuilder;
@@ -26,19 +27,19 @@ import io.bootique.di.TypeLiteral;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.MappedJobListener;
+import io.bootique.job.lock.LockHandler;
 
-public class JobModuleExtender {
+public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
 
-    private Binder binder;
     private SetBuilder<Job> jobs;
     private SetBuilder<JobListener> listeners;
     private SetBuilder<MappedJobListener> mappedListeners;
 
-    JobModuleExtender(Binder binder) {
-        this.binder = binder;
+    public JobModuleExtender(Binder binder) {
+        super(binder);
     }
 
-    JobModuleExtender initAllExtensions() {
+    public JobModuleExtender initAllExtensions() {
         contributeListeners();
         contributeMappedListeners();
         contributeJobs();
@@ -59,6 +60,11 @@ public class JobModuleExtender {
 
     public JobModuleExtender addListener(JobListener listener) {
         contributeListeners().addInstance(listener);
+        return this;
+    }
+
+    public JobModuleExtender setLockHandler(LockHandler lockHandler) {
+        binder.bind(LockHandler.class).toInstance(lockHandler);
         return this;
     }
 
@@ -105,24 +111,14 @@ public class JobModuleExtender {
     }
 
     protected SetBuilder<Job> contributeJobs() {
-        if (jobs == null) {
-            jobs = binder.bindSet(Job.class);
-        }
-
-        return jobs;
+        return jobs != null ? jobs : (jobs = newSet(Job.class));
     }
 
     protected SetBuilder<JobListener> contributeListeners() {
-        if (listeners == null) {
-            listeners = binder.bindSet(JobListener.class);
-        }
-        return listeners;
+        return listeners != null ? listeners : (listeners = newSet(JobListener.class));
     }
 
     protected SetBuilder<MappedJobListener> contributeMappedListeners() {
-        if (mappedListeners == null) {
-            mappedListeners = binder.bindSet(MappedJobListener.class);
-        }
-        return mappedListeners;
+        return mappedListeners != null ? mappedListeners : (mappedListeners = newSet(MappedJobListener.class));
     }
 }

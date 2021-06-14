@@ -56,6 +56,8 @@ public class JobModule extends ConfigModule {
     // goes inside BUSINESS_TX_LISTENER
     public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
 
+    private final LockHandler defaultLockHandler = new LocalLockHandler();
+
     public JobModule() {
     }
 
@@ -95,14 +97,9 @@ public class JobModule extends ConfigModule {
 
         JobModule.extend(binder)
                 .initAllExtensions()
+                .setLockHandler(defaultLockHandler)
                 .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {
                 });
-    }
-
-    @Provides
-    @Singleton
-    LockHandler provideLocalLockHandler() {
-        return new LocalLockHandler();
     }
 
     @Provides
