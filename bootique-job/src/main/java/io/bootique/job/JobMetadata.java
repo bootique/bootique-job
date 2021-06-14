@@ -23,8 +23,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 public class JobMetadata {
+    private static final String LOCK_NAME_KEY = "LOCK-NAME-KEY-" + UUID.randomUUID();
 
     private String name;
     private Collection<JobParameterMetadata<?>> parameters;
@@ -84,6 +86,15 @@ public class JobMetadata {
         return parameters != null ? parameters : Collections.emptyList();
     }
 
+    public String getLockName() {
+        return parameters.stream()
+                .filter(jobParameterMetadata -> jobParameterMetadata.getName().equals(LOCK_NAME_KEY))
+                .findAny()
+                .map(JobParameterMetadata::getDefaultValue)
+                .map(Object::toString)
+                .orElse(name);
+    }
+
     public static class Builder {
 
         private String name;
@@ -129,6 +140,10 @@ public class JobMetadata {
 
         public Builder longParam(String name, Long longValue) {
             return param(new LongParameter(name, longValue));
+        }
+
+        public Builder lockName(String lockName) {
+            return param(new StringParameter(LOCK_NAME_KEY, lockName));
         }
 
         public JobMetadata build() {

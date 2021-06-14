@@ -47,7 +47,6 @@ public class LocalLockHandler implements LockHandler {
 
 	@Override
 	public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
-
 		return () -> {
 			String lockName = toLockName(metadata);
 			Lock lock = getLock(lockName);
@@ -73,6 +72,6 @@ public class LocalLockHandler implements LockHandler {
 	}
 
 	private String toLockName(JobMetadata metadata) {
-		return metadata.getName();
+		return metadata.getLockName();
 	}
 }
