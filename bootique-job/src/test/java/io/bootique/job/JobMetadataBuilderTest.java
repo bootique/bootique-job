@@ -37,6 +37,7 @@ public class JobMetadataBuilderTest {
 		JobMetadata j = JobMetadata.build("nn");
 		assertNotNull(j);
 		assertEquals("nn", j.getName());
+		assertEquals("nn", j.getLockName());
 		assertTrue(j.getParameters().isEmpty());
 	}
 
@@ -46,14 +47,28 @@ public class JobMetadataBuilderTest {
 		JobMetadata j = JobMetadata.builder("nn").build();
 		assertNotNull(j);
 		assertEquals("nn", j.getName());
+		assertEquals("nn", j.getLockName());
+		assertTrue(j.getParameters().isEmpty());
+	}
+
+	@Test
+	public void testBuild_LockName() {
+
+		JobMetadata j = JobMetadata.builder("nn").lockName("ll").build();
+		assertNotNull(j);
+		assertEquals("nn", j.getName());
+		assertEquals("ll", j.getLockName());
 		assertTrue(j.getParameters().isEmpty());
 	}
 
 	@Test
 	public void testBuild_Params() {
 
-		JobMetadata j = JobMetadata.builder("nn").dateParam("dd", "2015-02-04").stringParam("ss", "ssv")
-				.longParam("ll", "34556775").build();
+		JobMetadata j = JobMetadata.builder("nn")
+				.dateParam("dd", "2015-02-04")
+				.stringParam("ss", "ssv")
+				.longParam("ll", "34556775")
+				.build();
 		assertEquals(3, j.getParameters().size());
 
 		List<JobParameterMetadata<?>> params = new ArrayList<>(j.getParameters());

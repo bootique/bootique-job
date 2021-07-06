@@ -26,11 +26,13 @@ import java.util.Collections;
 
 public class JobMetadata {
 
-    private String name;
-    private Collection<JobParameterMetadata<?>> parameters;
+    private final String name;
+    private final String lockName;
+    private final Collection<JobParameterMetadata<?>> parameters;
 
-    JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters) {
+    JobMetadata(String name, String lockName, Collection<JobParameterMetadata<?>> parameters) {
         this.name = name;
+        this.lockName = lockName;
         this.parameters = parameters;
     }
 
@@ -80,6 +82,14 @@ public class JobMetadata {
         return name;
     }
 
+    /**
+     * @return lock name to use with this job
+     * @since 3.0
+     */
+    public String getLockName() {
+        return lockName;
+    }
+
     public Collection<JobParameterMetadata<?>> getParameters() {
         return parameters != null ? parameters : Collections.emptyList();
     }
@@ -87,11 +97,28 @@ public class JobMetadata {
     public static class Builder {
 
         private String name;
+        private String lockName;
         private Collection<JobParameterMetadata<?>> parameters;
 
         private Builder(String name) {
             this.name = name;
             this.parameters = new ArrayList<>();
+        }
+
+        /**
+         * Set custom lock name that will be used by a {@link io.bootique.job.lock.LockHandler} implementation to
+         * disable this job parallel execution.
+         * <br/>
+         * By default job name will be used as a lock name.
+         *
+         * @param lockName optional name of the lock to use
+         * @return this builder
+         *
+         * @since 3.0
+         */
+        public Builder lockName(String lockName) {
+            this.lockName = lockName;
+            return this;
         }
 
         public Builder param(JobParameterMetadata<?> param) {
@@ -136,8 +163,10 @@ public class JobMetadata {
             if (name == null) {
                 throw new IllegalStateException("Job name is not configured");
             }
-
-            return new JobMetadata(name, parameters);
+            if (lockName == null) {
+                lockName = name;
+            }
+            return new JobMetadata(name, lockName, parameters);
         }
 
     }

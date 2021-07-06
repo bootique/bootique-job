@@ -71,6 +71,6 @@ public class ZkClusterLockHandler implements LockHandler {
 	}
 
 	private String getLockName(JobMetadata metadata) {
-		return ZK_PATH_PREFIX + metadata.getName();
+		return ZK_PATH_PREFIX + metadata.getLockName();
 	}
 }
