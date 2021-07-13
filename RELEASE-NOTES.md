@@ -1,3 +1,7 @@
+## 3.0
+
+* #83 More flexible job lock handlers
+
 ## 2.0.M1
 
 * #77 JobGroup feature doesn't pass incoming parameters to job executions 

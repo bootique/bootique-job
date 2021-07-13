@@ -19,6 +19,8 @@
 
 package io.bootique.job.runtime;
 
+import javax.inject.Provider;
+
 import io.bootique.ModuleExtender;
 import io.bootique.di.Binder;
 import io.bootique.di.Key;
@@ -39,6 +41,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
         super(binder);
     }
 
+    @Override
     public JobModuleExtender initAllExtensions() {
         contributeListeners();
         contributeMappedListeners();
@@ -65,6 +68,43 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
 
     public JobModuleExtender setLockHandler(LockHandler lockHandler) {
         binder.bind(LockHandler.class).toInstance(lockHandler);
+        return this;
+    }
+
+    /**
+     *
+     * @param lockHandler class that implements LockHandler
+     * @return this
+     */
+    public JobModuleExtender setLockHandler(Class<? extends LockHandler> lockHandler) {
+        binder.bind(LockHandler.class).to(lockHandler);
+        return this;
+    }
+
+    /**
+     * @param lockHandler key of the LockHandler implementation
+     * @return this
+     */
+    public JobModuleExtender setLockHandler(Key<? extends LockHandler> lockHandler) {
+        binder.bind(LockHandler.class).to(lockHandler);
+        return this;
+    }
+
+    /**
+     * @param lockHandlerProvider LockHandler provider
+     * @return this
+     */
+    public JobModuleExtender setLockHandlerProvider(Class<Provider<? extends LockHandler>> lockHandlerProvider) {
+        binder.bind(LockHandler.class).toProvider(lockHandlerProvider);
+        return this;
+    }
+
+    /**
+     * @param lockHandlerProvider LockHandler provider
+     * @return this
+     */
+    public JobModuleExtender setLockHandlerProvider(Provider<? extends LockHandler> lockHandlerProvider) {
+        binder.bind(LockHandler.class).toProviderInstance(lockHandlerProvider);
         return this;
     }
 
@@ -115,10 +155,16 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     }
 
     protected SetBuilder<JobListener> contributeListeners() {
-        return listeners != null ? listeners : (listeners = newSet(JobListener.class));
+        if(listeners == null) {
+            listeners = newSet(JobListener.class);
+        }
+        return listeners;
     }
 
     protected SetBuilder<MappedJobListener> contributeMappedListeners() {
-        return mappedListeners != null ? mappedListeners : (mappedListeners = newSet(MappedJobListener.class));
+        if(mappedListeners == null) {
+            mappedListeners = newSet(MappedJobListener.class);
+        }
+        return mappedListeners;
     }
 }
