@@ -46,7 +46,7 @@
         <!-- TODO: we are bringing the entire huge Spring framework to just use
             a few scheduling classes, and no injection -->
         <spring-version>4.3.20.RELEASE</spring-version>
-        <testcontainers.version>1.15.1</testcontainers.version>
+        <testcontainers.version>1.16.0</testcontainers.version>
     </properties>
 
     <scm>
