@@ -1,6 +1,7 @@
-## 3.0
+## 3.0.M1
 
 * #83 More flexible job lock handlers
+* #89 Bump Spring dependency from 4.3.x to 5.3.x
 
 ## 2.0.M1
 

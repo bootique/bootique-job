@@ -45,7 +45,7 @@
         <bootique.version>${project.version}</bootique.version>
         <!-- TODO: we are bringing the entire huge Spring framework to just use
             a few scheduling classes, and no injection -->
-        <spring-version>4.3.20.RELEASE</spring-version>
+        <spring.version>5.3.9</spring.version>
         <testcontainers.version>1.16.0</testcontainers.version>
     </properties>
 
@@ -85,12 +85,12 @@
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
-                <version>${spring-version}</version>
+                <version>${spring.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
-                <version>${spring-version}</version>
+                <version>${spring.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-logging</groupId>
