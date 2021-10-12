@@ -20,56 +20,113 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.BQRuntime;
-import io.bootique.Bootique;
+import io.bootique.job.BaseJob;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.job.scheduler.ScheduledJobFuture;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.junit5.BQTest;
+import io.bootique.junit5.BQTestFactory;
+import io.bootique.junit5.BQTestTool;
 import io.bootique.logback.LogbackModule;
 import io.bootique.metrics.MetricsModule;
-import org.junit.jupiter.api.AfterEach;
+import io.bootique.metrics.mdc.TransactionIdMDC;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @BQTest
 public class InstrumentedJobMDCIT {
 
-    final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/instrumented/schedule.yml")
-            .module(new LogbackModule())
-            .module(new MetricsModule())
-            .module(new JobModule())
-            .module(new JobInstrumentedModule())
-            .module(binder -> {
-                JobModule.extend(binder)
-                        .addJob(ScheduledJob1.class)
-                        .addJob(ScheduledJob2.class);
+    @BQTestTool
+    final BQTestFactory factory = new BQTestFactory();
 
-            }).createRuntime();
+    @BeforeEach
+    void resetJobs() {
+        ScheduledJob1.counter.set(0);
+        ScheduledJob1.tx.clear();
 
-    @AfterEach
-    public void after() {
-        getScheduler().getScheduledJobs().forEach(ScheduledJobFuture::cancelInterruptibly);
+        ScheduledJob2.counter.set(0);
+        ScheduledJob2.tx.clear();
     }
 
     @Test
     public void testScheduleJob() throws InterruptedException {
-        Scheduler scheduler = getScheduler();
+        BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/schedule.yml", "--schedule")
+                .module(new LogbackModule())
+                .module(new MetricsModule())
+                .module(new JobModule())
+                .module(new JobInstrumentedModule())
+                .module(binder -> JobModule.extend(binder).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
+                .createRuntime();
 
-        int jobCount = scheduler.start();
-        assertEquals(2, jobCount);
+        Scheduler scheduler = app.getInstance(Scheduler.class);
+        TransactionIdMDC mdc = app.getInstance(TransactionIdMDC.class);
 
-        Collection<ScheduledJobFuture> scheduledJobs = scheduler.getScheduledJobs();
-        assertEquals(2, scheduledJobs.size());
+        app.run();
 
-        // sleep here to let the jobs run and generate some logs
-        // TODO: can we make any assertions here? Otherwise this test can only be checked visually
-        Thread.sleep(1000);
+        // let the jobs run for a while and analyze TX ids
+        Thread.sleep(1000L);
+        app.shutdown();
+
+        int j1c = ScheduledJob1.counter.get();
+        assertTrue(j1c > 0);
+        Set<String> uniqueIds1 = new HashSet<>(ScheduledJob1.tx.values());
+        assertEquals(j1c, uniqueIds1.size());
+
+        int j2c = ScheduledJob2.counter.get();
+        assertTrue(j2c > 0);
+        Set<String> uniqueIds2 = new HashSet<>(ScheduledJob2.tx.values());
+        assertEquals(j2c, uniqueIds2.size());
+
+        Set<String> uniqueIds = new HashSet<>();
+        uniqueIds.addAll(uniqueIds1);
+        uniqueIds.addAll(uniqueIds2);
+        assertEquals(j1c + j2c, uniqueIds.size());
     }
 
-    private Scheduler getScheduler() {
-        return app.getInstance(Scheduler.class);
+    static class ScheduledJob1 extends BaseJob {
+        static Map<Integer, String> tx = new ConcurrentHashMap<>();
+        static AtomicInteger counter = new AtomicInteger(0);
+
+        public ScheduledJob1() {
+            super(JobMetadata.build(ScheduledJob1.class));
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+
+            int next = counter.getAndIncrement();
+            tx.put(next, MDC.get(TransactionIdMDC.MDC_KEY));
+
+            return JobResult.success(getMetadata());
+        }
+    }
+
+
+    static class ScheduledJob2 extends BaseJob {
+
+        static Map<Integer, String> tx = new ConcurrentHashMap<>();
+        static AtomicInteger counter = new AtomicInteger(0);
+
+        public ScheduledJob2() {
+            super(JobMetadata.build(ScheduledJob2.class));
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            int next = counter.getAndIncrement();
+            tx.put(next, MDC.get(TransactionIdMDC.MDC_KEY));
+            return JobResult.success(getMetadata());
+        }
     }
 }
