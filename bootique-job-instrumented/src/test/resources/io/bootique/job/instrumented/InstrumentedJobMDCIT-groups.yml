@@ -14,10 +14,6 @@
 # limitations under the License.
 
 jobs:
-  g1:
-    type: group
-    jobs:
-      job1: {}
   g2:
     type: group
     jobs:
@@ -29,7 +25,7 @@ jobs:
 scheduler:
   threadPoolSize: 2
   triggers:
-    - job: g1
+    - job: job1
       fixedRate: 100ms
       initialDelay: 0ms
     - job: g2

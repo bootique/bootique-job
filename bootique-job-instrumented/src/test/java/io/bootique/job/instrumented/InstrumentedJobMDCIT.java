@@ -31,8 +31,9 @@ import io.bootique.logback.LogbackModule;
 import io.bootique.metrics.MetricsModule;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.util.HashSet;
@@ -45,6 +46,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
 public class InstrumentedJobMDCIT {
+
+    static final String NULL_PLACEHOLDER = "___";
 
     @BQTestTool
     final BQTestFactory factory = new BQTestFactory();
@@ -65,7 +68,9 @@ public class InstrumentedJobMDCIT {
                 .module(new MetricsModule())
                 .module(new JobModule())
                 .module(new JobInstrumentedModule())
-                .module(binder -> JobModule.extend(binder).addJob(Job1.class).addJob(Job2.class))
+                .module(binder -> JobModule.extend(binder)
+                        .addJob(Job1.class)
+                        .addJob(Job2.class))
                 .createRuntime();
 
         // let the jobs run for a while and analyze TX ids
@@ -90,8 +95,7 @@ public class InstrumentedJobMDCIT {
     }
 
     @Test
-    @Disabled("until #90 is fixed")
-    public void testTwoJobGroups() throws InterruptedException {
+    public void testJobGroupAndJob() throws InterruptedException {
         BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT-groups.yml", "--schedule")
                 .module(new LogbackModule())
                 .module(new MetricsModule())
@@ -100,7 +104,9 @@ public class InstrumentedJobMDCIT {
                 .module(binder -> JobModule.extend(binder).addJob(Job1.class).addJob(Job2.class).addJob(Job3.class).addJob(Job4.class))
                 .createRuntime();
 
-        // running jobs as groups
+        // Running one job directly, and another - in a group. MDC is available to the direct job and must not be
+        // reused
+
         // let the jobs run for a while and analyze TX ids
         app.run();
         Thread.sleep(1000L);
@@ -114,20 +120,16 @@ public class InstrumentedJobMDCIT {
         int j2c = Job2.counter.get();
         assertTrue(j2c > 0);
         Set<String> uniqueIds2 = new HashSet<>(Job2.tx.values());
-        assertEquals(j2c, uniqueIds2.size());
-
-        Set<String> intersect = new HashSet<>(uniqueIds1);
-        intersect.retainAll(uniqueIds2);
-
-        // checking for failures per https://github.com/bootique/bootique-job/issues/90
-        // Group having a dependency caused the issue
-        assertEquals(0, intersect.size(), () -> "Dupes: " + intersect);
+        assertEquals(1, uniqueIds2.size(), () -> String.valueOf(uniqueIds2));
+        assertTrue(uniqueIds2.contains(NULL_PLACEHOLDER));
     }
 
 
     static class Job1 extends BaseJob {
-        static Map<Integer, String> tx = new ConcurrentHashMap<>();
-        static AtomicInteger counter = new AtomicInteger(0);
+        static final Logger LOGGER = LoggerFactory.getLogger(Job1.class);
+
+        static final Map<Integer, String> tx = new ConcurrentHashMap<>();
+        static final AtomicInteger counter = new AtomicInteger(0);
 
         public Job1() {
             super(JobMetadata.build(Job1.class));
@@ -136,18 +138,20 @@ public class InstrumentedJobMDCIT {
         @Override
         public JobResult run(Map<String, Object> params) {
 
-            int next = counter.getAndIncrement();
-            tx.put(next, MDC.get(TransactionIdMDC.MDC_KEY));
+            LOGGER.info("in job1");
 
+            int next = counter.getAndIncrement();
+            String id = MDC.get(TransactionIdMDC.MDC_KEY);
+            tx.put(next, id != null ? id : NULL_PLACEHOLDER);
             return JobResult.success(getMetadata());
         }
     }
 
-
     static class Job2 extends BaseJob {
+        static final Logger LOGGER = LoggerFactory.getLogger(Job2.class);
 
-        static Map<Integer, String> tx = new ConcurrentHashMap<>();
-        static AtomicInteger counter = new AtomicInteger(0);
+        static final Map<Integer, String> tx = new ConcurrentHashMap<>();
+        static final AtomicInteger counter = new AtomicInteger(0);
 
         public Job2() {
             super(JobMetadata.build(Job2.class));
@@ -155,8 +159,10 @@ public class InstrumentedJobMDCIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
+            LOGGER.info("in job2");
             int next = counter.getAndIncrement();
-            tx.put(next, MDC.get(TransactionIdMDC.MDC_KEY));
+            String id = MDC.get(TransactionIdMDC.MDC_KEY);
+            tx.put(next, id != null ? id : NULL_PLACEHOLDER);
             return JobResult.success(getMetadata());
         }
     }

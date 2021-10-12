@@ -43,5 +43,6 @@ public class JobMDCManager implements JobListener {
     public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
         String id = idGenerator.nextId();
         transactionIdMDC.reset(id);
+        finishEventSource.accept(jr -> transactionIdMDC.clear());
     }
 }
