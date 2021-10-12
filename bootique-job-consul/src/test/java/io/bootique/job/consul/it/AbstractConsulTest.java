@@ -9,13 +9,17 @@ import io.bootique.job.consul.ConsulJobModule;
 import io.bootique.job.consul.it.job.LockJob;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.job.scheduler.Scheduler;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import io.bootique.junit5.BQTest;
+import io.bootique.junit5.BQTestFactory;
+import io.bootique.junit5.BQTestTool;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.function.Consumer;
 
+@Testcontainers
+@BQTest
 public abstract class AbstractConsulTest {
 
     private static final int HOST_PORT = 8500;
@@ -26,13 +30,13 @@ public abstract class AbstractConsulTest {
                             new ExposedPort(CONTAINER_EXPOSED_PORT))
             );
 
-    @ClassRule
-    public static GenericContainer consul = new GenericContainer("consul:latest")
-                                            .withCreateContainerCmdModifier(MAPPING_CMD)
-                                            .withExposedPorts(CONTAINER_EXPOSED_PORT);
+    @Container
+    static final GenericContainer consul = new GenericContainer("consul:latest")
+            .withCreateContainerCmdModifier(MAPPING_CMD)
+            .withExposedPorts(CONTAINER_EXPOSED_PORT);
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory();
+    @BQTestTool
+    final BQTestFactory testFactory = new BQTestFactory();
 
     protected Scheduler getSchedulerFromRuntime(String yamlConfigPath) {
         BQRuntime bqRuntime = testFactory

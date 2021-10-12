@@ -28,14 +28,17 @@ import io.bootique.job.runtime.JobModule;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.zookeeper.ZkJobModule;
 import io.bootique.job.zookeeper.it.job.LockJob;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import io.bootique.junit5.BQTest;
+import io.bootique.junit5.BQTestFactory;
+import io.bootique.junit5.BQTestTool;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
 import java.util.function.Consumer;
 
+@Testcontainers
+@BQTest
 public abstract class AbstractZkIT {
 
     private static final int HOST_PORT_1 = 2181;
@@ -48,13 +51,13 @@ public abstract class AbstractZkIT {
                     )
             );
 
-    @ClassRule
+    @Container
     public static GenericContainer zookeeper = new GenericContainer("zookeeper:latest")
             .withCreateContainerCmdModifier(MAPPING_CMD)
             .withExposedPorts(CONTAINER_EXPOSED_PORT_1);
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory();
+    @BQTestTool
+    final BQTestFactory testFactory = new BQTestFactory();
 
     protected Scheduler getSchedulerFromRuntime(String yamlConfigPath) {
         BQRuntime bqRuntime = testFactory

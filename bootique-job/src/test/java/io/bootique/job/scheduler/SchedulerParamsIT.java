@@ -24,21 +24,23 @@ import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.Rule;
-import org.junit.Test;
+import io.bootique.junit5.BQTest;
+import io.bootique.junit5.BQTestFactory;
+import io.bootique.junit5.BQTestTool;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+@BQTest
 public class SchedulerParamsIT {
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
+    @BQTestTool
+    final BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
 
     @Test
     public void testJobParams() {
@@ -127,7 +129,7 @@ public class SchedulerParamsIT {
                 }
             }
 
-            assertTrue("Job failed to run", isFinished());
+            assertTrue(isFinished(), "Job failed to run");
             assertNotNull(result);
             assertTrue(result.isSuccess());
             assertEquals(expectedParams, params);

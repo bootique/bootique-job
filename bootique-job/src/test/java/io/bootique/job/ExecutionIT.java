@@ -20,6 +20,7 @@
 package io.bootique.job;
 
 import io.bootique.BQCoreModule;
+import io.bootique.BQRuntime;
 import io.bootique.BootiqueException;
 import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.fixture.Job1;
@@ -28,12 +29,14 @@ import io.bootique.job.fixture.Job3;
 import io.bootique.job.fixture.ParameterizedJob1;
 import io.bootique.job.fixture.ParameterizedJob2;
 import io.bootique.job.runtime.JobModule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ExecutionIT extends BaseJobExecIT {
 
@@ -245,13 +248,13 @@ public class ExecutionIT extends BaseJobExecIT {
         assertExecutedWithParams(job, Collections.singletonMap("longp", 35l));
     }
 
-    @Test(expected = BootiqueException.class)
+    @Test
     public void testExecution_UnregisteredJob() {
-        testFactory.app("--exec", "--job=dummy",
-                "--config=classpath:io/bootique/job/config_dummy.yml")
+        BQRuntime app = testFactory.app("--exec", "--job=dummy", "--config=classpath:io/bootique/job/config_dummy.yml")
                 .autoLoadModules()
-                .createRuntime()
-                .run();
+                .createRuntime();
+
+        assertThrows(BootiqueException.class, () -> app.run());
     }
 
     @Test

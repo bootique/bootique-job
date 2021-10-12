@@ -19,33 +19,21 @@
 
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.BaseJob;
-import io.bootique.job.Job;
-import io.bootique.job.JobListener;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.MappedJobListener;
+import io.bootique.job.*;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class CallbackTest {
 
@@ -54,14 +42,14 @@ public class CallbackTest {
 
     private ExecutorService executor;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.jobStats = new MappedJobListener<>(new JobStats(), Integer.MAX_VALUE);
         this.rjf = (job, parameters) -> () -> Callback.runAndNotify(job, parameters, Collections.singleton(jobStats));
         this.executor = Executors.newFixedThreadPool(50);
     }
 
-    @After
+    @AfterEach
     public void after() {
         this.executor.shutdownNow();
     }

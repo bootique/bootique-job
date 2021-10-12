@@ -2,12 +2,13 @@ package io.bootique.job.consul.it;
 
 import io.bootique.job.consul.it.job.LockJob;
 import io.bootique.job.scheduler.Scheduler;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConsulJobLockIT extends AbstractConsulTest {
 
@@ -17,7 +18,7 @@ public class ConsulJobLockIT extends AbstractConsulTest {
 
     private Map<String, Object> callsCount;
 
-    @Before
+    @BeforeEach
     public void before() {
         callsCount = new ConcurrentHashMap<>();
         callsCount.put(CALLS_COUNT, 0);
@@ -30,7 +31,7 @@ public class ConsulJobLockIT extends AbstractConsulTest {
         scheduler_1.runOnce(new LockJob(), callsCount);
         scheduler_2.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
-        Assert.assertEquals(1, callsCount.get(CALLS_COUNT));
+        assertEquals(1, callsCount.get(CALLS_COUNT));
     }
 
     @Test
@@ -39,6 +40,6 @@ public class ConsulJobLockIT extends AbstractConsulTest {
         scheduler.runOnce(new LockJob(), callsCount);
         scheduler.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
-        Assert.assertEquals(1, callsCount.get(CALLS_COUNT));
+        assertEquals(1, callsCount.get(CALLS_COUNT));
     }
 }

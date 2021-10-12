@@ -22,22 +22,23 @@ package io.bootique.job.instrumented;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import io.bootique.job.runnable.JobResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 public class InstrumentedJobListenerTest {
 
     private MetricRegistry metricRegistry;
 
-    @Before
+    @BeforeEach
     public void before() {
         this.metricRegistry = new MetricRegistry();
     }
