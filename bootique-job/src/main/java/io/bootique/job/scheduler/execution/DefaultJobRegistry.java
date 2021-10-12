@@ -58,8 +58,7 @@ public class DefaultJobRegistry implements JobRegistry {
     private Map<String, JobDefinition> jobDefinitions;
 
     /**
-     * Combined collection of single jobs and job groups,
-     * lazily populated upon request to retrieve a particular job
+     * Combined collection of single jobs and job groups, lazily populated upon request to retrieve a particular job
      */
     private ConcurrentMap<String, Job> executions;
 
@@ -130,7 +129,7 @@ public class DefaultJobRegistry implements JobRegistry {
         };
 
         JobExecution e1 = graph.topSort().get(0).iterator().next();
-        return new SingleJob(delegate, e1.getParams(), listeners);
+        return new ListenerAwareJob(delegate, e1.getParams(), listeners);
     }
 
     @Override

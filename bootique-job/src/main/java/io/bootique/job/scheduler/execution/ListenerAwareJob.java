@@ -28,13 +28,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-class SingleJob implements Job {
+class ListenerAwareJob implements Job {
 
     private final Job delegate;
     private final Map<String, Object> defaultParams;
     private final Collection<MappedJobListener> listeners;
 
-    SingleJob(Job delegate, Map<String, Object> defaultParams, Collection<MappedJobListener> listeners) {
+    ListenerAwareJob(Job delegate, Map<String, Object> defaultParams, Collection<MappedJobListener> listeners) {
         this.delegate = delegate;
         this.defaultParams = defaultParams;
         this.listeners = listeners;
