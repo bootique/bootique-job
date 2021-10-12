@@ -24,7 +24,6 @@ import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.job.scheduler.Scheduler;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -32,6 +31,7 @@ import io.bootique.logback.LogbackModule;
 import io.bootique.metrics.MetricsModule;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 
@@ -52,40 +52,36 @@ public class InstrumentedJobMDCIT {
 
     @BeforeEach
     void resetJobs() {
-        ScheduledJob1.counter.set(0);
-        ScheduledJob1.tx.clear();
+        Job1.counter.set(0);
+        Job1.tx.clear();
 
-        ScheduledJob2.counter.set(0);
-        ScheduledJob2.tx.clear();
+        Job2.counter.set(0);
+        Job2.tx.clear();
     }
 
     @Test
-    public void testScheduleJob() throws InterruptedException {
-        BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/schedule.yml", "--schedule")
+    public void testTwoJobs() throws InterruptedException {
+        BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT.yml", "--schedule")
                 .module(new LogbackModule())
                 .module(new MetricsModule())
                 .module(new JobModule())
                 .module(new JobInstrumentedModule())
-                .module(binder -> JobModule.extend(binder).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
+                .module(binder -> JobModule.extend(binder).addJob(Job1.class).addJob(Job2.class))
                 .createRuntime();
 
-        Scheduler scheduler = app.getInstance(Scheduler.class);
-        TransactionIdMDC mdc = app.getInstance(TransactionIdMDC.class);
-
-        app.run();
-
         // let the jobs run for a while and analyze TX ids
+        app.run();
         Thread.sleep(1000L);
         app.shutdown();
 
-        int j1c = ScheduledJob1.counter.get();
+        int j1c = Job1.counter.get();
         assertTrue(j1c > 0);
-        Set<String> uniqueIds1 = new HashSet<>(ScheduledJob1.tx.values());
+        Set<String> uniqueIds1 = new HashSet<>(Job1.tx.values());
         assertEquals(j1c, uniqueIds1.size());
 
-        int j2c = ScheduledJob2.counter.get();
+        int j2c = Job2.counter.get();
         assertTrue(j2c > 0);
-        Set<String> uniqueIds2 = new HashSet<>(ScheduledJob2.tx.values());
+        Set<String> uniqueIds2 = new HashSet<>(Job2.tx.values());
         assertEquals(j2c, uniqueIds2.size());
 
         Set<String> uniqueIds = new HashSet<>();
@@ -94,12 +90,48 @@ public class InstrumentedJobMDCIT {
         assertEquals(j1c + j2c, uniqueIds.size());
     }
 
-    static class ScheduledJob1 extends BaseJob {
+    @Test
+    @Disabled("until #90 is fixed")
+    public void testTwoJobGroups() throws InterruptedException {
+        BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT-groups.yml", "--schedule")
+                .module(new LogbackModule())
+                .module(new MetricsModule())
+                .module(new JobModule())
+                .module(new JobInstrumentedModule())
+                .module(binder -> JobModule.extend(binder).addJob(Job1.class).addJob(Job2.class).addJob(Job3.class).addJob(Job4.class))
+                .createRuntime();
+
+        // running jobs as groups
+        // let the jobs run for a while and analyze TX ids
+        app.run();
+        Thread.sleep(1000L);
+        app.shutdown();
+
+        int j1c = Job1.counter.get();
+        assertTrue(j1c > 0);
+        Set<String> uniqueIds1 = new HashSet<>(Job1.tx.values());
+        assertEquals(j1c, uniqueIds1.size());
+
+        int j2c = Job2.counter.get();
+        assertTrue(j2c > 0);
+        Set<String> uniqueIds2 = new HashSet<>(Job2.tx.values());
+        assertEquals(j2c, uniqueIds2.size());
+
+        Set<String> intersect = new HashSet<>(uniqueIds1);
+        intersect.retainAll(uniqueIds2);
+
+        // checking for failures per https://github.com/bootique/bootique-job/issues/90
+        // Group having a dependency caused the issue
+        assertEquals(0, intersect.size(), () -> "Dupes: " + intersect);
+    }
+
+
+    static class Job1 extends BaseJob {
         static Map<Integer, String> tx = new ConcurrentHashMap<>();
         static AtomicInteger counter = new AtomicInteger(0);
 
-        public ScheduledJob1() {
-            super(JobMetadata.build(ScheduledJob1.class));
+        public Job1() {
+            super(JobMetadata.build(Job1.class));
         }
 
         @Override
@@ -113,19 +145,43 @@ public class InstrumentedJobMDCIT {
     }
 
 
-    static class ScheduledJob2 extends BaseJob {
+    static class Job2 extends BaseJob {
 
         static Map<Integer, String> tx = new ConcurrentHashMap<>();
         static AtomicInteger counter = new AtomicInteger(0);
 
-        public ScheduledJob2() {
-            super(JobMetadata.build(ScheduledJob2.class));
+        public Job2() {
+            super(JobMetadata.build(Job2.class));
         }
 
         @Override
         public JobResult run(Map<String, Object> params) {
             int next = counter.getAndIncrement();
             tx.put(next, MDC.get(TransactionIdMDC.MDC_KEY));
+            return JobResult.success(getMetadata());
+        }
+    }
+
+    static class Job3 extends BaseJob {
+
+        public Job3() {
+            super(JobMetadata.build(Job3.class));
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            return JobResult.success(getMetadata());
+        }
+    }
+
+    static class Job4 extends BaseJob {
+
+        public Job4() {
+            super(JobMetadata.build(Job4.class));
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
             return JobResult.success(getMetadata());
         }
     }
