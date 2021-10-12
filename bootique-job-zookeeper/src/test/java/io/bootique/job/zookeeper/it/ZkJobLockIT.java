@@ -20,12 +20,13 @@ package io.bootique.job.zookeeper.it;
 
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.zookeeper.it.job.LockJob;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ZkJobLockIT extends AbstractZkIT {
 
@@ -35,7 +36,7 @@ public class ZkJobLockIT extends AbstractZkIT {
 
     private Map<String, Object> callsCount;
 
-    @Before
+    @BeforeEach
     public void before() {
         callsCount = new ConcurrentHashMap<>();
         callsCount.put(CALLS_COUNT, 0);
@@ -48,7 +49,7 @@ public class ZkJobLockIT extends AbstractZkIT {
         scheduler_1.runOnce(new LockJob(), callsCount);
         scheduler_2.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
-        Assert.assertEquals(1, callsCount.get(CALLS_COUNT));
+        assertEquals(1, callsCount.get(CALLS_COUNT));
     }
 
     @Test
@@ -57,6 +58,6 @@ public class ZkJobLockIT extends AbstractZkIT {
         scheduler.runOnce(new LockJob(), callsCount);
         scheduler.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
-        Assert.assertEquals(1, callsCount.get(CALLS_COUNT));
+        assertEquals(1, callsCount.get(CALLS_COUNT));
     }
 }

@@ -20,44 +20,36 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.BQRuntime;
+import io.bootique.Bootique;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.job.scheduler.ScheduledJobFuture;
 import io.bootique.job.scheduler.Scheduler;
+import io.bootique.junit5.BQTest;
 import io.bootique.logback.LogbackModule;
 import io.bootique.metrics.MetricsModule;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@BQTest
 public class InstrumentedJobMDCIT {
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory();
+    final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/instrumented/schedule.yml")
+            .module(new LogbackModule())
+            .module(new MetricsModule())
+            .module(new JobModule())
+            .module(new JobInstrumentedModule())
+            .module(binder -> {
+                JobModule.extend(binder)
+                        .addJob(ScheduledJob1.class)
+                        .addJob(ScheduledJob2.class);
 
-    private BQRuntime runtime;
+            }).createRuntime();
 
-    @Before
-    public void before() {
-        runtime = testFactory.app("-c", "classpath:io/bootique/job/instrumented/schedule.yml")
-                .module(new LogbackModule())
-                .module(new MetricsModule())
-                .module(new JobModule())
-                .module(new JobInstrumentedModule())
-                .module(binder -> {
-                    JobModule.extend(binder)
-                            .addJob(ScheduledJob1.class)
-                            .addJob(ScheduledJob2.class);
-
-                }).createRuntime();
-    }
-
-    @After
+    @AfterEach
     public void after() {
         getScheduler().getScheduledJobs().forEach(ScheduledJobFuture::cancelInterruptibly);
     }
@@ -78,6 +70,6 @@ public class InstrumentedJobMDCIT {
     }
 
     private Scheduler getScheduler() {
-        return runtime.getInstance(Scheduler.class);
+        return app.getInstance(Scheduler.class);
     }
 }

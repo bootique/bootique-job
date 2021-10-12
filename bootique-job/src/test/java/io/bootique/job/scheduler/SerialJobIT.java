@@ -20,50 +20,43 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
+import io.bootique.Bootique;
 import io.bootique.job.fixture.SerialJob1;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import io.bootique.junit5.BQApp;
+import io.bootique.junit5.BQTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
+@BQTest
 public class SerialJobIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(SerialJobIT.class);
 
-    private BQRuntime runtime;
     private ExecutorService executor;
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory();
+    @BQApp
+    final BQRuntime app = Bootique.app()
+            .module(JobModule.class)
+            .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
+            .createRuntime();
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        runtime = testFactory.app()
-                .module(JobModule.class)
-                .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
-                .createRuntime();
-
-        executor = Executors.newFixedThreadPool(10);
+        this.executor = Executors.newFixedThreadPool(10);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         executor.shutdownNow();
     }
@@ -71,7 +64,7 @@ public class SerialJobIT {
     @Test
     public void testSerialJob() throws InterruptedException {
         String jobName = "serialjob1";
-        Scheduler scheduler = runtime.getInstance(Scheduler.class);
+        Scheduler scheduler = app.getInstance(Scheduler.class);
         int count = 10;
 
         Queue<JobResult> resultQueue = new LinkedBlockingQueue<>(count + 1);
@@ -111,15 +104,14 @@ public class SerialJobIT {
             }
         }
 
-        assertTrue("No jobs finished successfully, expected exactly one", foundOneSuccessful);
+        assertTrue(foundOneSuccessful, "No jobs finished successfully, expected exactly one");
 
         for (int i = 1; i < count; i++) {
             // we expect all other simultaneous jobs to be skipped by scheduler;
             // otherwise we expect failure, because io.bootique.job.fixture.ExecutableJob
             // throws an exception if run more than once
             JobOutcome actualOutcome = resultQueue.poll().getOutcome();
-            assertEquals("Execution #" + (i+1) + " was not skipped; actual outcome: " + actualOutcome,
-                    JobOutcome.SKIPPED, actualOutcome);
+            assertEquals(JobOutcome.SKIPPED, actualOutcome, "Execution #" + (i + 1) + " was not skipped; actual outcome: " + actualOutcome);
         }
     }
 }

@@ -20,44 +20,42 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
+import io.bootique.Bootique;
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.fixture.ExecutionRateListener;
 import io.bootique.job.fixture.ScheduledJob1;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import io.bootique.junit5.BQApp;
+import io.bootique.junit5.BQTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
+@BQTest
 public class SchedulerIT {
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory();
-    private ExecutionRateListener listener;
-    private BQRuntime runtime;
+    final ExecutionRateListener listener = new ExecutionRateListener();
 
-    @Before
+    @BQApp
+    final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
+            .module(JobModule.class)
+            .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addListener(listener))
+            .createRuntime();
+
+
+    @BeforeEach
     public void before() {
-        listener = new ExecutionRateListener();
-        runtime = testFactory.app("-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
-                .module(JobModule.class)
-                .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addListener(listener))
-                .createRuntime();
+        listener.reset();
     }
 
-    @After
+    @AfterEach
     public void after() {
         getScheduler().getScheduledJobs().forEach(ScheduledJobFuture::cancelInterruptibly);
     }
@@ -104,7 +102,7 @@ public class SchedulerIT {
         assertTrue(scheduledJob.getSchedule().isPresent());
         assertEquals("fixedRateMs: 100", scheduledJob.getSchedule().get().getDescription());
 
-        JobRegistry jobRegistry = runtime.getInstance(JobRegistry.class);
+        JobRegistry jobRegistry = app.getInstance(JobRegistry.class);
         Job job = jobRegistry.getJob(scheduledJob.getJobName());
         assertNotNull(job);
 
@@ -138,11 +136,11 @@ public class SchedulerIT {
     }
 
     private Scheduler getScheduler() {
-        return runtime.getInstance(Scheduler.class);
+        return app.getInstance(Scheduler.class);
     }
 
     private void assertEqualsApprox(long lower, long upper, long actual) {
-        assertTrue("Lower than expected rate: " + actual, lower <= actual);
-        assertTrue("Higher than expected rate: " + actual, upper >= actual);
+        assertTrue(lower <= actual, () -> "Lower than expected rate: " + actual);
+        assertTrue(upper >= actual, () -> "Higher than expected rate: " + actual);
     }
 }

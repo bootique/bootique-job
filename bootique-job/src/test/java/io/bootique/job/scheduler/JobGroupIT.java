@@ -20,16 +20,17 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
+import io.bootique.Bootique;
 import io.bootique.job.fixture.ParameterizedJob3;
 import io.bootique.job.fixture.SerialJob1;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import io.bootique.junit5.BQApp;
+import io.bootique.junit5.BQTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,76 +38,68 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
+@BQTest
 public class JobGroupIT {
-	private static final Logger LOGGER = LoggerFactory.getLogger(JobGroupIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobGroupIT.class);
 
-	private BQRuntime runtime;
-	private ExecutorService executor;
+    private ExecutorService executor;
 
-	@Rule
-	public BQTestFactory testFactory = new BQTestFactory();
+    @BQApp
+    final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup_parameters.yml")
+            .module(JobModule.class)
+            .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
+            .module(b -> JobModule.extend(b).addJob(ParameterizedJob3.class))
+            .createRuntime();
 
-	@Before
-	public void setUp() {
-		runtime = testFactory.app("-c", "classpath:io/bootique/job/config_jobgroup_parameters.yml")
-				.module(JobModule.class)
-				.module(b -> JobModule.extend(b).addJob(SerialJob1.class))
-				.module(b -> JobModule.extend(b).addJob(ParameterizedJob3.class))
-				.createRuntime();
+    @BeforeEach
+    public void setUp() {
+        executor = Executors.newFixedThreadPool(10);
+    }
 
-		executor = Executors.newFixedThreadPool(10);
-	}
+    @AfterEach
+    public void tearDown() {
+        executor.shutdownNow();
+    }
 
-	@After
-	public void tearDown() {
-		executor.shutdownNow();
-	}
+    @Test
+    public void testJobGroup() throws InterruptedException {
+        String jobGroupName = "group1";
+        Scheduler scheduler = app.getInstance(Scheduler.class);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("param1", "value1");
+        parameters.put("param2", 2);
 
-	@Test
-	public void testJobGroup() throws InterruptedException {
-		String jobGroupName = "group1";
-		Scheduler scheduler = runtime.getInstance(Scheduler.class);
-		Map<String, Object> parameters = new HashMap<>();
-		parameters.put("param1", "value1");
-		parameters.put("param2", 2);
+        Queue<JobResult> resultQueue = new LinkedBlockingQueue<>(1);
+        CountDownLatch latch = new CountDownLatch(1);
+        executor.submit(() -> {
+            try {
+                resultQueue.add(scheduler.runOnce(jobGroupName, parameters).get());
+            } catch (Exception e) {
+                LOGGER.error("Failed to run job", e);
+            } finally {
+                LOGGER.info(resultQueue.element().toString());
+                latch.countDown();
+            }
+        });
 
-		Queue<JobResult> resultQueue = new LinkedBlockingQueue<>(1);
-		CountDownLatch latch = new CountDownLatch(1);
-		executor.submit(() -> {
-			try {
-				resultQueue.add(scheduler.runOnce(jobGroupName, parameters).get());
-			}
-			catch (Exception e) {
-				LOGGER.error("Failed to run job", e);
-			}
-			finally {
-				LOGGER.info(resultQueue.element().toString());
-				latch.countDown();
-			}
-		});
+        boolean finished = latch.await(10, TimeUnit.SECONDS);
+        if (!finished) {
+            fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
+        }
 
-		boolean finished = latch.await(10, TimeUnit.SECONDS);
-		if (!finished) {
-			fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
-		}
+        assertEquals(1, resultQueue.size());
+        Iterator<JobResult> iter = resultQueue.iterator();
 
-		assertEquals(1, resultQueue.size());
-		Iterator<JobResult> iter = resultQueue.iterator();
-
-		if (iter.hasNext()) {
-			JobResult result = iter.next();
-			assertEquals(JobOutcome.SUCCESS, result.getOutcome());
-			LOGGER.info(result.toString());
-			iter.remove();
-		}
-	}
+        if (iter.hasNext()) {
+            JobResult result = iter.next();
+            assertEquals(JobOutcome.SUCCESS, result.getOutcome());
+            LOGGER.info(result.toString());
+            iter.remove();
+        }
+    }
 }

@@ -21,17 +21,15 @@ package io.bootique.job.instrumented;
 
 import io.bootique.BQRuntime;
 import io.bootique.job.runtime.JobModule;
+import io.bootique.junit5.*;
 import io.bootique.metrics.MetricsModule;
-import io.bootique.test.junit.BQModuleProviderChecker;
-import io.bootique.test.junit.BQRuntimeChecker;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+@BQTest
 public class JobInstrumentedModuleProviderIT {
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory();
+    @BQTestTool
+    final BQTestFactory testFactory = new BQTestFactory();
 
     @Test
     public void testAutoLoadable() {
@@ -40,7 +38,7 @@ public class JobInstrumentedModuleProviderIT {
 
     @Test
     public void testModuleDeclaresDependencies() {
-        final BQRuntime bqRuntime = testFactory.app().moduleProvider(new JobInstrumentedModuleProvider()).createRuntime();
+        BQRuntime bqRuntime = testFactory.app().moduleProvider(new JobInstrumentedModuleProvider()).createRuntime();
         BQRuntimeChecker.testModulesLoaded(bqRuntime, JobModule.class, MetricsModule.class);
     }
 }

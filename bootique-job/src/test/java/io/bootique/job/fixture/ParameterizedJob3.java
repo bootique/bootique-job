@@ -25,8 +25,7 @@ import io.bootique.job.runnable.JobResult;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ParameterizedJob3 extends BaseJob {
 

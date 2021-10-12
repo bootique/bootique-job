@@ -26,25 +26,27 @@ import io.bootique.job.fixture.Job1;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.job.runtime.JobModuleExtender;
-import io.bootique.test.junit.BQTestFactory;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import io.bootique.junit5.BQTest;
+import io.bootique.junit5.BQTestFactory;
+import io.bootique.junit5.BQTestTool;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@BQTest
 public class MappedListenerIT {
 
-    @Rule
-    public BQTestFactory testFactory = new BQTestFactory();
+    @BQTestTool
+    final BQTestFactory testFactory = new BQTestFactory();
 
-    @Before
+    @BeforeEach
     public void before() {
         SharedState.reset();
     }

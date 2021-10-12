@@ -24,7 +24,7 @@ import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
 import io.bootique.job.fixture.Job3;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExecCommandIT extends BaseJobExecIT {
 
@@ -75,7 +75,7 @@ public class ExecCommandIT extends BaseJobExecIT {
      * 1. jobs are submitted to the executor in the same order as they appear in program arguments
      * 2. jobs are more likely to be executed in the same order in which they are submitted to the executor
      * => to increase the prob. of other orders of execution (incl. overlapping executions)
-     *    we make the first submitted job the most time-consuming
+     * we make the first submitted job the most time-consuming
      **/
     private void testExec_MultipleJobs(boolean serial, boolean shouldFail) {
         List<String> args = new ArrayList<>();
