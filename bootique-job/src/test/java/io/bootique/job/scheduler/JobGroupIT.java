@@ -49,7 +49,7 @@ public class JobGroupIT {
 
     private ExecutorService executor;
 
-    @BQApp
+    @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup_parameters.yml")
             .module(JobModule.class)
             .module(b -> JobModule.extend(b).addJob(SerialJob1.class))

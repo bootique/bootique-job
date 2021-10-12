@@ -45,7 +45,7 @@ public class SerialJobIT {
 
     private ExecutorService executor;
 
-    @BQApp
+    @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app()
             .module(JobModule.class)
             .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
