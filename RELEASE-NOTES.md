@@ -2,6 +2,7 @@
 
 * #83 More flexible job lock handlers
 * #89 Bump Spring dependency from 4.3.x to 5.3.x
+* #90 Transaction ids are not reset between jobs
 
 ## 2.0.M1
 
