@@ -16,14 +16,14 @@
 scheduler:
   threadPoolSize: 2
   triggers:
-    - job: scheduledjob1
+    - job: job1
       fixedRate: 100ms
       initialDelay: 0ms
-    - job: scheduledjob2
+    - job: job2
       fixedRate: 150ms
       initialDelay: 0ms
 log:
   level: info
   appenders:
     - type: console
-      logFormat: '%-4r [%thread] %-5level [%c]:%X{txid} - %msg%n'
+      logFormat: '%-4r [%thread] %-5level [%X{txid}] %msg%n'
