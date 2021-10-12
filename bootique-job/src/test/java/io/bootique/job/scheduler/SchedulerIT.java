@@ -43,7 +43,7 @@ public class SchedulerIT {
 
     final ExecutionRateListener listener = new ExecutionRateListener();
 
-    @BQApp
+    @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
             .module(JobModule.class)
             .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addListener(listener))
