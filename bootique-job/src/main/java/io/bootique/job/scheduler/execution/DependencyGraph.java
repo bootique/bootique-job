@@ -35,23 +35,32 @@ import java.util.Set;
 
 class DependencyGraph {
 
-    private final Map<String, JobExecution> knownExecutions = new LinkedHashMap<>();
+    private final Map<String, JobExecution> knownExecutions;
     private final DIGraph<JobExecution> graph;
     private final Map<String, Job> jobs;
 
     DependencyGraph(String rootJobName, Map<String, JobDefinition> definitionMap, Map<String, Job> jobs) {
-        DIGraph<JobExecution> graph = new DIGraph<>();
         this.jobs = jobs;
-        Environment jobDefinitions = new Environment(definitionMap);
-        populateWithDependencies(rootJobName, null, graph, jobDefinitions, new HashMap<>());
-        this.graph = graph;
+        this.knownExecutions = new LinkedHashMap<>();
+        this.graph = createGraph(rootJobName, new Environment(definitionMap), new HashMap<>());
     }
 
-    private void populateWithDependencies(String jobName,
-                                          JobExecution childExecution,
-                                          DIGraph<JobExecution> graph,
-                                          Environment jobDefinitions,
-                                          Map<String, JobExecution> childExecutions) {
+    private DIGraph<JobExecution> createGraph(
+            String jobName,
+            Environment jobDefinitions,
+            Map<String, JobExecution> childExecutions) {
+
+        DIGraph<JobExecution> graph = new DIGraph<>();
+        populateWithDependencies(jobName, null, graph, jobDefinitions, childExecutions);
+        return graph;
+    }
+
+    private void populateWithDependencies(
+            String jobName,
+            JobExecution childExecution,
+            DIGraph<JobExecution> graph,
+            Environment jobDefinitions,
+            Map<String, JobExecution> childExecutions) {
 
         JobDefinition jobDefinition = jobDefinitions.getDefinition(jobName);
         if (jobDefinition instanceof SingleJobDefinition) {

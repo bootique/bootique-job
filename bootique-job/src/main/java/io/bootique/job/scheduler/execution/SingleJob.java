@@ -23,8 +23,6 @@ import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,15 +30,13 @@ import java.util.Map;
 
 class SingleJob implements Job {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SingleJob.class);
+    private final Job delegate;
+    private final Map<String, Object> defaultParams;
+    private final Collection<MappedJobListener> listeners;
 
-    private Job delegate;
-    private JobExecution execution;
-    private Collection<MappedJobListener> listeners;
-
-    SingleJob(Job delegate, JobExecution execution, Collection<MappedJobListener> listeners) {
+    SingleJob(Job delegate, Map<String, Object> defaultParams, Collection<MappedJobListener> listeners) {
         this.delegate = delegate;
-        this.execution = execution;
+        this.defaultParams = defaultParams;
         this.listeners = listeners;
     }
 
@@ -51,14 +47,8 @@ class SingleJob implements Job {
 
     @Override
     public JobResult run(Map<String, Object> parameters) {
-        Map<String, Object> mergedParams = mergeParams(parameters, execution.getParams());
-
-        try {
-            return Callback.runAndNotify(delegate, mergedParams, listeners);
-        } catch (Exception e) {
-            LOGGER.error(delegate.getMetadata().getName() + "failed to run.", e);
-            return JobResult.failure(delegate.getMetadata());
-        }
+        Map<String, Object> mergedParams = mergeParams(parameters, this.defaultParams);
+        return JobRunner.run(delegate, mergedParams, listeners);
     }
 
     private Map<String, Object> mergeParams(Map<String, Object> overridingParams, Map<String, Object> defaultParams) {

@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-public class CallbackTest {
+public class JobRunnerTest {
 
     private RunnableJobFactory rjf;
     private MappedJobListener jobStats;
@@ -45,7 +45,7 @@ public class CallbackTest {
     @BeforeEach
     public void before() {
         this.jobStats = new MappedJobListener<>(new JobStats(), Integer.MAX_VALUE);
-        this.rjf = (job, parameters) -> () -> Callback.runAndNotify(job, parameters, Collections.singleton(jobStats));
+        this.rjf = (job, parameters) -> () -> JobRunner.run(job, parameters, Collections.singleton(jobStats));
         this.executor = Executors.newFixedThreadPool(50);
     }
 

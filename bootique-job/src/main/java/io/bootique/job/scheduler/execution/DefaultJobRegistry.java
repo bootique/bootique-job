@@ -128,7 +128,9 @@ public class DefaultJobRegistry implements JobRegistry {
                 return job.run(parameters);
             }
         };
-        return new SingleJob(delegate, graph.topSort().get(0).iterator().next(), listeners);
+
+        JobExecution e1 = graph.topSort().get(0).iterator().next();
+        return new SingleJob(delegate, e1.getParams(), listeners);
     }
 
     @Override
