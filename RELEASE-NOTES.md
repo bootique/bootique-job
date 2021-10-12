@@ -1,3 +1,7 @@
+## 2.0.RC1
+
+* #90 Jobs in job group assume transaction IDs of unrelated jobs
+
 ## 2.0.M1
 
 * #77 JobGroup feature doesn't pass incoming parameters to job executions 
