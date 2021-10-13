@@ -70,7 +70,7 @@ class JobGroupCompiled extends BaseJob {
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        executionGroups.stream().forEach(e -> runner.run(e, params));
+        executionGroups.forEach(e -> runner.run(e, params));
         return JobResult.success(getMetadata());
     }
 }
