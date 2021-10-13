@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+/**
+ * A job listener that collects job execution metrics and posts them to the metrics registry.
+ */
 public class InstrumentedJobListener implements JobListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentedJobListener.class);
