@@ -33,22 +33,21 @@ class JobGroup implements Job {
     private volatile ExecutableJobGroup delegate;
 
     private final String name;
-    private final Collection<Job> jobs;
-    private final DependencyGraph graph;
+    private final Collection<Job> standaloneJobs;
+    private final DIGraph<JobExecution> executionGraph;
     private final Scheduler scheduler;
     private final Collection<MappedJobListener> listeners;
 
     public JobGroup(
             String name,
-            Collection<Job> jobs,
-            DependencyGraph graph,
+            Collection<Job> standaloneJobs,
+            DIGraph<JobExecution> executionGraph,
             Scheduler scheduler,
             Collection<MappedJobListener> listeners) {
 
         this.name = name;
-        this.jobs = jobs;
-
-        this.graph = graph;
+        this.standaloneJobs = standaloneJobs;
+        this.executionGraph = executionGraph;
         this.scheduler = scheduler;
         this.listeners = listeners;
     }
@@ -57,7 +56,7 @@ class JobGroup implements Job {
         if (delegate == null) {
             synchronized (this) {
                 if (delegate == null) {
-                    delegate = ExecutableJobGroup.create(name, scheduler, graph, jobs);
+                    delegate = ExecutableJobGroup.create(name, scheduler, executionGraph, standaloneJobs);
                 }
             }
         }

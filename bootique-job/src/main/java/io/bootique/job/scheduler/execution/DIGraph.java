@@ -19,16 +19,7 @@
 
 package io.bootique.job.scheduler.execution;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The implementation here is basically an adjacency list, but a {@link Map} is
@@ -38,12 +29,15 @@ import java.util.Set;
  */
 class DIGraph<V> {
 
-    /**
-     * Note: {@link LinkedHashMap} is used for supporting insertion order.
-     */
-    private Map<V, List<V>> neighbors = new LinkedHashMap<>();
+    private final Map<V, List<V>> neighbors;
 
     public DIGraph() {
+        // LinkedHashMap is used for supporting insertion order.
+        this.neighbors = new LinkedHashMap<>();
+    }
+
+    public Set<V> allVertices() {
+        return neighbors.keySet();
     }
 
     /**
@@ -127,12 +121,18 @@ class DIGraph<V> {
         return result;
     }
 
+    public List<Set<V>> reverseTopSort() {
+        List<Set<V>> result = topSort();
+        Collections.reverse(result);
+        return result;
+    }
+
     /**
      * Return an eventual topological sort of the vertices; null for no such
      * sort (i.e. if there are cycles).
      *
      * @return List of groups of vertices. Vertices from the same group have the same rank.
-     *         Rank is the distance from a vertex, from which the graph traversal started).
+     * Rank is the distance from a vertex, from which the graph traversal started).
      */
     public List<Set<V>> topSort() {
         Map<V, Integer> degree = inDegree();

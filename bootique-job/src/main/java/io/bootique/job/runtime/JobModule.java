@@ -117,8 +117,8 @@ public class JobModule extends ConfigModule {
     @Provides
     @Singleton
     JobRegistry createJobRegistry(
-            Set<Job> jobs,
-            Set<JobListener> jobListeners,
+            Set<Job> standaloneJobs,
+            Set<JobListener> listeners,
             Set<MappedJobListener> mappedJobListeners,
             Provider<Scheduler> schedulerProvider,
             ConfigurationFactory configFactory) {
@@ -127,8 +127,8 @@ public class JobModule extends ConfigModule {
         };
         Map<String, JobDefinition> configuredDefinitions = configFactory.config(ref, "jobs");
 
-        List<MappedJobListener> allListeners = allListeners(jobListeners, mappedJobListeners);
-        return new DefaultJobRegistry(jobs, configuredDefinitions, schedulerProvider, allListeners);
+        List<MappedJobListener> allListeners = allListeners(listeners, mappedJobListeners);
+        return new DefaultJobRegistry(standaloneJobs, configuredDefinitions, schedulerProvider, allListeners);
     }
 
     @Singleton

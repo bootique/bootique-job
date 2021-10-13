@@ -97,7 +97,7 @@ public class DefaultScheduler implements Scheduler {
         Iterator<String> it = jobNamesSet.iterator();
         while (it.hasNext()) {
             String jobName = it.next();
-            if (!jobRegistry.getAvailableJobs().contains(jobName)) {
+            if (!jobRegistry.getJobNames().contains(jobName)) {
                 throw new BootiqueException(1, "Unknown job: " + jobName);
             } else if (!triggerMap.containsKey(jobName)) {
                 LOGGER.warn("No triggers configured for job: {}. Skipping...", jobName);
@@ -117,7 +117,7 @@ public class DefaultScheduler implements Scheduler {
 
 
         String badTriggers = triggers.stream()
-                .filter(t -> !jobRegistry.getAvailableJobs().contains(t.getJob()))
+                .filter(t -> !jobRegistry.getJobNames().contains(t.getJob()))
                 .map(t -> t.getJob() + ":" + t.getTrigger())
                 .collect(Collectors.joining(", "));
 

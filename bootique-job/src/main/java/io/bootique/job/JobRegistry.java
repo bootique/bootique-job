@@ -23,7 +23,19 @@ import java.util.Set;
 
 public interface JobRegistry {
 
-    Set<String> getAvailableJobs();
+    /**
+     * @deprecated since 3.0 in favor of {@link #getJobNames()}
+     */
+    default Set<String> getAvailableJobs() {
+        return getJobNames();
+    }
+
+    /**
+     * Returns all known job names, including standalone jobs and job groups.
+     *
+     * @since 3.0.M1
+     */
+    Set<String> getJobNames();
 
     Job getJob(String jobName);
 

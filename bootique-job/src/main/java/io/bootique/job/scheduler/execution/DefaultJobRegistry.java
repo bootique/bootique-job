@@ -32,98 +32,92 @@ import java.util.stream.Collectors;
 
 public class DefaultJobRegistry implements JobRegistry {
 
-    /**
-     * Combined list of single job names and group names,
-     * i.e. everything that can be "run"
-     */
-    private Set<String> availableJobs;
+    private final Provider<Scheduler> scheduler;
+    private final Collection<MappedJobListener> listeners;
+    private final Map<String, Job> standaloneJobs;
+    private final Map<String, JobDefinition> allJobDefinitions;
+    private final Set<String> allJobsAndGroupNames;
 
-    /**
-     * "Real" job implementations (no groups here)
-     */
-    private Map<String, Job> jobs;
+    // Lazily populated map of decorated runnable jobs (either standalone or groups)
+    private final ConcurrentMap<String, Job> decoratedJobAndGroups;
 
-    /**
-     * All single job and group definitions, that were specified in configuration
-     */
-    private Map<String, JobDefinition> jobDefinitions;
+    public DefaultJobRegistry(
+            Collection<Job> standaloneJobs,
+            Map<String, JobDefinition> jobDefinitions,
+            Provider<Scheduler> scheduler,
+            Collection<MappedJobListener> listeners) {
 
-    /**
-     * Combined collection of single jobs and job groups, lazily populated upon request to retrieve a particular job
-     */
-    private ConcurrentMap<String, Job> executions;
-
-    private Provider<Scheduler> schedulerProvider;
-    private Collection<MappedJobListener> listeners;
-
-    public DefaultJobRegistry(Collection<Job> jobs,
-                              Map<String, JobDefinition> jobDefinitions,
-                              Provider<Scheduler> schedulerProvider,
-                              Collection<MappedJobListener> listeners) {
-        this.availableJobs = Collections.unmodifiableSet(collectJobNames(jobs, jobDefinitions));
-        this.jobs = mapJobs(jobs);
-        this.jobDefinitions = collectJobDefinitions(jobDefinitions, jobs);
-        this.executions = new ConcurrentHashMap<>((int) (jobDefinitions.size() / 0.75d) + 1);
-        this.schedulerProvider = schedulerProvider;
+        this.allJobsAndGroupNames = allJobsAndGroupNames(standaloneJobs, jobDefinitions);
+        this.allJobDefinitions = allJobDefinitions(jobDefinitions, standaloneJobs);
+        this.standaloneJobs = jobsByName(standaloneJobs);
+        this.decoratedJobAndGroups = new ConcurrentHashMap<>((int) (jobDefinitions.size() / 0.75d) + 1);
+        this.scheduler = scheduler;
         this.listeners = listeners;
     }
 
-    private Map<String, JobDefinition> collectJobDefinitions(Map<String, JobDefinition> configured, Collection<Job> jobs) {
+    private Set<String> allJobsAndGroupNames(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions) {
+        Set<String> jobNames = jobs.stream().map(job -> job.getMetadata().getName()).collect(Collectors.toSet());
+        jobNames.addAll(jobDefinitions.keySet());
+        return Collections.unmodifiableSet(jobNames);
+    }
+
+    private Map<String, JobDefinition> allJobDefinitions(
+            Map<String, JobDefinition> configured,
+            Collection<Job> standaloneJobs) {
+
+        // combine explicit job definitions from config with default definitions for the existing jobs
         Map<String, JobDefinition> combined = new HashMap<>(configured);
+
         // create definition for each job, that is not present in config
-        jobs.stream().filter(job -> !combined.containsKey(job.getMetadata().getName())).forEach(job -> {
-            combined.put(job.getMetadata().getName(), new SingleJobDefinition());
-        });
+        standaloneJobs.stream().map(j -> j.getMetadata().getName())
+                .filter(n -> !combined.containsKey(n))
+                .forEach(n -> combined.put(n, new SingleJobDefinition()));
+
         return combined;
     }
 
-    private Set<String> collectJobNames(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions) {
-        Set<String> jobNames = jobs.stream().map(job -> job.getMetadata().getName()).collect(Collectors.toSet());
-        jobNames.addAll(jobDefinitions.keySet());
-        return jobNames;
-    }
-
     @Override
-    public Set<String> getAvailableJobs() {
-        return availableJobs;
+    public Set<String> getJobNames() {
+        return allJobsAndGroupNames;
     }
 
     @Override
     public Job getJob(String jobName) {
-        return executions.computeIfAbsent(jobName, this::createJob);
+        return decoratedJobAndGroups.computeIfAbsent(jobName, this::createJob);
     }
 
     /**
      * @since 3.0
      */
     protected Job createJob(String jobName) {
-        DependencyGraph graph = new DependencyGraph(jobName, jobDefinitions, jobs);
-        Collection<Job> executionJobs = collectJobs(graph);
 
-        if (executionJobs.size() != 1) {
-            return new JobGroup(jobName, executionJobs, graph, schedulerProvider.get(), listeners);
+        checkJobExists(jobName);
+
+        DIGraph<JobExecution> graph = new JobGraphBuilder(allJobDefinitions, standaloneJobs).createGraph(jobName);
+        List<Job> standaloneJobsInGraph = standaloneJobsInGraph(graph);
+
+        if (standaloneJobsInGraph.size() != 1) {
+            return new JobGroup(jobName, standaloneJobsInGraph, graph, scheduler.get(), listeners);
         }
 
-        // do not create a full-fledged execution for standalone jobs
-        Job job = executionJobs.iterator().next();
+        Job job = standaloneJobsInGraph.get(0);
         Job withName = decorateWithName(jobName, job);
 
-        JobExecution e1 = graph.topSort().get(0).iterator().next();
-        return new ListenerAwareJob(withName, e1.getParams(), listeners);
+        JobExecution exec = graph.topSort().get(0).iterator().next();
+        return new ListenerAwareJob(withName, exec.getParams(), listeners);
     }
 
     @Override
     public boolean allowsSimultaneousExecutions(String jobName) {
-        if (!availableJobs.contains(jobName)) {
-            throw new IllegalArgumentException("Unknown job: " + jobName);
-        }
-        Job job = jobs.get(jobName);
+        checkJobExists(jobName);
+
+        Job job = standaloneJobs.get(jobName);
         // simultaneous executions are allowed for job groups (in this case job is null)
         // and real jobs, that haven't been annotated with @SerialJob
-        return (job == null) || !job.getClass().isAnnotationPresent(SerialJob.class);
+        return job == null || !job.getClass().isAnnotationPresent(SerialJob.class);
     }
 
-    private Map<String, Job> mapJobs(Collection<Job> jobs) {
+    private Map<String, Job> jobsByName(Collection<Job> jobs) {
         return jobs.stream().collect(HashMap::new, (m, j) -> m.put(j.getMetadata().getName(), j), HashMap::putAll);
     }
 
@@ -133,7 +127,7 @@ public class DefaultJobRegistry implements JobRegistry {
      */
     private Job decorateWithName(String name, Job job) {
         JobMetadata metadata = job.getMetadata();
-        if(metadata.getName().equals(name)) {
+        if (metadata.getName().equals(name)) {
             return job;
         }
 
@@ -142,10 +136,16 @@ public class DefaultJobRegistry implements JobRegistry {
         return new JobMetadataDecorator(builder.build(), job);
     }
 
-    private Collection<Job> collectJobs(DependencyGraph graph) {
-        return jobs.entrySet().stream()
-                .filter(e -> graph.getJobNames().contains(e.getKey()))
-                .map(Map.Entry::getValue)
+    private List<Job> standaloneJobsInGraph(DIGraph<JobExecution> graph) {
+        return graph.allVertices().stream()
+                .map(e -> standaloneJobs.get(e.getJobName()))
+                .filter(j -> j != null)
                 .collect(Collectors.toList());
+    }
+
+    private void checkJobExists(String jobName) {
+        if (!allJobsAndGroupNames.contains(jobName)) {
+            throw new IllegalArgumentException("Unknown job: " + jobName);
+        }
     }
 }

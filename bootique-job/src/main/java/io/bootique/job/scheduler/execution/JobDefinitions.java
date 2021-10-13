@@ -23,44 +23,35 @@ import io.bootique.BootiqueException;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJobDefinition;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-class Environment {
+class JobDefinitions {
 
-    private Map<String, ? extends JobDefinition> definitions;
-    private Optional<Environment> defaultEnvironment;
+    private final Map<String, ? extends JobDefinition> definitions;
+    private final JobDefinitions defaults;
 
-    public Environment(Map<String, ? extends JobDefinition> definitions) {
+    JobDefinitions(Map<String, ? extends JobDefinition> definitions) {
         this(definitions, null);
     }
 
-    public Environment(Map<String, ? extends JobDefinition> definitions,
-                       Environment defaultEnvironment) {
-        this.definitions = definitions;
-        this.defaultEnvironment = Optional.ofNullable(defaultEnvironment);
+    JobDefinitions(Map<String, ? extends JobDefinition> definitions, JobDefinitions defaults) {
+        this.definitions = Objects.requireNonNull(definitions);
+        this.defaults = defaults;
     }
 
-    public JobDefinition getDefinition(String jobName) {
+    JobDefinition getDefinition(String jobName) {
         JobDefinition definition = definitions.get(jobName);
-        if (defaultEnvironment.isPresent()) {
-            if (definition == null) {
-                definition = defaultEnvironment.get().getDefinition(jobName);
-            } else if (definition instanceof SingleJobDefinition) {
-                JobDefinition delegateDefinition = defaultEnvironment.get().getDefinition(jobName);
-                if (delegateDefinition instanceof SingleJobDefinition) {
-                    definition = mergeDefinitions((SingleJobDefinition) definition, (SingleJobDefinition) delegateDefinition);
-                }
-            }
+        JobDefinition defaultDefinition = defaults != null ? defaults.getDefinition(jobName) : null;
+
+        if (definition instanceof SingleJobDefinition && defaultDefinition instanceof SingleJobDefinition) {
+            return mergeDefinitions((SingleJobDefinition) definition, (SingleJobDefinition) defaultDefinition);
         }
 
-        if(definition == null) {
+        if (definition == null && defaultDefinition == null) {
             throw new BootiqueException(1, "No job object for name '" + jobName + "'");
         }
 
-        return definition;
+        return definition != null ? definition : defaultDefinition;
     }
 
     private SingleJobDefinition mergeDefinitions(SingleJobDefinition overriding, SingleJobDefinition overriden) {

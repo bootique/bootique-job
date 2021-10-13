@@ -38,12 +38,12 @@ class JobGroupRunner {
 
     private final Scheduler scheduler;
     private final JobMetadata groupMetadata;
-    private final Map<String, Job> jobs;
+    private final Map<String, Job> standaloneJobs;
 
-    JobGroupRunner(Scheduler scheduler, JobMetadata groupMetadata, Map<String, Job> jobs) {
+    JobGroupRunner(Scheduler scheduler, JobMetadata groupMetadata, Map<String, Job> standaloneJobs) {
         this.scheduler = scheduler;
         this.groupMetadata = groupMetadata;
-        this.jobs = jobs;
+        this.standaloneJobs = standaloneJobs;
     }
 
     void execute(Set<JobExecution> jobExecutions, Map<String, Object> runParams) {
@@ -55,7 +55,7 @@ class JobGroupRunner {
         Set<JobResult> failures = new HashSet<>();
 
         jobExecutions.stream()
-                .map(e -> runJob(e, runParams))
+                .map(e -> runJob(e.getJobName(), e.getParams(), runParams))
                 .map(JobFuture::get)
                 .forEach(r -> processJobResult(r, failures));
 
@@ -71,9 +71,10 @@ class JobGroupRunner {
         }
     }
 
-    private JobFuture runJob(JobExecution execution, Map<String, Object> runParams) {
-        Job job = jobs.get(execution.getJobName());
-        return scheduler.runOnce(job, mergeParams(runParams, execution.getParams()));
+    private JobFuture runJob(String jobName, Map<String, Object> configParams, Map<String, Object> runParams) {
+        return scheduler.runOnce(
+                standaloneJobs.get(jobName),
+                mergeParams(configParams, runParams));
     }
 
     private void processJobResult(JobResult result, Set<JobResult> failures) {
@@ -95,7 +96,7 @@ class JobGroupRunner {
         }
     }
 
-    private Map<String, Object> mergeParams(Map<String, Object> overridingParams, Map<String, Object> defaultParams) {
+    private Map<String, Object> mergeParams(Map<String, Object> defaultParams, Map<String, Object> overridingParams) {
         Map<String, Object> merged = new HashMap<>(defaultParams);
         merged.putAll(overridingParams);
         return merged;

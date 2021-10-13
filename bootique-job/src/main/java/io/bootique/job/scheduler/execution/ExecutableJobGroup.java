@@ -30,25 +30,25 @@ import java.util.*;
 class ExecutableJobGroup extends BaseJob {
 
     private final JobGroupRunner runner;
-    private final List<Set<JobExecution>> executions;
+    private final List<Set<JobExecution>> executionGroups;
 
     public static ExecutableJobGroup create(
             String jobName,
             Scheduler scheduler,
-            DependencyGraph graph,
-            Collection<Job> jobs) {
+            DIGraph<JobExecution> executionGraph,
+            Collection<Job> standaloneJobs) {
 
-        JobMetadata groupMetadata = groupMetadata(jobName, jobs);
+        JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs);
         return new ExecutableJobGroup(
                 groupMetadata,
-                new JobGroupRunner(scheduler, groupMetadata, jobsByName(jobs)),
-                executions(graph));
+                new JobGroupRunner(scheduler, groupMetadata, jobsByName(standaloneJobs)),
+                executionGraph.reverseTopSort());
     }
 
-    ExecutableJobGroup(JobMetadata metadata, JobGroupRunner runner, List<Set<JobExecution>> executions) {
+    ExecutableJobGroup(JobMetadata metadata, JobGroupRunner runner, List<Set<JobExecution>> executionGroups) {
         super(metadata);
         this.runner = runner;
-        this.executions = executions;
+        this.executionGroups = executionGroups;
     }
 
     private static JobMetadata groupMetadata(String jobName, Collection<Job> jobs) {
@@ -65,15 +65,9 @@ class ExecutableJobGroup extends BaseJob {
         return byName;
     }
 
-    private static List<Set<JobExecution>> executions(DependencyGraph graph) {
-        List<Set<JobExecution>> executions = graph.topSort();
-        Collections.reverse(executions);
-        return executions;
-    }
-
     @Override
     public JobResult run(Map<String, Object> params) {
-        executions.stream().forEach(e -> runner.execute(e, params));
+        executionGroups.stream().forEach(e -> runner.execute(e, params));
         return JobResult.success(getMetadata());
     }
 }

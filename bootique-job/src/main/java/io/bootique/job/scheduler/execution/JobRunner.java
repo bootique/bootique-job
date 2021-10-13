@@ -36,7 +36,10 @@ class JobRunner {
         return listeners.isEmpty() ? runNoListeners(job, parameters) : runWithListeners(job, parameters, listeners);
     }
 
-    private static JobResult runWithListeners(Job job, Map<String, Object> parameters, Collection<MappedJobListener> listeners) {
+    private static JobResult runWithListeners(
+            Job job,
+            Map<String, Object> parameters,
+            Collection<MappedJobListener> listeners) {
 
         String jobName = job.getMetadata().getName();
         JobListenerInvoker listenerInvoker = new JobListenerInvoker(jobName);

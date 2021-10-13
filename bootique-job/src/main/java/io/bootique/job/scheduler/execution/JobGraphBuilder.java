@@ -29,29 +29,26 @@ import io.bootique.job.config.SingleJobDefinition;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-class DependencyGraph {
+class JobGraphBuilder {
 
     private final Map<String, JobExecution> knownExecutions;
-    private final DIGraph<JobExecution> graph;
-    private final Map<String, Job> jobs;
+    private final Map<String, Job> standaloneJobs;
+    private final JobDefinitions definitions;
 
-    DependencyGraph(String rootJobName, Map<String, JobDefinition> definitionMap, Map<String, Job> jobs) {
-        this.jobs = jobs;
+    JobGraphBuilder(Map<String, JobDefinition> definitions, Map<String, Job> standaloneJobs) {
+        this.definitions = new JobDefinitions(definitions);
+        this.standaloneJobs = standaloneJobs;
         this.knownExecutions = new LinkedHashMap<>();
-        this.graph = createGraph(rootJobName, new Environment(definitionMap), new HashMap<>());
     }
 
-    private DIGraph<JobExecution> createGraph(
-            String jobName,
-            Environment jobDefinitions,
-            Map<String, JobExecution> childExecutions) {
-
+    /**
+     * Creates a dependency graph rooted in the given job name
+     */
+    public DIGraph<JobExecution> createGraph(String rootJobName) {
         DIGraph<JobExecution> graph = new DIGraph<>();
-        populateWithDependencies(jobName, null, graph, jobDefinitions, childExecutions);
+        populateWithDependencies(rootJobName, null, graph, definitions, new HashMap<>());
         return graph;
     }
 
@@ -59,7 +56,7 @@ class DependencyGraph {
             String jobName,
             JobExecution childExecution,
             DIGraph<JobExecution> graph,
-            Environment jobDefinitions,
+            JobDefinitions jobDefinitions,
             Map<String, JobExecution> childExecutions) {
 
         JobDefinition jobDefinition = jobDefinitions.getDefinition(jobName);
@@ -75,7 +72,7 @@ class DependencyGraph {
         } else if (jobDefinition instanceof JobGroupDefinition) {
             JobGroupDefinition group = (JobGroupDefinition) jobDefinition;
             group.getJobs().forEach((name, definition) -> {
-                Environment groupDefinitions = new Environment(group.getJobs(), jobDefinitions);
+                JobDefinitions groupDefinitions = new JobDefinitions(group.getJobs(), jobDefinitions);
                 populateWithDependencies(name, childExecution, graph, groupDefinitions, childExecutions);
             });
 
@@ -84,10 +81,12 @@ class DependencyGraph {
         }
     }
 
-    private void populateWithSingleJobDependencies(JobExecution execution,
-                                                   DIGraph<JobExecution> graph,
-                                                   Environment jobDefinitions,
-                                                   Map<String, JobExecution> childExecutions) {
+    private void populateWithSingleJobDependencies(
+            JobExecution execution,
+            DIGraph<JobExecution> graph,
+            JobDefinitions jobDefinitions,
+            Map<String, JobExecution> childExecutions) {
+
         String jobName = execution.getJobName();
         childExecutions.put(jobName, execution);
         ((SingleJobDefinition) jobDefinitions.getDefinition(jobName)).getDependsOn().ifPresent(parents ->
@@ -101,18 +100,16 @@ class DependencyGraph {
     }
 
     private JobExecution getOrCreateExecution(String jobName, SingleJobDefinition definition) {
-        JobExecution execution = knownExecutions.get(jobName);
-        if (execution == null) {
-            Job job = jobs.get(jobName);
+
+        return knownExecutions.computeIfAbsent(jobName, jn -> {
+            Job job = standaloneJobs.get(jobName);
 
             if (job == null) {
                 throw new BootiqueException(1, "No job object for name '" + jobName + "'");
             }
 
-            execution = new JobExecution(jobName, convertParams(job.getMetadata(), definition.getParams()));
-            knownExecutions.put(jobName, execution);
-        }
-        return execution;
+            return new JobExecution(jobName, convertParams(job.getMetadata(), definition.getParams()));
+        });
     }
 
     private Map<String, Object> convertParams(JobMetadata jobMD, Map<String, String> params) {
@@ -128,13 +125,5 @@ class DependencyGraph {
 
     private RuntimeException createUnexpectedJobDefinitionError(JobDefinition definition) {
         return new IllegalArgumentException("Unexpected job definition type: " + definition.getClass().getName());
-    }
-
-    public List<Set<JobExecution>> topSort() {
-        return graph.topSort();
-    }
-
-    public Set<String> getJobNames() {
-        return knownExecutions.keySet();
     }
 }

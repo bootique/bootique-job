@@ -23,72 +23,75 @@ import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
 import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.JobParameterMetadata;
 import io.bootique.job.JobRegistry;
 import io.bootique.log.BootLogger;
 import io.bootique.meta.application.CommandMetadata;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class ListCommand extends CommandWithMetadata {
 
-	private Provider<JobRegistry> jobRegistryProvider;
-	private BootLogger bootLogger;
+    private Provider<JobRegistry> jobRegistryProvider;
+    private BootLogger bootLogger;
 
-	private static CommandMetadata createMetadata() {
-		return CommandMetadata.builder(ListCommand.class).description("Lists all jobs available in the app").build();
-	}
+    private static CommandMetadata createMetadata() {
+        return CommandMetadata.builder(ListCommand.class).description("Lists all jobs available in the app").build();
+    }
 
-	@Inject
-	public ListCommand(Provider<JobRegistry> jobRegistryProvider, BootLogger bootLogger) {
-		super(createMetadata());
+    @Inject
+    public ListCommand(Provider<JobRegistry> jobRegistryProvider, BootLogger bootLogger) {
+        super(createMetadata());
 
-		this.jobRegistryProvider = jobRegistryProvider;
-		this.bootLogger = bootLogger;
-	}
+        this.jobRegistryProvider = jobRegistryProvider;
+        this.bootLogger = bootLogger;
+    }
 
-	@Override
-	public CommandOutcome run(Cli cli) {
+    @Override
+    public CommandOutcome run(Cli cli) {
 
-		JobRegistry jobRegistry = jobRegistryProvider.get();
-		Collection<Job> jobs = jobRegistry.getAvailableJobs().stream()
-				.map(jobRegistry::getJob)
-				.sorted(Comparator.comparing(job -> job.getMetadata().getName(), String.CASE_INSENSITIVE_ORDER))
-				.collect(Collectors.toList());
-		if (jobs.isEmpty()) {
-			bootLogger.stdout("No jobs.");
-			return CommandOutcome.succeeded();
-		}
+        JobRegistry jobRegistry = jobRegistryProvider.get();
+        Collection<JobMetadata> jobsInfo = jobRegistry.getJobNames()
+                .stream()
+                .map(jobRegistry::getJob)
+                .map(Job::getMetadata)
+                .sorted(Comparator.comparing(md -> md.getName(), String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toList());
 
-		bootLogger.stdout("Available jobs:");
+        if (jobsInfo.isEmpty()) {
+            bootLogger.stdout("No jobs.");
+            return CommandOutcome.succeeded();
+        }
 
-		// TODO: sort jobs by name for more readable output
+        bootLogger.stdout("Available jobs:");
+        jobsInfo.forEach(this::printJobInfo);
+        return CommandOutcome.succeeded();
+    }
 
-		jobs.forEach(j -> {
-			Optional<String> params = j.getMetadata().getParameters().stream().map(p -> {
+    private void printJobInfo(JobMetadata md) {
+        String paramsString = paramsToString(md.getParameters());
+        bootLogger.stdout(String.format("     - %s%s", md.getName(), paramsString));
+    }
 
-				StringBuilder buffer = new StringBuilder();
+    String paramsToString(Collection<JobParameterMetadata<?>> params) {
+        return params.stream().map(this::paramToString).collect(Collectors.joining(", ", "(", ")"));
+    }
 
-				buffer.append(p.getName()).append(":").append(p.getTypeName());
+    String paramToString(JobParameterMetadata<?> pmd) {
+        StringBuilder buffer = new StringBuilder()
+                .append(pmd.getName())
+                .append(":")
+                .append(pmd.getTypeName());
 
-				if (p.getDefaultValue() != null) {
-					buffer.append("=").append(p.getDefaultValue());
-				}
+        if (pmd.getDefaultValue() != null) {
+            buffer.append("=").append(pmd.getDefaultValue());
+        }
 
-				return buffer.toString();
-			}).reduce((s1, s2) -> s1 + ", " + s2);
-
-			if (params.isPresent()) {
-				bootLogger.stdout(String.format("     - %s(%s)", j.getMetadata().getName(), params.get()));
-			} else {
-				bootLogger.stdout(String.format("     - %s", j.getMetadata().getName()));
-			}
-		});
-
-		return CommandOutcome.succeeded();
-	}
+        return buffer.toString();
+    }
 }
