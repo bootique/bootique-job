@@ -52,7 +52,7 @@ public class MappedListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_Ordering1() throws Exception {
+    public void testAddMappedListener_Ordering1() {
         Job1 job1 = new Job1(0);
         Set<? extends Job> jobs = Collections.singleton(job1);
 
@@ -73,7 +73,7 @@ public class MappedListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_Ordering2() throws Exception {
+    public void testAddMappedListener_Ordering2() {
         Job1 job1 = new Job1(0);
         Set<? extends Job> jobs = Collections.singleton(job1);
 
@@ -136,7 +136,7 @@ public class MappedListenerIT {
 
         Set<MappedJobListener> listeners = runtime.getInstance(Key.get(new TypeLiteral<Set<MappedJobListener>>() {
         }));
-        assertTrue(listeners.size() == 2);
+        assertEquals(2, listeners.size());
         assertEquals(1, listeners.stream()
                 .filter(l -> l.getListener() instanceof JobLogListener)
                 .count());
@@ -163,9 +163,7 @@ public class MappedListenerIT {
     public static class Listener1 implements JobListener {
         @Override
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
-            finishEventSource.accept(result -> {
-                SharedState.append("_L1_finished");
-            });
+            finishEventSource.accept(result -> SharedState.append("_L1_finished"));
 
             SharedState.append("_L1_started");
         }
@@ -175,9 +173,7 @@ public class MappedListenerIT {
 
         @Override
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
-            finishEventSource.accept(result -> {
-                SharedState.append("_L2_finished");
-            });
+            finishEventSource.accept(result -> SharedState.append("_L2_finished"));
             SharedState.append("_L2_started");
         }
     }
@@ -186,9 +182,7 @@ public class MappedListenerIT {
 
         @Override
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
-            finishEventSource.accept(result -> {
-                SharedState.append("_L3_finished");
-            });
+            finishEventSource.accept(result -> SharedState.append("_L3_finished"));
             SharedState.append("_L3_started");
         }
     }
