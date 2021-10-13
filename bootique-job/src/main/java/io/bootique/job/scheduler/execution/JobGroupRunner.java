@@ -46,7 +46,7 @@ class JobGroupRunner {
         this.standaloneJobs = standaloneJobs;
     }
 
-    void execute(Set<JobExecution> jobExecutions, Map<String, Object> runParams) {
+    void run(Set<JobExecution> jobExecutions, Map<String, Object> runParams) {
 
         if (jobExecutions.isEmpty()) {
             JobResult.failure(groupMetadata, "No jobs");

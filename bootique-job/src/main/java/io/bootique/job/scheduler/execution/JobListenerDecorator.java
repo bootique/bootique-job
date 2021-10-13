@@ -20,6 +20,7 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
@@ -28,37 +29,34 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 
-class JobRunner {
+class JobListenerDecorator implements Job {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobRunner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobListenerDecorator.class);
 
-    static JobResult run(Job job, Map<String, Object> parameters, Collection<MappedJobListener> listeners) {
-        return listeners.isEmpty() ? runNoListeners(job, parameters) : runWithListeners(job, parameters, listeners);
+    private final Job delegate;
+    private final Collection<MappedJobListener> listeners;
+
+    JobListenerDecorator(Job delegate, Collection<MappedJobListener> listeners) {
+        this.delegate = delegate;
+        this.listeners = listeners;
     }
 
-    private static JobResult runWithListeners(
-            Job job,
-            Map<String, Object> parameters,
-            Collection<MappedJobListener> listeners) {
+    @Override
+    public JobMetadata getMetadata() {
+        return delegate.getMetadata();
+    }
 
-        String jobName = job.getMetadata().getName();
+    @Override
+    public JobResult run(Map<String, Object> params) {
+
+        String jobName = getMetadata().getName();
         JobListenerInvoker listenerInvoker = new JobListenerInvoker(jobName);
-        listenerInvoker.onStart(listeners, parameters);
+        listenerInvoker.onStart(listeners, params);
 
-        JobResult result = runNoListeners(job, parameters);
+        JobResult result = delegate.run(params);
 
         listenerInvoker.onFinish(result);
         return result;
-    }
-
-    private static JobResult runNoListeners(Job job, Map<String, Object> parameters) {
-        try {
-            JobResult result = job.run(parameters);
-            return result != null ? result : JobResult.unknown(job.getMetadata());
-        } catch (Exception e) {
-            LOGGER.error(job.getMetadata().getName() + " failed to run.", e);
-            return JobResult.failure(job.getMetadata(), e);
-        }
     }
 
     static class JobListenerInvoker implements Consumer<Consumer<JobResult>> {

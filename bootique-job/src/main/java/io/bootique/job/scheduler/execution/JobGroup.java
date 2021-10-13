@@ -30,7 +30,7 @@ import java.util.Map;
 
 class JobGroup implements Job {
 
-    private volatile ExecutableJobGroup delegate;
+    private volatile Job delegate;
 
     private final String name;
     private final Collection<Job> standaloneJobs;
@@ -52,15 +52,26 @@ class JobGroup implements Job {
         this.listeners = listeners;
     }
 
-    private ExecutableJobGroup getDelegate() {
+    private Job getDelegate() {
         if (delegate == null) {
             synchronized (this) {
                 if (delegate == null) {
-                    delegate = ExecutableJobGroup.create(name, scheduler, executionGraph, standaloneJobs);
+                    delegate = createDelegate();
                 }
             }
         }
         return delegate;
+    }
+
+    private Job createDelegate() {
+        Job groupJob = JobGroupCompiled.create(name, scheduler, executionGraph, standaloneJobs);
+
+        // TODO: merge execution params into individual jobs' params?
+
+        Job withListeners = decorateWithListeners(groupJob, listeners);
+
+        // exception handler must be the last decorator in the chain
+        return decorateWithExceptionHandler(withListeners);
     }
 
     @Override
@@ -70,7 +81,14 @@ class JobGroup implements Job {
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        // TODO: merge execution params into individual jobs' params
-        return JobRunner.run(getDelegate(), params, listeners);
+        return getDelegate().run(params);
+    }
+
+    private Job decorateWithListeners(Job job, Collection<MappedJobListener> listeners) {
+        return listeners.isEmpty() ? job : new JobListenerDecorator(job, listeners);
+    }
+
+    private Job decorateWithExceptionHandler(Job job) {
+        return new JobExceptionHandlerDecorator(job);
     }
 }

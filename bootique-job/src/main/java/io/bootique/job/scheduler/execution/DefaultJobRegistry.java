@@ -23,6 +23,8 @@ import io.bootique.job.*;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJobDefinition;
 import io.bootique.job.scheduler.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
 import java.util.*;
@@ -31,6 +33,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 public class DefaultJobRegistry implements JobRegistry {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobRegistry.class);
 
     private final Provider<Scheduler> scheduler;
     private final Collection<MappedJobListener> listeners;
@@ -96,15 +100,27 @@ public class DefaultJobRegistry implements JobRegistry {
         DIGraph<JobExecution> graph = new JobGraphBuilder(allJobDefinitions, standaloneJobs).createGraph(jobName);
         List<Job> standaloneJobsInGraph = standaloneJobsInGraph(graph);
 
-        if (standaloneJobsInGraph.size() != 1) {
-            return new JobGroup(jobName, standaloneJobsInGraph, graph, scheduler.get(), listeners);
+        switch (standaloneJobsInGraph.size()) {
+            case 1:
+                JobExecution exec = graph.topSort().get(0).iterator().next();
+
+                Job job = standaloneJobsInGraph.get(0);
+                Job withName = decorateWithName(job, jobName);
+                Job withListeners = decorateWithListeners(withName, listeners);
+
+                // parameter decorator must go AFTER the listeners decorator as to enable listeners to receieve
+                // curried parameter values
+
+                Job withParamBindings = decorateWithParamBindings(withListeners, exec.getParams());
+
+                // exception handler must be the last decorator in the chain
+                return decorateWithExceptionHandler(withParamBindings);
+            case 0:
+                // fall through to the JobGroup
+                LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
+            default:
+                return new JobGroup(jobName, standaloneJobsInGraph, graph, scheduler.get(), listeners);
         }
-
-        Job job = standaloneJobsInGraph.get(0);
-        Job withName = decorateWithName(jobName, job);
-
-        JobExecution exec = graph.topSort().get(0).iterator().next();
-        return new ListenerAwareJob(withName, exec.getParams(), listeners);
     }
 
     @Override
@@ -125,7 +141,7 @@ public class DefaultJobRegistry implements JobRegistry {
      * Optionally decorates a job with a different name. Decoration may be needed if we need to execute a job group
      * with a single job.
      */
-    private Job decorateWithName(String name, Job job) {
+    private Job decorateWithName(Job job, String name) {
         JobMetadata metadata = job.getMetadata();
         if (metadata.getName().equals(name)) {
             return job;
@@ -133,7 +149,19 @@ public class DefaultJobRegistry implements JobRegistry {
 
         JobMetadata.Builder builder = JobMetadata.builder(name);
         metadata.getParameters().forEach(builder::param);
-        return new JobMetadataDecorator(builder.build(), job);
+        return new JobMetadataDecorator(job, builder.build());
+    }
+
+    private Job decorateWithListeners(Job job, Collection<MappedJobListener> listeners) {
+        return listeners.isEmpty() ? job : new JobListenerDecorator(job, listeners);
+    }
+
+    private Job decorateWithParamBindings(Job job, Map<String, Object> params) {
+        return params.isEmpty() ? job : new JobParamDefaultsDecorator(job, params);
+    }
+
+    private Job decorateWithExceptionHandler(Job job) {
+        return new JobExceptionHandlerDecorator(job);
     }
 
     private List<Job> standaloneJobsInGraph(DIGraph<JobExecution> graph) {

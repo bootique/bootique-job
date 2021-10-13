@@ -16,29 +16,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.BaseJob;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 /**
  * @since 3.0
  */
-class JobMetadataDecorator extends BaseJob {
+class JobExceptionHandlerDecorator implements Job {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobExceptionHandlerDecorator.class);
 
     private final Job delegate;
 
-    public JobMetadataDecorator(Job delegate, JobMetadata metadata) {
-        super(metadata);
+    JobExceptionHandlerDecorator(Job delegate) {
         this.delegate = delegate;
     }
 
     @Override
+    public JobMetadata getMetadata() {
+        return delegate.getMetadata();
+    }
+
+    @Override
     public JobResult run(Map<String, Object> params) {
-        return delegate.run(params);
+        try {
+            JobResult result = delegate.run(params);
+            return result != null ? result : JobResult.unknown(getMetadata());
+        } catch (Exception e) {
+            LOGGER.error("Run failure: " + getMetadata().getName(), e);
+            return JobResult.failure(getMetadata(), e);
+        }
     }
 }

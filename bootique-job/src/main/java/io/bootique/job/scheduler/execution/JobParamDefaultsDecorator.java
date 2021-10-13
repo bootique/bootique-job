@@ -16,42 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package io.bootique.job.scheduler.execution;
 
+import io.bootique.job.BaseJob;
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobResult;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-class ListenerAwareJob implements Job {
+/**
+ * @since 3.0
+ */
+class JobParamDefaultsDecorator extends BaseJob {
 
     private final Job delegate;
     private final Map<String, Object> defaultParams;
-    private final Collection<MappedJobListener> listeners;
 
-    ListenerAwareJob(Job delegate, Map<String, Object> defaultParams, Collection<MappedJobListener> listeners) {
+    public JobParamDefaultsDecorator(Job delegate, Map<String, Object> defaultParams) {
+        super(delegate.getMetadata());
         this.delegate = delegate;
         this.defaultParams = defaultParams;
-        this.listeners = listeners;
     }
 
     @Override
-    public JobMetadata getMetadata() {
-        return delegate.getMetadata();
+    public JobResult run(Map<String, Object> params) {
+        return delegate.run(mergeParams(params));
     }
 
-    @Override
-    public JobResult run(Map<String, Object> parameters) {
-        Map<String, Object> mergedParams = mergeParams(parameters, this.defaultParams);
-        return JobRunner.run(delegate, mergedParams, listeners);
-    }
-
-    private Map<String, Object> mergeParams(Map<String, Object> overridingParams, Map<String, Object> defaultParams) {
+    protected Map<String, Object> mergeParams(Map<String, Object> overridingParams) {
         Map<String, Object> merged = new HashMap<>(defaultParams);
         merged.putAll(overridingParams);
         return merged;

@@ -27,25 +27,28 @@ import io.bootique.job.scheduler.Scheduler;
 
 import java.util.*;
 
-class ExecutableJobGroup extends BaseJob {
+/**
+ * @since 3.0
+ */
+class JobGroupCompiled extends BaseJob {
 
     private final JobGroupRunner runner;
     private final List<Set<JobExecution>> executionGroups;
 
-    public static ExecutableJobGroup create(
+    public static JobGroupCompiled create(
             String jobName,
             Scheduler scheduler,
             DIGraph<JobExecution> executionGraph,
             Collection<Job> standaloneJobs) {
 
         JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs);
-        return new ExecutableJobGroup(
+        return new JobGroupCompiled(
                 groupMetadata,
                 new JobGroupRunner(scheduler, groupMetadata, jobsByName(standaloneJobs)),
                 executionGraph.reverseTopSort());
     }
 
-    ExecutableJobGroup(JobMetadata metadata, JobGroupRunner runner, List<Set<JobExecution>> executionGroups) {
+    JobGroupCompiled(JobMetadata metadata, JobGroupRunner runner, List<Set<JobExecution>> executionGroups) {
         super(metadata);
         this.runner = runner;
         this.executionGroups = executionGroups;
@@ -67,7 +70,7 @@ class ExecutableJobGroup extends BaseJob {
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        executionGroups.stream().forEach(e -> runner.execute(e, params));
+        executionGroups.stream().forEach(e -> runner.run(e, params));
         return JobResult.success(getMetadata());
     }
 }
