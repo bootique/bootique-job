@@ -34,18 +34,15 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @BQTest
-public class JobGroupIT {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobGroupIT.class);
+public class Scheduler_JobGroupIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler_JobGroupIT.class);
 
     private ExecutorService executor;
 
@@ -67,7 +64,7 @@ public class JobGroupIT {
     }
 
     @Test
-    public void testJobGroup() throws InterruptedException {
+    public void testRunOnce_JobGroup() throws InterruptedException {
         String jobGroupName = "group1";
         Scheduler scheduler = app.getInstance(Scheduler.class);
         Map<String, Object> parameters = new HashMap<>();
@@ -79,8 +76,6 @@ public class JobGroupIT {
         executor.submit(() -> {
             try {
                 resultQueue.add(scheduler.runOnce(jobGroupName, parameters).get());
-            } catch (Exception e) {
-                LOGGER.error("Failed to run job", e);
             } finally {
                 LOGGER.info(resultQueue.element().toString());
                 latch.countDown();
@@ -93,13 +88,31 @@ public class JobGroupIT {
         }
 
         assertEquals(1, resultQueue.size());
-        Iterator<JobResult> iter = resultQueue.iterator();
+        assertEquals(JobOutcome.SUCCESS, resultQueue.peek().getOutcome());
+    }
 
-        if (iter.hasNext()) {
-            JobResult result = iter.next();
-            assertEquals(JobOutcome.SUCCESS, result.getOutcome());
-            LOGGER.info(result.toString());
-            iter.remove();
+    @Test
+    public void testRunOnce_EmptyGroup() throws InterruptedException {
+        String jobGroupName = "group2";
+        Scheduler scheduler = app.getInstance(Scheduler.class);
+
+        Queue<JobResult> resultQueue = new LinkedBlockingQueue<>(1);
+        CountDownLatch latch = new CountDownLatch(1);
+        executor.submit(() -> {
+            try {
+                resultQueue.add(scheduler.runOnce(jobGroupName, Collections.emptyMap()).get());
+            } finally {
+                LOGGER.info(resultQueue.element().toString());
+                latch.countDown();
+            }
+        });
+
+        boolean finished = latch.await(10, TimeUnit.SECONDS);
+        if (!finished) {
+            fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
         }
+
+        assertEquals(1, resultQueue.size());
+        assertEquals(JobOutcome.SUCCESS, resultQueue.peek().getOutcome());
     }
 }
