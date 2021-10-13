@@ -19,22 +19,13 @@
 
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.JobRegistry;
-import io.bootique.job.MappedJobListener;
-import io.bootique.job.SerialJob;
+import io.bootique.job.*;
 import io.bootique.job.config.JobDefinition;
 import io.bootique.job.config.SingleJobDefinition;
-import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 
 import javax.inject.Provider;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -115,21 +106,10 @@ public class DefaultJobRegistry implements JobRegistry {
 
         // do not create a full-fledged execution for standalone jobs
         Job job = executionJobs.iterator().next();
-        JobMetadata jobMetadata = cloneMetadata(jobName, job.getMetadata());
-        Job delegate = new Job() {
-            @Override
-            public JobMetadata getMetadata() {
-                return jobMetadata;
-            }
-
-            @Override
-            public JobResult run(Map<String, Object> parameters) {
-                return job.run(parameters);
-            }
-        };
+        Job withName = decorateWithName(jobName, job);
 
         JobExecution e1 = graph.topSort().get(0).iterator().next();
-        return new ListenerAwareJob(delegate, e1.getParams(), listeners);
+        return new ListenerAwareJob(withName, e1.getParams(), listeners);
     }
 
     @Override
@@ -147,10 +127,19 @@ public class DefaultJobRegistry implements JobRegistry {
         return jobs.stream().collect(HashMap::new, (m, j) -> m.put(j.getMetadata().getName(), j), HashMap::putAll);
     }
 
-    private JobMetadata cloneMetadata(String newName, JobMetadata metadata) {
-        JobMetadata.Builder builder = JobMetadata.builder(newName);
+    /**
+     * Optionally decorates a job with a different name. Decoration may be needed if we need to execute a job group
+     * with a single job.
+     */
+    private Job decorateWithName(String name, Job job) {
+        JobMetadata metadata = job.getMetadata();
+        if(metadata.getName().equals(name)) {
+            return job;
+        }
+
+        JobMetadata.Builder builder = JobMetadata.builder(name);
         metadata.getParameters().forEach(builder::param);
-        return builder.build();
+        return new JobMetadataDecorator(builder.build(), job);
     }
 
     private Collection<Job> collectJobs(DependencyGraph graph) {
