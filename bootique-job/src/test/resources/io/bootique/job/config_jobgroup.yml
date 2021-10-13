@@ -8,3 +8,5 @@ jobs:
       serialjob1:
         dependsOn:
           - parameterizedjob3
+  group2:
+    type: group

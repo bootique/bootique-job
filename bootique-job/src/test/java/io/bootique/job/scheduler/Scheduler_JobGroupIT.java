@@ -47,7 +47,7 @@ public class Scheduler_JobGroupIT {
     private ExecutorService executor;
 
     @BQApp(skipRun = true)
-    final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup_parameters.yml")
+    final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup.yml")
             .module(JobModule.class)
             .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
             .module(b -> JobModule.extend(b).addJob(ParameterizedJob3.class))
@@ -65,7 +65,6 @@ public class Scheduler_JobGroupIT {
 
     @Test
     public void testRunOnce_JobGroup() throws InterruptedException {
-        String jobGroupName = "group1";
         Scheduler scheduler = app.getInstance(Scheduler.class);
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("param1", "value1");
@@ -75,14 +74,14 @@ public class Scheduler_JobGroupIT {
         CountDownLatch latch = new CountDownLatch(1);
         executor.submit(() -> {
             try {
-                resultQueue.add(scheduler.runOnce(jobGroupName, parameters).get());
+                resultQueue.add(scheduler.runOnce("group1", parameters).get());
             } finally {
                 LOGGER.info(resultQueue.element().toString());
                 latch.countDown();
             }
         });
 
-        boolean finished = latch.await(10, TimeUnit.SECONDS);
+        boolean finished = latch.await(5, TimeUnit.SECONDS);
         if (!finished) {
             fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
         }
@@ -93,21 +92,20 @@ public class Scheduler_JobGroupIT {
 
     @Test
     public void testRunOnce_EmptyGroup() throws InterruptedException {
-        String jobGroupName = "group2";
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         Queue<JobResult> resultQueue = new LinkedBlockingQueue<>(1);
         CountDownLatch latch = new CountDownLatch(1);
         executor.submit(() -> {
             try {
-                resultQueue.add(scheduler.runOnce(jobGroupName, Collections.emptyMap()).get());
+                resultQueue.add(scheduler.runOnce("group2", Collections.emptyMap()).get());
             } finally {
                 LOGGER.info(resultQueue.element().toString());
                 latch.countDown();
             }
         });
 
-        boolean finished = latch.await(10, TimeUnit.SECONDS);
+        boolean finished = latch.await(5, TimeUnit.SECONDS);
         if (!finished) {
             fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
         }
