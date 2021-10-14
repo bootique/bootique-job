@@ -53,9 +53,9 @@ class InstrumentedJobLogDecorator implements Job {
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        JobMeter execution = onJobStarted(params);
+        JobMeter meter = onJobStarted(params);
         JobResult result = delegate.run(params);
-        return onJobFinished(result, execution);
+        return onJobFinished(result, meter);
     }
 
     private JobMeter onJobStarted(Map<String, Object> params) {
@@ -65,8 +65,8 @@ class InstrumentedJobLogDecorator implements Job {
         return execution;
     }
 
-    private JobResult onJobFinished(JobResult result, JobMeter execution) {
-        long timeMs = execution.stop(result);
+    private JobResult onJobFinished(JobResult result, JobMeter meter) {
+        long timeMs = meter.stop(result);
         logJobFinished(result, timeMs);
         mdcManager.onJobFinished();
         return result;
