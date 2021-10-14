@@ -78,19 +78,19 @@ class JobGroup extends BaseJob {
 
     private void processJobResult(JobResult result, Set<JobResult> failures) {
         if (result.isSuccess()) {
-            LOGGER.info("Finished group child job '{}', result: {}",
+            LOGGER.info("Finished group member job '{}', result: {}",
                     result.getMetadata().getName(),
                     result.getOutcome());
         } else if (result.getThrowable() == null) {
             failures.add(result);
-            LOGGER.info("Finished group child job '{}', result: {}, message: {}",
+            LOGGER.info("Finished group member job '{}', result: {}, message: {}",
                     result.getMetadata().getName(),
                     result.getOutcome(),
                     result.getMessage());
         } else {
             failures.add(result);
             // have to use String.format instead of LOGGER substitutions because of the throwable parameter
-            LOGGER.error(String.format("Finished group child job '%s', result: %s, message: %s",
+            LOGGER.error(String.format("Finished group member job '%s', result: %s, message: %s",
                             result.getMetadata().getName(),
                             result.getOutcome(),
                             result.getMessage()),
