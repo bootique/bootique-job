@@ -30,16 +30,16 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-class InstrumentedJobLogDecorator implements Job {
+class JobLogger implements Job {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentedJobLogDecorator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobLogger.class);
 
     private final Job delegate;
     private final String name;
     private final JobMDCManager mdcManager;
     private final JobMetricsManager metricsManager;
 
-    InstrumentedJobLogDecorator(Job delegate, JobMDCManager mdcManager, JobMetricsManager metricsManager) {
+    JobLogger(Job delegate, JobMDCManager mdcManager, JobMetricsManager metricsManager) {
         this.delegate = delegate;
         this.name = delegate.getMetadata().getName();
         this.mdcManager = mdcManager;

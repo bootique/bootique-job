@@ -210,7 +210,7 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     protected Job decorateWithLogger(Job job) {
-        return new JobLogDecorator(job);
+        return new JobLogger(job);
     }
 
     private List<Job> standaloneJobsInGraph(DIGraph<JobExecution> graph) {

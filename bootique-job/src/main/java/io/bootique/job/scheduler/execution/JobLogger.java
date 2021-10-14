@@ -30,14 +30,14 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-class JobLogDecorator implements Job {
+class JobLogger implements Job {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobLogDecorator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobLogger.class);
 
     private final Job delegate;
     private final String name;
 
-    JobLogDecorator(Job delegate) {
+    JobLogger(Job delegate) {
         this.delegate = delegate;
         this.name = delegate.getMetadata().getName();
     }

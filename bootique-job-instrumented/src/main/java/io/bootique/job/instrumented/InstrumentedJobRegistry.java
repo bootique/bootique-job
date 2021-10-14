@@ -56,7 +56,7 @@ public class InstrumentedJobRegistry extends DefaultJobRegistry {
     @Override
     protected Job decorateWithLogger(Job job) {
         // replace super logger with instrumented logger that records job timing and provides the MDC context
-        return new InstrumentedJobLogDecorator(job, mdcManager, metricsManager);
+        return new JobLogger(job, mdcManager, metricsManager);
     }
 
     @Override
