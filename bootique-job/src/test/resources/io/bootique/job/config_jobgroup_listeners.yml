@@ -1,0 +1,6 @@
+jobs:
+  g1:
+    type: group
+    jobs:
+      job1: {}
+      job2: {}

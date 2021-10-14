@@ -23,6 +23,7 @@ import io.bootique.BQRuntime;
 import io.bootique.di.Key;
 import io.bootique.di.TypeLiteral;
 import io.bootique.job.fixture.Job1;
+import io.bootique.job.fixture.Job2;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.junit5.BQTest;
@@ -97,6 +98,28 @@ public class ListenerIT {
 
         assertTrue(job.isExecuted());
         assertEquals("_L1_started_L3_started_L2_started_L2_finished_L3_finished_L1_finished", SharedState.getAndReset());
+    }
+
+    @Test
+    public void testAddMappedListener_JobGroup_Ordering() {
+        Job1 job1 = new Job1(0);
+        Job2 job2 = new Job2(0);
+
+        testFactory.app("--exec", "--job=g1", "--config=classpath:io/bootique/job/config_jobgroup_listeners.yml")
+                .module(new JobModule())
+                .module(b -> JobModule.extend(b)
+                        .addJob(job1)
+                        .addJob(job2)
+                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
+                        .addMappedListener(new MappedJobListener<>(new Listener2(), 2))
+                        .addMappedListener(new MappedJobListener<>(new Listener3(), 3)))
+                .run();
+
+        assertTrue(job1.isExecuted());
+        assertTrue(job2.isExecuted());
+
+        // no losteners should be called for subjobs of a group
+        assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
