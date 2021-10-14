@@ -65,10 +65,7 @@ public class InstrumentedJobMDCIT {
     @Test
     public void testTwoJobs() throws InterruptedException {
         BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT.yml", "--schedule")
-                .module(new LogbackModule())
-                .module(new MetricsModule())
-                .module(new JobModule())
-                .module(new JobInstrumentedModule())
+                .autoLoadModules()
                 .module(binder -> JobModule.extend(binder)
                         .addJob(Job1.class)
                         .addJob(Job2.class))
