@@ -30,6 +30,7 @@ import java.util.Map;
 /**
  * @since 3.0
  */
+// calling the class JobLogger instead of InstrumentedJobLogDecorator for prettier log output
 class JobLogger implements Job {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobLogger.class);
