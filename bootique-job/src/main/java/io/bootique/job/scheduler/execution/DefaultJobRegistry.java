@@ -103,24 +103,37 @@ public class DefaultJobRegistry implements JobRegistry {
         switch (standaloneJobsInGraph.size()) {
             case 1:
                 JobExecution exec = graph.topSort().get(0).iterator().next();
-
-                Job job = standaloneJobsInGraph.get(0);
-                Job withName = decorateWithName(job, jobName);
-                Job withListeners = decorateWithListeners(withName, listeners);
-
-                // parameter decorator must go AFTER the listeners decorator as to enable listeners to receieve
-                // curried parameter values
-
-                Job withParamBindings = decorateWithParamBindings(withListeners, exec.getParams());
-
-                // exception handler must be the last decorator in the chain
-                return decorateWithExceptionHandler(withParamBindings);
+                return createDecoratedJob(standaloneJobsInGraph.get(0), jobName, exec.getParams());
             case 0:
                 // fall through to the JobGroup
                 LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
             default:
-                return new JobGroup(jobName, standaloneJobsInGraph, graph, scheduler.get(), listeners);
+                return createDecoratedJobGroup(jobName, standaloneJobsInGraph, graph);
         }
+    }
+
+    protected Job createDecoratedJob(Job undecorated, String altName, Map<String, Object> prebindParameters) {
+        Job withName = decorateWithName(undecorated, altName);
+        Job withListeners = decorateWithListeners(withName, listeners);
+
+        // parameter decorator must go AFTER the listeners decorator as to enable listeners to receieve
+        // curried parameter values
+
+        Job withParamBindings = decorateWithParamBindings(withListeners, prebindParameters);
+
+        // exception handler must be the last decorator in the chain
+        return decorateWithExceptionHandler(withParamBindings);
+    }
+
+    protected Job createDecoratedJobGroup(String jobName, List<Job> standaloneJobsInGraph, DIGraph<JobExecution> graph) {
+        Job jobGroup = new JobGroup(jobName, standaloneJobsInGraph, graph, scheduler.get());
+
+        Job withListeners = decorateWithListeners(jobGroup, listeners);
+
+        // TODO: merge execution params into individual jobs' params?
+
+        // exception handler must be the last decorator in the chain
+        return decorateWithExceptionHandler(withListeners);
     }
 
     @Override

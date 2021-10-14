@@ -21,7 +21,6 @@ package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 
@@ -36,20 +35,17 @@ class JobGroup implements Job {
     private final Collection<Job> standaloneJobs;
     private final DIGraph<JobExecution> executionGraph;
     private final Scheduler scheduler;
-    private final Collection<MappedJobListener> listeners;
 
     public JobGroup(
             String name,
             Collection<Job> standaloneJobs,
             DIGraph<JobExecution> executionGraph,
-            Scheduler scheduler,
-            Collection<MappedJobListener> listeners) {
+            Scheduler scheduler) {
 
         this.name = name;
         this.standaloneJobs = standaloneJobs;
         this.executionGraph = executionGraph;
         this.scheduler = scheduler;
-        this.listeners = listeners;
     }
 
     private Job getDelegate() {
@@ -64,14 +60,7 @@ class JobGroup implements Job {
     }
 
     private Job createDelegate() {
-        Job groupJob = JobGroupCompiled.create(name, scheduler, executionGraph, standaloneJobs);
-
-        // TODO: merge execution params into individual jobs' params?
-
-        Job withListeners = decorateWithListeners(groupJob, listeners);
-
-        // exception handler must be the last decorator in the chain
-        return decorateWithExceptionHandler(withListeners);
+        return JobGroupCompiled.create(name, scheduler, executionGraph, standaloneJobs);
     }
 
     @Override
@@ -82,13 +71,5 @@ class JobGroup implements Job {
     @Override
     public JobResult run(Map<String, Object> params) {
         return getDelegate().run(params);
-    }
-
-    private Job decorateWithListeners(Job job, Collection<MappedJobListener> listeners) {
-        return listeners.isEmpty() ? job : new JobListenerDecorator(job, listeners);
-    }
-
-    private Job decorateWithExceptionHandler(Job job) {
-        return new JobExceptionHandlerDecorator(job);
     }
 }
