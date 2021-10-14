@@ -22,21 +22,17 @@ package io.bootique.job.scheduler.execution;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 /**
  * @since 3.0
  */
-class JobExceptionHandlerDecorator implements Job {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobExceptionHandlerDecorator.class);
+class JobExceptionsHandlerDecorator implements Job {
 
     private final Job delegate;
 
-    JobExceptionHandlerDecorator(Job delegate) {
+    JobExceptionsHandlerDecorator(Job delegate) {
         this.delegate = delegate;
     }
 
@@ -51,7 +47,7 @@ class JobExceptionHandlerDecorator implements Job {
             JobResult result = delegate.run(params);
             return result != null ? result : JobResult.unknown(getMetadata());
         } catch (Exception e) {
-            LOGGER.error("Run failure: " + getMetadata().getName(), e);
+            // not logging the failure here.. JobLogDecorator will do the logging
             return JobResult.failure(getMetadata(), e);
         }
     }

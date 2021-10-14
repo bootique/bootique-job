@@ -128,13 +128,13 @@ public class DefaultJobRegistry implements JobRegistry {
         Job withName = decorateWithName(undecorated, altName);
         Job withListeners = decorateWithListeners(withName, listeners);
 
-        // parameter decorator must go AFTER the listeners decorator as to enable listeners to receieve
+        // parameter decorator must go AFTER the listeners decorator to enable listeners to receive
         // curried parameter values
-
         Job withParamBindings = decorateWithParamBindings(withListeners, prebindParameters);
 
-        // exception handler must be the last decorator in the chain
-        return decorateWithExceptionHandler(withParamBindings);
+        // finally catch exceptions and log the outcome
+        Job withExceptionsCaught = decorateWithExceptionsHandler(withParamBindings);
+        return decorateWithLogger(withExceptionsCaught);
     }
 
     private JobGroup createJobGroup(String jobName, DIGraph<JobExecution> graph) {
@@ -196,8 +196,12 @@ public class DefaultJobRegistry implements JobRegistry {
         return params.isEmpty() ? job : new JobParamDefaultsDecorator(job, params);
     }
 
-    private Job decorateWithExceptionHandler(Job job) {
-        return new JobExceptionHandlerDecorator(job);
+    private Job decorateWithExceptionsHandler(Job job) {
+        return new JobExceptionsHandlerDecorator(job);
+    }
+
+    private Job decorateWithLogger(Job job) {
+        return new JobLogDecorator(job);
     }
 
     private List<Job> standaloneJobsInGraph(DIGraph<JobExecution> graph) {

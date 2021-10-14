@@ -32,11 +32,10 @@ import io.bootique.metrics.mdc.TransactionIdMDC;
 import javax.inject.Singleton;
 
 import static io.bootique.job.runtime.JobModule.BUSINESS_TX_LISTENER_ORDER;
-import static io.bootique.job.runtime.JobModule.LOG_LISTENER_ORDER;
 
 public class JobInstrumentedModule extends ConfigModule {
 
-    public static final int JOB_LISTENER_ORDER = LOG_LISTENER_ORDER + 200;
+    public static final int JOB_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 400;
 
     public JobInstrumentedModule() {
 

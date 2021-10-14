@@ -19,9 +19,6 @@
 
 package io.bootique.job;
 
-import io.bootique.BQRuntime;
-import io.bootique.di.Key;
-import io.bootique.di.TypeLiteral;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
 import io.bootique.job.runnable.JobResult;
@@ -33,7 +30,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -120,29 +116,6 @@ public class ListenerIT {
 
         // no losteners should be called for subjobs of a group
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
-    }
-
-    @Test
-    public void testStandardMappedListeners() {
-        Job1 job = new Job1(0);
-
-        BQRuntime runtime = testFactory.app()
-                .module(new JobModule())
-                .module(binder ->
-                        JobModule.extend(binder)
-                                .addJob(job)
-                                .addListener(new Listener3())
-                                .addMappedListener(new MappedJobListener<>(new Listener2(), 1)))
-                .createRuntime();
-
-
-        Set<MappedJobListener> mappedListeners = runtime.getInstance(Key.get(new TypeLiteral<Set<MappedJobListener>>() {
-        }));
-        assertEquals(2, mappedListeners.size());
-        assertEquals(1, mappedListeners.stream()
-                .map(MappedJobListener::getListener)
-                .filter(l -> l instanceof JobLogListener)
-                .count());
     }
 
     public static class SharedState {

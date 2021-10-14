@@ -24,7 +24,6 @@ import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
-import io.bootique.di.TypeLiteral;
 import io.bootique.help.ValueObjectDescriptor;
 import io.bootique.job.*;
 import io.bootique.job.command.ExecCommand;
@@ -53,7 +52,11 @@ public class JobModule extends ConfigModule {
     // relative to this one , using higher ordering values.
     public static final int BUSINESS_TX_LISTENER_ORDER = Integer.MIN_VALUE + 800;
 
+    /**
+     * @deprecated since 3.0 as JobLogListener is no longer exists
+     */
     // goes inside BUSINESS_TX_LISTENER
+    @Deprecated
     public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
 
     private final LockHandler defaultLockHandler = new LocalLockHandler();
@@ -87,8 +90,8 @@ public class JobModule extends ConfigModule {
 
         BQCoreModule.extend(binder).addCommand(ExecCommand.class)
                 .addOption(OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to execute or schedule. "
-                        + "Used in conjunction with '--execute' or '--schedule' commands. "
-                        + "Available job names can be viewed using '--list' command.")
+                                + "Used in conjunction with '--execute' or '--schedule' commands. "
+                                + "Available job names can be viewed using '--list' command.")
                         .valueRequired("job_name")
                         .build())
                 .addCommand(ListCommand.class)
@@ -97,9 +100,7 @@ public class JobModule extends ConfigModule {
 
         JobModule.extend(binder)
                 .initAllExtensions()
-                .setLockHandler(defaultLockHandler)
-                .addMappedListener(new TypeLiteral<MappedJobListener<JobLogListener>>() {
-                });
+                .setLockHandler(defaultLockHandler);
     }
 
     @Provides
@@ -129,12 +130,6 @@ public class JobModule extends ConfigModule {
 
         List<MappedJobListener> allListeners = allListeners(listeners, mappedJobListeners);
         return new DefaultJobRegistry(standaloneJobs, configuredDefinitions, schedulerProvider, allListeners);
-    }
-
-    @Singleton
-    @Provides
-    public MappedJobListener<JobLogListener> provideJobLogListener() {
-        return new MappedJobListener<>(new JobLogListener(), LOG_LISTENER_ORDER);
     }
 
     private List<MappedJobListener> allListeners(
