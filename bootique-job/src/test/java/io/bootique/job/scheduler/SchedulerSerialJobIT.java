@@ -40,8 +40,8 @@ import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
-public class SerialJobIT {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SerialJobIT.class);
+public class SchedulerSerialJobIT {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerSerialJobIT.class);
 
     private ExecutorService executor;
 
