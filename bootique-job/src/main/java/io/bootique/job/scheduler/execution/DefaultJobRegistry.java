@@ -90,6 +90,16 @@ public class DefaultJobRegistry implements JobRegistry {
         return decoratedJobAndGroups.computeIfAbsent(jobName, this::createJob);
     }
 
+    @Override
+    public boolean allowsSimultaneousExecutions(String jobName) {
+        checkJobExists(jobName);
+
+        Job job = standaloneJobs.get(jobName);
+        // simultaneous executions are allowed for job groups (in this case job is null)
+        // and real jobs, that haven't been annotated with @SerialJob
+        return job == null || !job.getClass().isAnnotationPresent(SerialJob.class);
+    }
+
     /**
      * @since 3.0
      */
@@ -103,16 +113,18 @@ public class DefaultJobRegistry implements JobRegistry {
         switch (standaloneJobsInGraph.size()) {
             case 1:
                 JobExecution exec = graph.topSort().get(0).iterator().next();
-                return createDecoratedJob(standaloneJobsInGraph.get(0), jobName, exec.getParams());
+                Job job = standaloneJobsInGraph.get(0);
+                return decorateJob(job, jobName, exec.getParams());
             case 0:
                 // fall through to the JobGroup
                 LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
             default:
-                return createDecoratedJobGroup(jobName, standaloneJobsInGraph, graph);
+                Job group = createJobGroup(jobName, graph);
+                return decorateJob(group, jobName, Collections.emptyMap());
         }
     }
 
-    protected Job createDecoratedJob(Job undecorated, String altName, Map<String, Object> prebindParameters) {
+    protected Job decorateJob(Job undecorated, String altName, Map<String, Object> prebindParameters) {
         Job withName = decorateWithName(undecorated, altName);
         Job withListeners = decorateWithListeners(withName, listeners);
 
@@ -125,25 +137,36 @@ public class DefaultJobRegistry implements JobRegistry {
         return decorateWithExceptionHandler(withParamBindings);
     }
 
-    protected Job createDecoratedJobGroup(String jobName, List<Job> standaloneJobsInGraph, DIGraph<JobExecution> graph) {
-        Job jobGroup = new JobGroup(jobName, standaloneJobsInGraph, graph, scheduler.get());
-
-        Job withListeners = decorateWithListeners(jobGroup, listeners);
-
-        // TODO: merge execution params into individual jobs' params?
-
-        // exception handler must be the last decorator in the chain
-        return decorateWithExceptionHandler(withListeners);
+    private JobGroup createJobGroup(String jobName, DIGraph<JobExecution> graph) {
+        JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs.values());
+        List<Set<Job>> executionPlan = executionPlan(graph.reverseTopSort(), standaloneJobs);
+        return new JobGroup(groupMetadata, executionPlan, scheduler.get());
     }
 
-    @Override
-    public boolean allowsSimultaneousExecutions(String jobName) {
-        checkJobExists(jobName);
+    private JobMetadata groupMetadata(String jobName, Collection<Job> jobs) {
+        JobMetadata.Builder builder = JobMetadata.builder(jobName);
+        for (Job job : jobs) {
+            job.getMetadata().getParameters().forEach(builder::param);
+        }
+        return builder.build();
+    }
 
-        Job job = standaloneJobs.get(jobName);
-        // simultaneous executions are allowed for job groups (in this case job is null)
-        // and real jobs, that haven't been annotated with @SerialJob
-        return job == null || !job.getClass().isAnnotationPresent(SerialJob.class);
+    private List<Set<Job>> executionPlan(List<Set<JobExecution>> executions, Map<String, Job> standaloneJobs) {
+
+        List<Set<Job>> result = new ArrayList<>(executions.size());
+
+        for (Set<JobExecution> s : executions) {
+            Set<Job> executionGroup = new HashSet<>();
+            for (JobExecution e : s) {
+
+                Job undecorated = standaloneJobs.get(e.getJobName());
+                Job withParams = decorateWithParamBindings(undecorated, e.getParams());
+                executionGroup.add(withParams);
+            }
+            result.add(executionGroup);
+        }
+
+        return result;
     }
 
     private Map<String, Job> jobsByName(Collection<Job> jobs) {

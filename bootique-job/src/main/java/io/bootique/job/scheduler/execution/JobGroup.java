@@ -19,57 +19,96 @@
 
 package io.bootique.job.scheduler.execution;
 
+import io.bootique.job.BaseJob;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.JobFuture;
+import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-class JobGroup implements Job {
+/**
+ * @since 3.0
+ */
+class JobGroup extends BaseJob {
 
-    private volatile Job delegate;
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobGroup.class);
 
-    private final String name;
-    private final Collection<Job> standaloneJobs;
-    private final DIGraph<JobExecution> executionGraph;
     private final Scheduler scheduler;
+    private final List<Set<Job>> executionPlan;
 
-    public JobGroup(
-            String name,
-            Collection<Job> standaloneJobs,
-            DIGraph<JobExecution> executionGraph,
-            Scheduler scheduler) {
+    JobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan, Scheduler scheduler) {
+        super(groupMetadata);
 
-        this.name = name;
-        this.standaloneJobs = standaloneJobs;
-        this.executionGraph = executionGraph;
         this.scheduler = scheduler;
-    }
-
-    private Job getDelegate() {
-        if (delegate == null) {
-            synchronized (this) {
-                if (delegate == null) {
-                    delegate = createDelegate();
-                }
-            }
-        }
-        return delegate;
-    }
-
-    private Job createDelegate() {
-        return JobGroupCompiled.create(name, scheduler, executionGraph, standaloneJobs);
-    }
-
-    @Override
-    public JobMetadata getMetadata() {
-        return getDelegate().getMetadata();
+        this.executionPlan = executionPlan;
     }
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        return getDelegate().run(params);
+
+        for (Set<Job> parallelBatch : executionPlan) {
+            runBatchInParallel(parallelBatch, params);
+        }
+
+        return JobResult.success(getMetadata());
+    }
+
+    void runBatchInParallel(Set<Job> batch, Map<String, Object> params) {
+
+        if (batch.isEmpty()) {
+            return;
+        }
+
+        Set<JobResult> failures = new HashSet<>();
+
+        batch.stream()
+                .map(j -> scheduler.runOnce(j, params))
+                .map(JobFuture::get)
+                .forEach(r -> processJobResult(r, failures));
+
+        processBatchFailures(failures);
+    }
+
+    private void processJobResult(JobResult result, Set<JobResult> failures) {
+        if (result.getThrowable() == null) {
+            LOGGER.info(String.format("Finished job '%s', result: %s, message: %s",
+                    result.getMetadata().getName(),
+                    result.getOutcome(),
+                    result.getMessage()));
+        } else {
+            LOGGER.error(String.format("Finished job '%s', result: %s, message: %s",
+                            result.getMetadata().getName(),
+                            result.getOutcome(),
+                            result.getMessage()),
+                    result.getThrowable());
+        }
+
+        if (result.getOutcome() != JobOutcome.SUCCESS) {
+            failures.add(result);
+        }
+    }
+
+    private void processBatchFailures(Set<JobResult> failures) {
+        if (!failures.isEmpty()) {
+
+            // TODO: report all failure, not just the first one
+            JobResult f1 = failures.iterator().next();
+
+            String message = "Failed to execute at least one job: " + f1.getMetadata().getName();
+            if (f1.getMessage() != null) {
+                message += ". Reason: " + f1.getMessage();
+            }
+
+            // TODO: instead of throwing, return a JobResult with combined failure
+            throw new RuntimeException(message, f1.getThrowable());
+        }
     }
 }
