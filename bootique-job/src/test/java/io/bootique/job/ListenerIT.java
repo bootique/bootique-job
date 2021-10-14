@@ -25,14 +25,12 @@ import io.bootique.di.TypeLiteral;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.job.runtime.JobModuleExtender;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -41,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @BQTest
-public class MappedListenerIT {
+public class ListenerIT {
 
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
@@ -53,92 +51,74 @@ public class MappedListenerIT {
 
     @Test
     public void testAddMappedListener_Ordering1() {
-        Job1 job1 = new Job1(0);
-        Set<? extends Job> jobs = Collections.singleton(job1);
+        Job1 job = new Job1(0);
 
         testFactory.app("--exec", "--job=job1")
                 .module(new JobModule())
-                .module(binder -> {
-                    JobModuleExtender extender = JobModule.extend(binder);
-                    jobs.forEach(extender::addJob);
-
-                    extender.addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                            .addMappedListener(new MappedJobListener<>(new Listener2(), 2))
-                            .addMappedListener(new MappedJobListener<>(new Listener3(), 3));
-                }).createRuntime()
+                .module(binder -> JobModule.extend(binder)
+                        .addJob(job)
+                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
+                        .addMappedListener(new MappedJobListener<>(new Listener2(), 2))
+                        .addMappedListener(new MappedJobListener<>(new Listener3(), 3)))
                 .run();
 
-        assertTrue(job1.isExecuted());
+        assertTrue(job.isExecuted());
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
     public void testAddMappedListener_Ordering2() {
-        Job1 job1 = new Job1(0);
-        Set<? extends Job> jobs = Collections.singleton(job1);
+        Job1 job = new Job1(0);
 
         testFactory.app("--exec", "--job=job1")
                 .module(new JobModule())
-                .module(binder -> {
-                    JobModuleExtender extender = JobModule.extend(binder);
-                    jobs.forEach(extender::addJob);
-
-                    extender.addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                            .addMappedListener(new MappedJobListener<>(new Listener3(), 3))
-                            .addMappedListener(new MappedJobListener<>(new Listener2(), 2));
-                }).createRuntime()
+                .module(binder -> JobModule.extend(binder)
+                        .addJob(job)
+                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
+                        .addMappedListener(new MappedJobListener<>(new Listener3(), 3))
+                        .addMappedListener(new MappedJobListener<>(new Listener2(), 2)))
                 .run();
 
-        assertTrue(job1.isExecuted());
+        assertTrue(job.isExecuted());
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
-    public void testAddMappedListener_OrderingVsUnmapped() {
-        Job1 job1 = new Job1(0);
-        Set<? extends Job> jobs = Collections.singleton(job1);
+    public void testAddMappedListener_AddListener_Ordering() {
+        Job1 job = new Job1(0);
 
         testFactory.app("--exec", "--job=job1")
                 .module(new JobModule())
-                .module(binder -> {
-                    JobModuleExtender extender = JobModule.extend(binder);
-                    jobs.forEach(extender::addJob);
-
-                    extender.addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                            .addListener(new Listener2())
-                            .addMappedListener(new MappedJobListener<>(new Listener3(), 2));
-                }).createRuntime()
+                .module(binder -> JobModule.extend(binder).addJob(job)
+                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
+                        .addListener(new Listener2())
+                        .addMappedListener(new MappedJobListener<>(new Listener3(), 2)))
                 .run();
 
-        assertTrue(job1.isExecuted());
+        assertTrue(job.isExecuted());
         assertEquals("_L1_started_L3_started_L2_started_L2_finished_L3_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
-    public void testEmbeddedLogListener_Ordering() {
-        Job1 job1 = new Job1(0);
-        Set<? extends Job> jobs = Collections.singleton(job1);
+    public void testStandardMappedListeners() {
+        Job1 job = new Job1(0);
 
-        BQRuntime runtime = testFactory.app("--exec", "--job=job1")
+        BQRuntime runtime = testFactory.app()
                 .module(new JobModule())
-                .module(binder -> {
-                    JobModuleExtender extender = JobModule.extend(binder);
-                    jobs.forEach(extender::addJob);
+                .module(binder ->
+                        JobModule.extend(binder)
+                                .addJob(job)
+                                .addListener(new Listener3())
+                                .addMappedListener(new MappedJobListener<>(new Listener2(), 1)))
+                .createRuntime();
 
-                    extender.addListener(new Listener3())
-                            .addMappedListener(new MappedJobListener<>(new Listener2(), 1));
-                }).createRuntime();
 
-        runtime.run();
-
-        assertTrue(job1.isExecuted());
-        assertEquals("_L2_started_L3_started_L3_finished_L2_finished", SharedState.getAndReset());
-
-        Set<MappedJobListener> listeners = runtime.getInstance(Key.get(new TypeLiteral<Set<MappedJobListener>>() {
+        Set<MappedJobListener> mappedListeners = runtime.getInstance(Key.get(new TypeLiteral<Set<MappedJobListener>>() {
         }));
-        assertEquals(2, listeners.size());
-        assertEquals(1, listeners.stream()
-                .filter(l -> l.getListener() instanceof JobLogListener)
+        assertEquals(2, mappedListeners.size());
+        assertEquals(1, mappedListeners.stream()
+                .map(MappedJobListener::getListener)
+                .filter(l -> l instanceof JobLogListener)
                 .count());
     }
 
