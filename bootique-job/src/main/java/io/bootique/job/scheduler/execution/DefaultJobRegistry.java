@@ -124,19 +124,6 @@ public class DefaultJobRegistry implements JobRegistry {
         }
     }
 
-    protected Job decorateJob(Job undecorated, String altName, Map<String, Object> prebindParameters) {
-        Job withName = decorateWithName(undecorated, altName);
-        Job withListeners = decorateWithListeners(withName, listeners);
-
-        // parameter decorator must go AFTER the listeners decorator to enable listeners to receive
-        // curried parameter values
-        Job withParamBindings = decorateWithParamBindings(withListeners, prebindParameters);
-
-        // finally catch exceptions and log the outcome
-        Job withExceptionsCaught = decorateWithExceptionsHandler(withParamBindings);
-        return decorateWithLogger(withExceptionsCaught);
-    }
-
     private JobGroup createJobGroup(String jobName, DIGraph<JobExecution> graph) {
         JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs.values());
         List<Set<Job>> executionPlan = executionPlan(graph.reverseTopSort(), standaloneJobs);
@@ -170,12 +157,25 @@ public class DefaultJobRegistry implements JobRegistry {
         return result;
     }
 
-    private Job decorateGroupMemberJob(Job undecorated, Map<String, Object> params) {
-        return decorateWithParamBindings(undecorated, params);
-    }
-
     private Map<String, Job> jobsByName(Collection<Job> jobs) {
         return jobs.stream().collect(HashMap::new, (m, j) -> m.put(j.getMetadata().getName(), j), HashMap::putAll);
+    }
+
+    protected Job decorateJob(Job undecorated, String altName, Map<String, Object> prebindParams) {
+        Job withName = decorateWithName(undecorated, altName);
+        Job withListeners = decorateWithListeners(withName, listeners);
+
+        // parameter decorator must go AFTER the listeners decorator to enable listeners to receive
+        // curried parameter values
+        Job withParamBindings = decorateWithParamBindings(withListeners, prebindParams);
+
+        // finally catch exceptions and log the outcome
+        Job withExceptionsCaught = decorateWithExceptionsHandler(withParamBindings);
+        return decorateWithLogger(withExceptionsCaught);
+    }
+
+    private Job decorateGroupMemberJob(Job undecorated, Map<String, Object> prebindParams) {
+        return decorateWithParamBindings(undecorated, prebindParams);
     }
 
     /**
