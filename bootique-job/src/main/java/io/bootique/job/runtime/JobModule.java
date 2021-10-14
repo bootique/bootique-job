@@ -25,37 +25,40 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.help.ValueObjectDescriptor;
-import io.bootique.job.*;
+import io.bootique.job.JobRegistry;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
-import io.bootique.job.config.JobDefinition;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
-import io.bootique.job.scheduler.execution.DefaultJobRegistry;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
-import io.bootique.type.TypeRef;
 
-import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.*;
 
 public class JobModule extends ConfigModule {
 
+    static final String JOBS_CONFIG_PREFIX = "jobs";
+    static final String SCHEDULER_CONFIG_PREFIX = "scheduler";
+
     public static final String JOB_OPTION = "job";
 
+
+    /**
+     * @deprecated since 3.0 as JobMDCManager is no longer implemented as a listener.
+     */
     // TX ID listener is usually the outermost listener in any app. It is a good idea to order your other listeners
     // relative to this one , using higher ordering values.
+    @Deprecated
     public static final int BUSINESS_TX_LISTENER_ORDER = Integer.MIN_VALUE + 800;
 
     /**
      * @deprecated since 3.0 as JobLogListener is no longer exists
      */
-    // goes inside BUSINESS_TX_LISTENER
+    // goes inside LOG_LISTENER_ORDER
     @Deprecated
     public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
 
@@ -81,12 +84,15 @@ public class JobModule extends ConfigModule {
 
     @Override
     protected String defaultConfigPrefix() {
-        // main config sets up Scheduler , so renaming default config prefix
-        return "scheduler";
+        // main config sets up Scheduler, so renaming default config prefix
+        return SCHEDULER_CONFIG_PREFIX;
     }
 
     @Override
     public void configure(Binder binder) {
+
+        // binding via provider, to simplify overriding in the "bootique-job-instrumented" module
+        binder.bind(JobRegistry.class).toProvider(JobRegistryProvider.class).inSingletonScope();
 
         BQCoreModule.extend(binder).addCommand(ExecCommand.class)
                 .addOption(OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to execute or schedule. "
@@ -113,41 +119,5 @@ public class JobModule extends ConfigModule {
 
         return config(SchedulerFactory.class, configFactory)
                 .createScheduler(serialJobRunner, jobRegistry, shutdownManager);
-    }
-
-    @Provides
-    @Singleton
-    JobRegistry createJobRegistry(
-            Set<Job> standaloneJobs,
-            Set<JobListener> listeners,
-            Set<MappedJobListener> mappedJobListeners,
-            Provider<Scheduler> schedulerProvider,
-            ConfigurationFactory configFactory) {
-
-        TypeRef<Map<String, JobDefinition>> ref = new TypeRef<Map<String, JobDefinition>>() {
-        };
-        Map<String, JobDefinition> configuredDefinitions = configFactory.config(ref, "jobs");
-
-        List<MappedJobListener> allListeners = allListeners(listeners, mappedJobListeners);
-        return new DefaultJobRegistry(standaloneJobs, configuredDefinitions, schedulerProvider, allListeners);
-    }
-
-    private List<MappedJobListener> allListeners(
-            Set<JobListener> jobListeners,
-            Set<MappedJobListener> mappedJobListeners) {
-
-        // not checking for dupes between MappedJobListener and JobListener collections. Is that a problem?
-        List<MappedJobListener> localListeners = new ArrayList<>(mappedJobListeners.size() + jobListeners.size());
-
-        localListeners.addAll(mappedJobListeners);
-
-        //  Integer.MAX_VALUE means placing bare unordered listeners after (== inside) mapped listeners
-        jobListeners.forEach(
-                listener -> localListeners.add(new MappedJobListener<>(listener, Integer.MAX_VALUE))
-        );
-
-        localListeners.sort(Comparator.comparing(MappedJobListener::getOrder));
-
-        return localListeners;
     }
 }

@@ -177,7 +177,7 @@ public class DefaultJobRegistry implements JobRegistry {
      * Optionally decorates a job with a different name. Decoration may be needed if we need to execute a job group
      * with a single job.
      */
-    private Job decorateWithName(Job job, String name) {
+    protected Job decorateWithName(Job job, String name) {
         JobMetadata metadata = job.getMetadata();
         if (metadata.getName().equals(name)) {
             return job;
@@ -188,19 +188,19 @@ public class DefaultJobRegistry implements JobRegistry {
         return new JobMetadataDecorator(job, builder.build());
     }
 
-    private Job decorateWithListeners(Job job, Collection<MappedJobListener> listeners) {
+    protected Job decorateWithListeners(Job job, Collection<MappedJobListener> listeners) {
         return listeners.isEmpty() ? job : new JobListenerDecorator(job, listeners);
     }
 
-    private Job decorateWithParamBindings(Job job, Map<String, Object> params) {
+    protected Job decorateWithParamBindings(Job job, Map<String, Object> params) {
         return params.isEmpty() ? job : new JobParamDefaultsDecorator(job, params);
     }
 
-    private Job decorateWithExceptionsHandler(Job job) {
+    protected Job decorateWithExceptionsHandler(Job job) {
         return new JobExceptionsHandlerDecorator(job);
     }
 
-    private Job decorateWithLogger(Job job) {
+    protected Job decorateWithLogger(Job job) {
         return new JobLogDecorator(job);
     }
 

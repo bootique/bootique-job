@@ -21,10 +21,12 @@ package io.bootique.job.instrumented;
 
 import io.bootique.BQModuleProvider;
 import io.bootique.di.BQModule;
+import io.bootique.job.runtime.JobModule;
 import io.bootique.job.runtime.JobModuleProvider;
 import io.bootique.metrics.MetricsModuleProvider;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import static java.util.Arrays.asList;
 
@@ -33,6 +35,11 @@ public class JobInstrumentedModuleProvider implements BQModuleProvider {
     @Override
     public BQModule module() {
         return new JobInstrumentedModule();
+    }
+
+    @Override
+    public Collection<Class<? extends BQModule>> overrides() {
+        return Collections.singleton(JobModule.class);
     }
 
     @Override
