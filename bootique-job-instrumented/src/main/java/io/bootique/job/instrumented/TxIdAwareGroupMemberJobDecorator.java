@@ -28,17 +28,17 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-class MDCAwareGroupMemberJobDecorator implements Job {
+class TxIdAwareGroupMemberJobDecorator implements Job {
 
     private final Job delegate;
     private final String groupMDC;
     private final TransactionIdMDC transactionIdMDC;
 
-    public static MDCAwareGroupMemberJobDecorator captureCurrentTxId(Job delegate, TransactionIdMDC transactionIdMDC) {
-        return new MDCAwareGroupMemberJobDecorator(delegate, transactionIdMDC.get(), transactionIdMDC);
+    public static TxIdAwareGroupMemberJobDecorator captureCurrentTxId(Job delegate, TransactionIdMDC transactionIdMDC) {
+        return new TxIdAwareGroupMemberJobDecorator(delegate, transactionIdMDC.get(), transactionIdMDC);
     }
 
-    MDCAwareGroupMemberJobDecorator(Job delegate, String groupMDC, TransactionIdMDC transactionIdMDC) {
+    TxIdAwareGroupMemberJobDecorator(Job delegate, String groupMDC, TransactionIdMDC transactionIdMDC) {
         this.delegate = delegate;
         this.groupMDC = groupMDC;
         this.transactionIdMDC = transactionIdMDC;

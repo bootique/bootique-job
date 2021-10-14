@@ -61,7 +61,7 @@ public class InstrumentedJobRegistry extends DefaultJobRegistry {
 
     @Override
     protected JobGroup createJobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan) {
-        return new MDCAwareJobGroup(groupMetadata, executionPlan, scheduler.get(), mdcManager.getTransactionIdMDC());
+        return new TxIdAwareJobGroup(groupMetadata, executionPlan, scheduler.get(), mdcManager.getTransactionIdMDC());
     }
 
 

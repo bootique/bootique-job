@@ -32,20 +32,20 @@ import java.util.Set;
 /**
  * @since 3.0
  */
-public class MDCAwareJobGroup extends JobGroup {
+public class TxIdAwareJobGroup extends JobGroup {
 
     private final TransactionIdMDC transactionIdMDC;
 
-    public MDCAwareJobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan, Scheduler scheduler, TransactionIdMDC transactionIdMDC) {
+    public TxIdAwareJobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan, Scheduler scheduler, TransactionIdMDC transactionIdMDC) {
         super(groupMetadata, executionPlan, scheduler);
         this.transactionIdMDC = transactionIdMDC;
     }
 
     @Override
     protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {
-
-        // this is called within a "run" method, so capture the current MDC 
-        // and pass it down to whatever thread runs it
+        
+        // IMPORTANT: do not attempt to cache the decorated job. It must be invoked on the same thread as
+        // the group "run" method to capture the current transaction ID.
 
         Job withInheritedTxId = decorateWithGroupTxId(job);
 
@@ -53,6 +53,6 @@ public class MDCAwareJobGroup extends JobGroup {
     }
 
     protected Job decorateWithGroupTxId(Job job) {
-        return MDCAwareGroupMemberJobDecorator.captureCurrentTxId(job, transactionIdMDC);
+        return TxIdAwareGroupMemberJobDecorator.captureCurrentTxId(job, transactionIdMDC);
     }
 }
