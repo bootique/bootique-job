@@ -160,13 +160,18 @@ public class DefaultJobRegistry implements JobRegistry {
             for (JobExecution e : s) {
 
                 Job undecorated = standaloneJobs.get(e.getJobName());
-                Job withParams = decorateWithParamBindings(undecorated, e.getParams());
-                executionGroup.add(withParams);
+                Job decorated = decorateGroupMemberJob(undecorated, e.getParams());
+
+                executionGroup.add(decorated);
             }
             result.add(executionGroup);
         }
 
         return result;
+    }
+
+    private Job decorateGroupMemberJob(Job undecorated, Map<String, Object> params) {
+        return decorateWithParamBindings(undecorated, params);
     }
 
     private Map<String, Job> jobsByName(Collection<Job> jobs) {
