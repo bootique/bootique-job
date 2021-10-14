@@ -21,7 +21,6 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
@@ -197,26 +196,8 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public JobFuture runOnce(String jobName, Map<String, Object> parameters) {
-        Optional<Job> jobOptional = findJobByName(jobName);
-        if (jobOptional.isPresent()) {
-            Job job = jobOptional.get();
-            return runOnce(job, parameters);
-        } else {
-            return invalidJobNameResult(jobName, parameters);
-        }
-    }
-
-    private Optional<Job> findJobByName(String jobName) {
-        Job job = jobRegistry.getJob(jobName);
-        return (job == null) ? Optional.empty() : Optional.of(job);
-    }
-
-    private JobFuture invalidJobNameResult(String jobName, Map<String, Object> parameters) {
-        return JobFuture.forJob(jobName)
-                .future(new ExpiredFuture())
-                .runnable(() -> JobResult.unknown(JobMetadata.build(jobName)))
-                .resultSupplier(() -> JobResult.failure(JobMetadata.build(jobName), "Invalid job name: " + jobName))
-                .build();
+        Job job  = jobRegistry.getJob(jobName);
+        return runOnce(job, parameters);
     }
 
     @Override
