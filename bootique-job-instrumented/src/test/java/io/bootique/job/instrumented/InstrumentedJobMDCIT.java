@@ -27,8 +27,6 @@ import io.bootique.job.runtime.JobModule;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
-import io.bootique.logback.LogbackModule;
-import io.bootique.metrics.MetricsModule;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,10 +93,7 @@ public class InstrumentedJobMDCIT {
     @Test
     public void testJobGroupAndJob() throws InterruptedException {
         BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT-groups.yml", "--schedule")
-                .module(new LogbackModule())
-                .module(new MetricsModule())
-                .module(new JobModule())
-                .module(new JobInstrumentedModule())
+                .autoLoadModules()
                 .module(binder -> JobModule.extend(binder).addJob(Job1.class).addJob(Job2.class).addJob(Job3.class).addJob(Job4.class))
                 .createRuntime();
 
