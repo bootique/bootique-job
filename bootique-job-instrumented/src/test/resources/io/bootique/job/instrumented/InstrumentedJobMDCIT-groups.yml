@@ -35,4 +35,4 @@ log:
   level: info
   appenders:
     - type: console
-      logFormat: '%-4r [%thread] %-5level [%X{txid}] %msg%n'
+      logFormat: '%-4r [%thread] %-5level [%X{txid}] %logger{1} %msg%n'
