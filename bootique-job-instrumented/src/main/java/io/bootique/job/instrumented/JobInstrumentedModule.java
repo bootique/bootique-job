@@ -23,10 +23,7 @@ import com.codahale.metrics.MetricRegistry;
 import io.bootique.ConfigModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
-import io.bootique.di.TypeLiteral;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.MappedJobListener;
-import io.bootique.job.runtime.JobModule;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 
@@ -53,16 +50,12 @@ public class JobInstrumentedModule extends ConfigModule {
     @Override
     public void configure(Binder binder) {
         binder.override(JobRegistry.class).toProvider(InstrumentedJobRegistryProvider.class);
-
-        JobModule.extend(binder)
-                .addMappedListener(new TypeLiteral<MappedJobListener<InstrumentedJobListener>>() {
-                });
     }
 
     @Provides
     @Singleton
-    MappedJobListener<InstrumentedJobListener> provideInstrumentedJobListener(MetricRegistry metricRegistry) {
-        return new MappedJobListener<>(new InstrumentedJobListener(metricRegistry), JOB_LISTENER_ORDER);
+    JobMetricsManager provideJobMetricsManager(MetricRegistry metricRegistry) {
+        return new JobMetricsManager(metricRegistry);
     }
 
     @Provides

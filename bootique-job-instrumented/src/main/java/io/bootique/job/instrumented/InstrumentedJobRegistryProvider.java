@@ -36,6 +36,7 @@ import java.util.Set;
 public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
 
     private final JobMDCManager mdcManager;
+    private final JobMetricsManager metricsManager;
 
     @Inject
     public InstrumentedJobRegistryProvider(
@@ -44,9 +45,11 @@ public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
             Set<MappedJobListener> mappedListeners,
             Provider<Scheduler> scheduler,
             JobMDCManager mdcManager,
+            JobMetricsManager metricsManager,
             ConfigurationFactory configFactory) {
         super(standaloneJobs, listeners, mappedListeners, scheduler, configFactory);
         this.mdcManager = mdcManager;
+        this.metricsManager = metricsManager;
     }
 
     @Override
@@ -56,6 +59,7 @@ public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
                 jobConfigs(),
                 scheduler,
                 combineListeners(),
-                mdcManager);
+                mdcManager,
+                metricsManager);
     }
 }

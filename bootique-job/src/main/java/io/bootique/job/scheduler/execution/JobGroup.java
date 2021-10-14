@@ -23,7 +23,6 @@ import io.bootique.job.BaseJob;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobFuture;
-import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 import org.slf4j.Logger;
@@ -78,21 +77,24 @@ class JobGroup extends BaseJob {
     }
 
     private void processJobResult(JobResult result, Set<JobResult> failures) {
-        if (result.getThrowable() == null) {
-            LOGGER.info(String.format("Finished job '%s', result: %s, message: %s",
+        if (result.isSuccess()) {
+            LOGGER.info("Finished group child job '{}', result: {}",
+                    result.getMetadata().getName(),
+                    result.getOutcome());
+        } else if (result.getThrowable() == null) {
+            failures.add(result);
+            LOGGER.info("Finished group child job '{}', result: {}, message: {}",
                     result.getMetadata().getName(),
                     result.getOutcome(),
-                    result.getMessage()));
+                    result.getMessage());
         } else {
-            LOGGER.error(String.format("Finished job '%s', result: %s, message: %s",
+            failures.add(result);
+            // have to use String.format instead of LOGGER substitutions because of the throwable parameter
+            LOGGER.error(String.format("Finished group child job '%s', result: %s, message: %s",
                             result.getMetadata().getName(),
                             result.getOutcome(),
                             result.getMessage()),
                     result.getThrowable());
-        }
-
-        if (result.getOutcome() != JobOutcome.SUCCESS) {
-            failures.add(result);
         }
     }
 

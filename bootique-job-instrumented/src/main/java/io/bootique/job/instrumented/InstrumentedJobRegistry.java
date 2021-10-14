@@ -34,21 +34,24 @@ import java.util.Map;
 public class InstrumentedJobRegistry extends DefaultJobRegistry {
 
     private final JobMDCManager mdcManager;
+    private final JobMetricsManager metricsManager;
 
     public InstrumentedJobRegistry(
             Collection<Job> standaloneJobs,
             Map<String, JobDefinition> jobDefinitions,
             Provider<Scheduler> scheduler,
             Collection<MappedJobListener> listeners,
-            JobMDCManager mdcManager) {
+            JobMDCManager mdcManager,
+            JobMetricsManager metricsManager) {
         super(standaloneJobs, jobDefinitions, scheduler, listeners);
 
         this.mdcManager = mdcManager;
+        this.metricsManager = metricsManager;
     }
 
     @Override
     protected Job decorateWithLogger(Job job) {
         // replace super logger with instrumented logger that records job timing and provides the MDC context
-        return new InstrumentedJobLogDecorator(job, mdcManager);
+        return new InstrumentedJobLogDecorator(job, mdcManager, metricsManager);
     }
 }

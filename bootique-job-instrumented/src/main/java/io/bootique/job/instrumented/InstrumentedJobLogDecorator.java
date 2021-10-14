@@ -37,11 +37,13 @@ class InstrumentedJobLogDecorator implements Job {
     private final Job delegate;
     private final String name;
     private final JobMDCManager mdcManager;
+    private final JobMetricsManager metricsManager;
 
-    InstrumentedJobLogDecorator(Job delegate, JobMDCManager mdcManager) {
+    InstrumentedJobLogDecorator(Job delegate, JobMDCManager mdcManager, JobMetricsManager metricsManager) {
         this.delegate = delegate;
         this.name = delegate.getMetadata().getName();
         this.mdcManager = mdcManager;
+        this.metricsManager = metricsManager;
     }
 
     @Override
@@ -51,24 +53,28 @@ class InstrumentedJobLogDecorator implements Job {
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        onJobStarted(params);
-
+        JobMeter execution = onJobStarted(params);
         JobResult result = delegate.run(params);
+        return onJobFinished(result, execution);
+    }
 
-        onJobFinished(result);
+    private JobMeter onJobStarted(Map<String, Object> params) {
+        mdcManager.onJobStarted();
+        JobMeter execution = metricsManager.onJobStarted(name);
+        LOGGER.info("job '{}' started with params {}", name, params);
+        return execution;
+    }
+
+    private JobResult onJobFinished(JobResult result, JobMeter execution) {
+        long timeMs = execution.stop(result);
+        logJobFinished(result, timeMs);
+        mdcManager.onJobFinished();
         return result;
     }
 
-    private void onJobStarted(Map<String, Object> params) {
-
-        mdcManager.onJobStarted();
-        LOGGER.info(String.format("job '%s' started with params %s", name, params));
-    }
-
-    private void onJobFinished(JobResult result) {
-
+    private void logJobFinished(JobResult result, long timeMs) {
         if (result.isSuccess()) {
-            LOGGER.info("job '{}' finished", name);
+            LOGGER.info("job '{}' finished in {} ms", name, timeMs);
             return;
         }
 
@@ -85,8 +91,7 @@ class InstrumentedJobLogDecorator implements Job {
             LOGGER.info("job exception", result.getThrowable());
         }
 
-        LOGGER.warn("job '{}' finished: {} - {} ", name, result.getOutcome(), message);
-
-        mdcManager.onJobFinished();
+        LOGGER.warn("job '{}' finished in {} ms: {} - {} ", name, timeMs, result.getOutcome(), message);
     }
+
 }
