@@ -19,13 +19,16 @@
 
 package io.bootique.job;
 
-import java.util.Map;
-
 import io.bootique.job.runnable.JobResult;
 
+import java.util.Map;
+
+/**
+ * Represents a runnable job with metadata.
+ */
 public interface Job {
 
 	JobMetadata getMetadata();
 
-	JobResult run(Map<String, Object> parameters);
+	JobResult run(Map<String, Object> params);
 }

@@ -40,8 +40,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
 public class InstrumentedJobMDCIT {
@@ -113,8 +112,8 @@ public class InstrumentedJobMDCIT {
         int j2c = Job2.counter.get();
         assertTrue(j2c > 0);
         Set<String> uniqueIds2 = new HashSet<>(Job2.tx.values());
-        assertEquals(1, uniqueIds2.size(), () -> String.valueOf(uniqueIds2));
-        assertTrue(uniqueIds2.contains(NULL_PLACEHOLDER));
+        assertEquals(j2c, uniqueIds2.size());
+        assertFalse(uniqueIds2.contains(NULL_PLACEHOLDER));
     }
 
 

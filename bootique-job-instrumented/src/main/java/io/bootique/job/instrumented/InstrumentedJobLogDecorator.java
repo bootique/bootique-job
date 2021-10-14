@@ -53,16 +53,24 @@ class InstrumentedJobLogDecorator implements Job {
 
     @Override
     public JobResult run(Map<String, Object> params) {
+
         JobMeter meter = onJobStarted(params);
-        JobResult result = delegate.run(params);
-        return onJobFinished(result, meter);
+
+        try {
+            JobResult result = delegate.run(params);
+            return onJobFinished(result, meter);
+        } catch (Throwable th) {
+            // not expecting an exception because of the throwable job wrappers,
+            // but still need to be prepared for any outcome...
+            return onJobFinished(JobResult.failure(getMetadata(), th), meter);
+        }
     }
 
     private JobMeter onJobStarted(Map<String, Object> params) {
         mdcManager.onJobStarted();
-        JobMeter execution = metricsManager.onJobStarted(name);
+        JobMeter meter = metricsManager.onJobStarted(name);
         LOGGER.info("job '{}' started with params {}", name, params);
-        return execution;
+        return meter;
     }
 
     private JobResult onJobFinished(JobResult result, JobMeter meter) {

@@ -36,14 +36,14 @@ import java.util.Set;
 /**
  * @since 3.0
  */
-class JobGroup extends BaseJob {
+public class JobGroup extends BaseJob {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobGroup.class);
 
     private final Scheduler scheduler;
     private final List<Set<Job>> executionPlan;
 
-    JobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan, Scheduler scheduler) {
+    public JobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan, Scheduler scheduler) {
         super(groupMetadata);
 
         this.scheduler = scheduler;
@@ -60,7 +60,7 @@ class JobGroup extends BaseJob {
         return JobResult.success(getMetadata());
     }
 
-    void runBatchInParallel(Set<Job> batch, Map<String, Object> params) {
+    protected void runBatchInParallel(Set<Job> batch, Map<String, Object> params) {
 
         if (batch.isEmpty()) {
             return;
@@ -69,28 +69,30 @@ class JobGroup extends BaseJob {
         Set<JobResult> failures = new HashSet<>();
 
         batch.stream()
-                .map(j -> scheduler.runOnce(j, params))
+                .map(j -> submitGroupMember(j, params))
                 .map(JobFuture::get)
                 .forEach(r -> processJobResult(r, failures));
 
         processBatchFailures(failures);
     }
 
-    private void processJobResult(JobResult result, Set<JobResult> failures) {
+    protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {
+        return scheduler.runOnce(job, params);
+    }
+
+    protected void processJobResult(JobResult result, Set<JobResult> failures) {
         if (result.isSuccess()) {
-            LOGGER.info("Finished group member job '{}', result: {}",
-                    result.getMetadata().getName(),
-                    result.getOutcome());
+            LOGGER.info("group member '{}' finished", result.getMetadata().getName());
         } else if (result.getThrowable() == null) {
             failures.add(result);
-            LOGGER.info("Finished group member job '{}', result: {}, message: {}",
+            LOGGER.info("group member '{}' finished: {} - {}",
                     result.getMetadata().getName(),
                     result.getOutcome(),
                     result.getMessage());
         } else {
             failures.add(result);
             // have to use String.format instead of LOGGER substitutions because of the throwable parameter
-            LOGGER.error(String.format("Finished group member job '%s', result: %s, message: %s",
+            LOGGER.error(String.format("group member '%s' finished: %s - %s",
                             result.getMetadata().getName(),
                             result.getOutcome(),
                             result.getMessage()),
@@ -98,7 +100,7 @@ class JobGroup extends BaseJob {
         }
     }
 
-    private void processBatchFailures(Set<JobResult> failures) {
+    protected void processBatchFailures(Set<JobResult> failures) {
         if (!failures.isEmpty()) {
 
             // TODO: report all failure, not just the first one

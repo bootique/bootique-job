@@ -36,11 +36,11 @@ public class DefaultJobRegistry implements JobRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobRegistry.class);
 
-    private final Provider<Scheduler> scheduler;
-    private final Collection<MappedJobListener> listeners;
-    private final Map<String, Job> standaloneJobs;
-    private final Map<String, JobDefinition> allJobDefinitions;
-    private final Set<String> allJobsAndGroupNames;
+    protected final Provider<Scheduler> scheduler;
+    protected final Collection<MappedJobListener> listeners;
+    protected final Map<String, Job> standaloneJobs;
+    protected final Map<String, JobDefinition> allJobDefinitions;
+    protected final Set<String> allJobsAndGroupNames;
 
     // Lazily populated map of decorated runnable jobs (either standalone or groups)
     private final ConcurrentMap<String, Job> decoratedJobAndGroups;
@@ -124,9 +124,13 @@ public class DefaultJobRegistry implements JobRegistry {
         }
     }
 
-    private JobGroup createJobGroup(String jobName, DIGraph<JobExecution> graph) {
+    protected JobGroup createJobGroup(String jobName, DIGraph<JobExecution> graph) {
         JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs.values());
         List<Set<Job>> executionPlan = executionPlan(graph.reverseTopSort(), standaloneJobs);
+        return createJobGroup(groupMetadata, executionPlan);
+    }
+
+    protected JobGroup createJobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan) {
         return new JobGroup(groupMetadata, executionPlan, scheduler.get());
     }
 
@@ -174,7 +178,7 @@ public class DefaultJobRegistry implements JobRegistry {
         return decorateWithLogger(withExceptionsCaught);
     }
 
-    private Job decorateGroupMemberJob(Job undecorated, Map<String, Object> prebindParams) {
+    protected Job decorateGroupMemberJob(Job undecorated, Map<String, Object> prebindParams) {
         return decorateWithParamBindings(undecorated, prebindParams);
     }
 
