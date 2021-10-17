@@ -1,14 +1,15 @@
 package io.bootique.job.zookeeper;
 
+import io.bootique.ConfigModule;
+import io.bootique.di.Binder;
+import io.bootique.di.Provides;
+import io.bootique.job.runtime.JobModule;
+import io.bootique.job.zookeeper.lock.ZkClusterLockHandler;
+import org.apache.curator.framework.CuratorFramework;
+
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import io.bootique.ConfigModule;
-import io.bootique.di.Injector;
-import io.bootique.di.Provides;
-import io.bootique.job.lock.LockHandler;
-import io.bootique.job.zookeeper.lock.ZkClusterLockHandler;
-
-@SuppressWarnings("unused")
 public class ZkJobModule extends ConfigModule {
 
     public ZkJobModule() {
@@ -23,9 +24,14 @@ public class ZkJobModule extends ConfigModule {
         return "job-zookeeper";
     }
 
+    @Override
+    public void configure(Binder binder) {
+        JobModule.extend(binder).addLockHandler("zookeeper", ZkClusterLockHandler.class);
+    }
+
     @Provides
     @Singleton
-    LockHandler provideClusteredLockHandler(Injector injector) {
-        return new ZkClusterLockHandler(injector);
+    ZkClusterLockHandler provideZkLockHandler(Provider<CuratorFramework> curatorFramework) {
+        return new ZkClusterLockHandler(curatorFramework);
     }
 }

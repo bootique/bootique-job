@@ -19,23 +19,21 @@
 
 package io.bootique.job.runtime;
 
-import javax.inject.Provider;
-
 import io.bootique.ModuleExtender;
-import io.bootique.di.Binder;
-import io.bootique.di.Key;
-import io.bootique.di.SetBuilder;
-import io.bootique.di.TypeLiteral;
+import io.bootique.di.*;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.lock.LockHandler;
+
+import javax.inject.Provider;
 
 public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
 
     private SetBuilder<Job> jobs;
     private SetBuilder<JobListener> listeners;
     private SetBuilder<MappedJobListener> mappedListeners;
+    private MapBuilder<String, LockHandler> lockHandlers;
 
     public JobModuleExtender(Binder binder) {
         super(binder);
@@ -46,6 +44,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
         contributeListeners();
         contributeMappedListeners();
         contributeJobs();
+        contributeLockHandlers();
 
         return this;
     }
@@ -66,8 +65,19 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
         return this;
     }
 
-    public JobModuleExtender setLockHandler(LockHandler lockHandler) {
-        binder.bind(LockHandler.class).toInstance(lockHandler);
+    /**
+     * @since 3.0.M1
+     */
+    public JobModuleExtender addLockHandler(String name, LockHandler handler) {
+        contributeLockHandlers().putInstance(name, handler);
+        return this;
+    }
+
+    /**
+     * @since 3.0.M1
+     */
+    public JobModuleExtender addLockHandler(String name, Class<? extends LockHandler> handlerType) {
+        contributeLockHandlers().put(name, handlerType);
         return this;
     }
 
@@ -166,5 +176,12 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
             mappedListeners = newSet(MappedJobListener.class);
         }
         return mappedListeners;
+    }
+
+    protected MapBuilder<String, LockHandler> contributeLockHandlers() {
+        if(lockHandlers == null) {
+            lockHandlers = newMap(String.class, LockHandler.class);
+        }
+        return lockHandlers;
     }
 }

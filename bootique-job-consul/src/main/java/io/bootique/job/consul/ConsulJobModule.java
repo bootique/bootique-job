@@ -18,16 +18,15 @@
  */
 package io.bootique.job.consul;
 
-import javax.inject.Singleton;
-
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
-import io.bootique.di.Key;
 import io.bootique.di.Provides;
-import io.bootique.job.consul.lock.ConsulLockHandlerProvider;
-import io.bootique.job.lock.LockHandler;
+import io.bootique.job.consul.lock.CompositeConsulLockHandler;
+import io.bootique.job.runtime.JobModule;
 import io.bootique.shutdown.ShutdownManager;
+
+import javax.inject.Singleton;
 
 
 public class ConsulJobModule extends ConfigModule {
@@ -46,21 +45,14 @@ public class ConsulJobModule extends ConfigModule {
 
     @Override
     public void configure(Binder binder) {
-        binder.bind(Key.get(LockHandler.class)).toProvider(ConsulLockHandlerProvider.class);
+        JobModule.extend(binder).addLockHandler("consul", CompositeConsulLockHandler.class);
     }
 
     @Provides
     @Singleton
-    public ConsulLockHandlerProvider provideConsulLockHandlerProvider(
-            ConfigurationFactory configFactory, ShutdownManager shutdownManager) {
-
-        ConsulJobConfig config = config(ConsulJobConfig.class, configFactory);
-
-        return new ConsulLockHandlerProvider(
-                config.getConsulHost(),
-                config.getConsulPort(),
-                config.getDataCenter(),
-                config.getServiceGroup(),
-                shutdownManager);
+    public CompositeConsulLockHandler provideConsulLockHandler(
+            ConfigurationFactory configFactory,
+            ShutdownManager shutdownManager) {
+        return config(ConsulLockHandlerFactory.class, configFactory).createLockHandler(shutdownManager);
     }
 }

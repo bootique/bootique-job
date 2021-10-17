@@ -36,16 +36,20 @@ import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import java.util.Map;
 
 public class JobModule extends ConfigModule {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobModule.class);
 
     static final String JOBS_CONFIG_PREFIX = "jobs";
     static final String SCHEDULER_CONFIG_PREFIX = "scheduler";
 
     public static final String JOB_OPTION = "job";
-
 
     /**
      * @deprecated since 3.0 as JobMDCManager is no longer implemented as a listener.
@@ -61,8 +65,6 @@ public class JobModule extends ConfigModule {
     // goes inside LOG_LISTENER_ORDER
     @Deprecated
     public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
-
-    private final LockHandler defaultLockHandler = new LocalLockHandler();
 
     public JobModule() {
     }
@@ -91,6 +93,8 @@ public class JobModule extends ConfigModule {
     @Override
     public void configure(Binder binder) {
 
+        JobModule.extend(binder).initAllExtensions();
+
         // binding via provider, to simplify overriding in the "bootique-job-instrumented" module
         binder.bind(JobRegistry.class).toProvider(JobRegistryProvider.class).inSingletonScope();
 
@@ -103,21 +107,32 @@ public class JobModule extends ConfigModule {
                 .addCommand(ListCommand.class)
                 .addCommand(ScheduleCommand.class)
                 .addValueObjectDescriptor(Cron.class, new ValueObjectDescriptor("percent expression, e.g. '0 0 * * * *'"));
-
-        JobModule.extend(binder)
-                .initAllExtensions()
-                .setLockHandler(defaultLockHandler);
     }
 
     @Provides
     @Singleton
     Scheduler createScheduler(
-            LockHandler serialJobRunner,
+            LockHandler lockHandler,
             JobRegistry jobRegistry,
             ConfigurationFactory configFactory,
             ShutdownManager shutdownManager) {
 
-        return config(SchedulerFactory.class, configFactory)
-                .createScheduler(serialJobRunner, jobRegistry, shutdownManager);
+        return config(SchedulerFactory.class, configFactory).createScheduler(lockHandler, jobRegistry, shutdownManager);
+    }
+
+    @Provides
+    @Singleton
+    LockHandler provideDefaultLockHandler(Map<String, LockHandler> lockHandlers) {
+        switch (lockHandlers.size()) {
+            case 0:
+                return new LocalLockHandler();
+            case 1:
+                LOGGER.info("Using '{}' lock handler", lockHandlers.keySet().iterator().next());
+                return lockHandlers.values().iterator().next();
+            default:
+                throw new RuntimeException(
+                        "There's more than one LockHandler defined. Can't determine the default: "
+                                + lockHandlers.keySet());
+        }
     }
 }

@@ -18,21 +18,48 @@
  */
 package io.bootique.job.consul;
 
+import com.google.common.net.HostAndPort;
+import com.orbitz.consul.Consul;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.job.consul.lock.CompositeConsulLockHandler;
+import io.bootique.job.consul.lock.ConsulLockHandler;
+import io.bootique.job.lock.LocalLockHandler;
+import io.bootique.job.lock.LockHandler;
+import io.bootique.shutdown.ShutdownManager;
 
-
+/**
+ * @since 3.0.M1
+ */
 @BQConfig("Consul jobs configuration")
-public class ConsulJobConfig {
+public class ConsulLockHandlerFactory {
 
     private String consulHost;
-    private int consulPort;
+    private Integer consulPort;
     private String dataCenter;
     private String serviceGroup;
 
-    public ConsulJobConfig() {
+    public ConsulLockHandlerFactory() {
         this.consulHost = "localhost";
         this.consulPort = 8500;
+    }
+
+    public CompositeConsulLockHandler createLockHandler(ShutdownManager shutdownManager) {
+
+        String host = this.consulHost != null ? this.consulHost : "localhost";
+        int port = this.consulPort != null ? this.consulPort : 8500;
+
+        HostAndPort hostAndPort = HostAndPort.fromParts(host, port);
+        Consul consul = Consul.builder().withHostAndPort(hostAndPort).build();
+        ConsulSession session = new ConsulSession(consul.sessionClient(), dataCenter);
+        shutdownManager.addShutdownHook(session::destroySessionIfPresent);
+        LockHandler localLockHandler = new LocalLockHandler();
+        LockHandler consulLockHandler = new ConsulLockHandler(
+                consul.keyValueClient(),
+                session::getOrCreateSession,
+                serviceGroup
+        );
+        return new CompositeConsulLockHandler(localLockHandler, consulLockHandler);
     }
 
     @BQConfigProperty
@@ -41,7 +68,7 @@ public class ConsulJobConfig {
     }
 
     @BQConfigProperty
-    public void setConsulPort(int consulPort) {
+    public void setConsulPort(Integer consulPort) {
         this.consulPort = consulPort;
     }
 
@@ -53,21 +80,5 @@ public class ConsulJobConfig {
     @BQConfigProperty("Value to prepend to job lock names to distinguish them from other services that use Consul")
     public void setServiceGroup(String serviceGroup) {
         this.serviceGroup = serviceGroup;
-    }
-
-    public String getConsulHost() {
-        return consulHost;
-    }
-
-    public int getConsulPort() {
-        return consulPort;
-    }
-
-    public String getDataCenter() {
-        return dataCenter;
-    }
-
-    public String getServiceGroup() {
-        return serviceGroup;
     }
 }

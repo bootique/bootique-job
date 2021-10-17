@@ -19,58 +19,56 @@
 
 package io.bootique.job.zookeeper.lock;
 
-import javax.inject.Inject;
-
-import io.bootique.di.Injector;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runnable.JobOutcome;
+import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
+import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.JobResult;
+import javax.inject.Provider;
 
 public class ZkClusterLockHandler implements LockHandler {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ZkClusterLockHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZkClusterLockHandler.class);
 
-	// TODO: using a shared library package name for job locking can create
-	// unneeded contention between different apps
-	private final static String ZK_PATH_PREFIX = "/"
-			+ ZkClusterLockHandler.class.getPackage().getName().replace('.', '/') + "/";
+    // TODO: using a shared library package name for job locking can create
+    // unneeded contention between different apps
+    private final static String ZK_PATH_PREFIX = "/"
+            + ZkClusterLockHandler.class.getPackage().getName().replace('.', '/') + "/";
 
-	private final Injector injector;
+    private final Provider<CuratorFramework> curator;
 
-	@Inject
-	public ZkClusterLockHandler(Injector injector) {
-		this.injector = injector;
-	}
+    public ZkClusterLockHandler(Provider<CuratorFramework> curator) {
+        this.curator = curator;
+    }
 
-	@Override
-	public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
+    @Override
+    public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
 
-		return () -> {
-			String lockName = getLockName(metadata);
+        return () -> {
+            String lockName = getLockName(metadata);
 
-			LOGGER.info("Attempting to lock '{}'", lockName);
+            LOGGER.info("Attempting to lock '{}'", lockName);
 
-			ZkMutex lock = ZkMutex.acquire(injector, lockName);
-			if (lock == null) {
-				LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-				return new JobResult(metadata, JobOutcome.SKIPPED, null,
-						"Another job instance owns the lock. Skipping execution");
-			}
+            ZkMutex lock = ZkMutex.acquire(curator.get(), lockName);
+            if (lock == null) {
+                LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
+                return new JobResult(metadata, JobOutcome.SKIPPED, null,
+                        "Another job instance owns the lock. Skipping execution");
+            }
 
-			try {
-				return executable.run();
-			} finally {
-				lock.release();
-			}
-		};
-	}
+            try {
+                return executable.run();
+            } finally {
+                lock.release();
+            }
+        };
+    }
 
-	private String getLockName(JobMetadata metadata) {
-		return ZK_PATH_PREFIX + metadata.getName();
-	}
+    private String getLockName(JobMetadata metadata) {
+        return ZK_PATH_PREFIX + metadata.getName();
+    }
 }

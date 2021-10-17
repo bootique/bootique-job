@@ -19,11 +19,10 @@
 
 package io.bootique.job.zookeeper.lock;
 
-import java.util.concurrent.TimeUnit;
-
-import io.bootique.di.Injector;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Wraps Curator InterProcessMutex, so that {@link ZkClusterLockHandler} does
@@ -33,10 +32,8 @@ class ZkMutex {
 
 	private InterProcessMutex lock;
 
-	static ZkMutex acquire(Injector injector, String lockName) {
-		CuratorFramework curator = injector.getInstance(CuratorFramework.class);
+	static ZkMutex acquire(CuratorFramework curator, String lockName) {
 		InterProcessMutex lock = new InterProcessMutex(curator, lockName);
-
 		return acquire(lock) ? new ZkMutex(lock) : null;
 	}
 

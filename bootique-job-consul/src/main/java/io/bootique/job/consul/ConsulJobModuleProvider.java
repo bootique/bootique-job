@@ -20,10 +20,6 @@ package io.bootique.job.consul;
 
 import io.bootique.BQModuleProvider;
 import io.bootique.di.BQModule;
-import io.bootique.job.runtime.JobModule;
-
-import java.util.Collection;
-import java.util.Collections;
 
 
 public class ConsulJobModuleProvider implements BQModuleProvider {
@@ -31,10 +27,5 @@ public class ConsulJobModuleProvider implements BQModuleProvider {
     @Override
     public BQModule module() {
         return new ConsulJobModule();
-    }
-
-    @Override
-    public Collection<Class<? extends BQModule>> overrides() {
-        return Collections.singleton(JobModule.class);
     }
 }
