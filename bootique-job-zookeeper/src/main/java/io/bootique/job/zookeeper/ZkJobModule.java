@@ -12,13 +12,6 @@ import javax.inject.Singleton;
 
 public class ZkJobModule extends ConfigModule {
 
-    public ZkJobModule() {
-    }
-
-    public ZkJobModule(String configPrefix) {
-        super(configPrefix);
-    }
-
     @Override
     protected String defaultConfigPrefix() {
         return "job-zookeeper";

@@ -66,13 +66,6 @@ public class JobModule extends ConfigModule {
     @Deprecated
     public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
 
-    public JobModule() {
-    }
-
-    public JobModule(String configPrefix) {
-        super(configPrefix);
-    }
-
     /**
      * Returns an instance of {@link JobModuleExtender} used by downstream modules to load custom extensions to the
      * JobModule. Should be invoked from a downstream Module's "configure" method.

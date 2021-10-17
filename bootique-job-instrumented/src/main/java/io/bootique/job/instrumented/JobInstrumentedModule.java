@@ -39,14 +39,6 @@ public class JobInstrumentedModule extends ConfigModule {
     @Deprecated
     public static final int JOB_LISTENER_ORDER = LOG_LISTENER_ORDER + 200;
 
-    public JobInstrumentedModule() {
-
-    }
-
-    public JobInstrumentedModule(String configPrefix) {
-        super(configPrefix);
-    }
-
     @Override
     public void configure(Binder binder) {
         binder.override(JobRegistry.class).toProvider(InstrumentedJobRegistryProvider.class);

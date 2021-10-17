@@ -31,13 +31,6 @@ import javax.inject.Singleton;
 
 public class ConsulJobModule extends ConfigModule {
 
-    public ConsulJobModule() {
-    }
-
-    public ConsulJobModule(String configPrefix) {
-        super(configPrefix);
-    }
-
     @Override
     protected String defaultConfigPrefix() {
         return "job-consul";
