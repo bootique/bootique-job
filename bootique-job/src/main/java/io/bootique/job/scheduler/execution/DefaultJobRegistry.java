@@ -51,29 +51,33 @@ public class DefaultJobRegistry implements JobRegistry {
             Provider<Scheduler> scheduler,
             Collection<MappedJobListener> listeners) {
 
-        this.allJobsAndGroupNames = allJobsAndGroupNames(standaloneJobs, jobDefinitions);
-        this.allJobDefinitions = allJobDefinitions(jobDefinitions, standaloneJobs);
         this.standaloneJobs = jobsByName(standaloneJobs);
+        this.allJobsAndGroupNames = allJobsAndGroupNames(this.standaloneJobs, jobDefinitions);
+        this.allJobDefinitions = allJobDefinitions(this.standaloneJobs.keySet(), jobDefinitions);
         this.decoratedJobAndGroups = new ConcurrentHashMap<>((int) (jobDefinitions.size() / 0.75d) + 1);
         this.scheduler = scheduler;
         this.listeners = listeners;
     }
 
-    private Set<String> allJobsAndGroupNames(Collection<Job> jobs, Map<String, JobDefinition> jobDefinitions) {
-        Set<String> jobNames = jobs.stream().map(job -> job.getMetadata().getName()).collect(Collectors.toSet());
+    private Set<String> allJobsAndGroupNames(
+            Map<String, Job> standaloneJobs,
+            Map<String, JobDefinition> jobDefinitions) {
+
+        // TODO: how do we check for conflicts between standalone job names and group names?
+        Set<String> jobNames = new HashSet<>(standaloneJobs.keySet());
         jobNames.addAll(jobDefinitions.keySet());
-        return Collections.unmodifiableSet(jobNames);
+        return jobNames;
     }
 
     private Map<String, JobDefinition> allJobDefinitions(
-            Map<String, JobDefinition> configured,
-            Collection<Job> standaloneJobs) {
+            Set<String> standaloneJobsNames,
+            Map<String, JobDefinition> configured) {
 
         // combine explicit job definitions from config with default definitions for the existing jobs
         Map<String, JobDefinition> combined = new HashMap<>(configured);
 
         // create definition for each job, that is not present in config
-        standaloneJobs.stream().map(j -> j.getMetadata().getName())
+        standaloneJobsNames.stream()
                 .filter(n -> !combined.containsKey(n))
                 .forEach(n -> combined.put(n, new SingleJobDefinition()));
 
@@ -162,7 +166,21 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     private Map<String, Job> jobsByName(Collection<Job> jobs) {
-        return jobs.stream().collect(HashMap::new, (m, j) -> m.put(j.getMetadata().getName(), j), HashMap::putAll);
+
+        // report job name conflicts, but otherwise ignore them
+        // TODO: should we throw?
+
+        Map<String, Job> map = new HashMap<>();
+        for (Job j : jobs) {
+
+            String name = j.getMetadata().getName();
+            Job existing = map.put(name, j);
+            if (existing != null && existing != j) {
+                LOGGER.warn("Duplicate job name '{}' was ignored and one of the jobs discarded", name);
+            }
+        }
+
+        return map;
     }
 
     protected Job decorateJob(Job undecorated, String altName, Map<String, Object> prebindParams) {
