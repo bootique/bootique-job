@@ -5,7 +5,7 @@ jobs:
       parameterizedjob3:
         params:
           longp: 3
-      serialjob1:
+      scheduledjob1:
         dependsOn:
           - parameterizedjob3
   group2:

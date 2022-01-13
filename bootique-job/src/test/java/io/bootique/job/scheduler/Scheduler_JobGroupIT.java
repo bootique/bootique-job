@@ -22,7 +22,7 @@ package io.bootique.job.scheduler;
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.job.fixture.ParameterizedJob3;
-import io.bootique.job.fixture.SerialJob1;
+import io.bootique.job.fixture.ScheduledJob1;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
@@ -44,7 +44,7 @@ public class Scheduler_JobGroupIT {
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup.yml")
             .module(JobModule.class)
-            .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
+            .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class))
             .module(b -> JobModule.extend(b).addJob(ParameterizedJob3.class))
             .createRuntime();
 
