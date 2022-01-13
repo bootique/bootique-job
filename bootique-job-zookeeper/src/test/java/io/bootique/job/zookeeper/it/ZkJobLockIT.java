@@ -30,7 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ZkJobLockIT extends AbstractZkIT {
 
-    private static final String CONFIG_PATH = "--config=classpath:io/bootique/job/zookeeper/it/job-lock.yml";
     public static final String CALLS_COUNT = "count";
     private static final int WAIT_TIME = 15_000;
 
@@ -44,8 +43,8 @@ public class ZkJobLockIT extends AbstractZkIT {
 
     @Test
     public void testZkClusterLock() throws InterruptedException {
-        Scheduler scheduler_1 = getSchedulerFromRuntime(CONFIG_PATH);
-        Scheduler scheduler_2 = getSchedulerFromRuntime(CONFIG_PATH);
+        Scheduler scheduler_1 = getSchedulerFromRuntime();
+        Scheduler scheduler_2 = getSchedulerFromRuntime();
         scheduler_1.runOnce(new LockJob(), callsCount);
         scheduler_2.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
@@ -54,7 +53,7 @@ public class ZkJobLockIT extends AbstractZkIT {
 
     @Test
     public void testZkLocalLock() throws InterruptedException {
-        Scheduler scheduler = getSchedulerFromRuntime(CONFIG_PATH);
+        Scheduler scheduler = getSchedulerFromRuntime();
         scheduler.runOnce(new LockJob(), callsCount);
         scheduler.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);

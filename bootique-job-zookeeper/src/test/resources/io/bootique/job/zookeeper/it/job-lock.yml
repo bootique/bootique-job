@@ -1,5 +1,2 @@
 scheduler:
   threadPoolSize: 4
-
-curator:
-  connectString: localhost:2181

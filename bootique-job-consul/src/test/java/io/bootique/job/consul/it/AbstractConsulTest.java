@@ -23,9 +23,9 @@ public abstract class AbstractConsulTest {
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
 
-    protected Scheduler getSchedulerFromRuntime(String yamlConfigPath) {
+    protected Scheduler getSchedulerFromRuntime() {
         BQRuntime bqRuntime = testFactory
-                .app(yamlConfigPath)
+                .app("--config=classpath:io/bootique/job/consul/it/job-lock.yml")
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.job-consul.consulPort", String.valueOf(consul.getMappedPort(8500))))
                 .override(JobModule.class).with(ConsulJobModule.class)
                 .module(new JobModule())

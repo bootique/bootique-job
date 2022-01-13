@@ -18,10 +18,7 @@
  */
 package io.bootique.job.zookeeper.it;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
+import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.curator.CuratorModule;
 import io.bootique.job.runtime.JobModule;
@@ -35,33 +32,20 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.function.Consumer;
-
 @Testcontainers
 @BQTest
 public abstract class AbstractZkIT {
 
-    private static final int HOST_PORT_1 = 2181;
-    private static final int CONTAINER_EXPOSED_PORT_1 = 2181;
-    private static final Consumer<CreateContainerCmd> MAPPING_CMD =
-            e -> e.withPortBindings(
-                    new PortBinding(
-                            Ports.Binding.bindPort(HOST_PORT_1),
-                            new ExposedPort(CONTAINER_EXPOSED_PORT_1)
-                    )
-            );
-
     @Container
-    public static GenericContainer zookeeper = new GenericContainer("zookeeper:latest")
-            .withCreateContainerCmdModifier(MAPPING_CMD)
-            .withExposedPorts(CONTAINER_EXPOSED_PORT_1);
+    static final GenericContainer zk = new GenericContainer("zookeeper:latest").withExposedPorts(2181);
 
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
 
-    protected Scheduler getSchedulerFromRuntime(String yamlConfigPath) {
+    protected Scheduler getSchedulerFromRuntime() {
         BQRuntime bqRuntime = testFactory
-                .app(yamlConfigPath)
+                .app("--config=classpath:io/bootique/job/zookeeper/it/job-lock.yml")
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.curator.connectString", "localhost:" + zk.getMappedPort(2181)))
                 .override(JobModule.class).with(ZkJobModule.class)
                 .module(new JobModule())
                 .module(new CuratorModule())

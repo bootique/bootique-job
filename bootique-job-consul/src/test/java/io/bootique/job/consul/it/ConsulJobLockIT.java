@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConsulJobLockIT extends AbstractConsulTest {
 
-    private static final String CONFIG_PATH = "--config=classpath:io/bootique/job/consul/it/job-lock.yml";
     public static final String CALLS_COUNT = "count";
     private static final int WAIT_TIME = 3_000;
 
@@ -26,8 +25,8 @@ public class ConsulJobLockIT extends AbstractConsulTest {
 
     @Test
     public void testConsulClusterJobLocking() throws InterruptedException {
-        Scheduler scheduler_1 = getSchedulerFromRuntime(CONFIG_PATH);
-        Scheduler scheduler_2 = getSchedulerFromRuntime(CONFIG_PATH);
+        Scheduler scheduler_1 = getSchedulerFromRuntime();
+        Scheduler scheduler_2 = getSchedulerFromRuntime();
         scheduler_1.runOnce(new LockJob(), callsCount);
         scheduler_2.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
@@ -36,7 +35,7 @@ public class ConsulJobLockIT extends AbstractConsulTest {
 
     @Test
     public void testConsulLocalJobLocking() throws InterruptedException {
-        Scheduler scheduler = getSchedulerFromRuntime(CONFIG_PATH);
+        Scheduler scheduler = getSchedulerFromRuntime();
         scheduler.runOnce(new LockJob(), callsCount);
         scheduler.runOnce(new LockJob(), callsCount);
         Thread.sleep(WAIT_TIME);
