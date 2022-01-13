@@ -23,29 +23,24 @@ import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.job.fixture.ParameterizedJob3;
 import io.bootique.job.fixture.SerialJob1;
+import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @BQTest
 public class Scheduler_JobGroupIT {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler_JobGroupIT.class);
-
-    private ExecutorService executor;
-
+    
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup.yml")
             .module(JobModule.class)
@@ -53,64 +48,24 @@ public class Scheduler_JobGroupIT {
             .module(b -> JobModule.extend(b).addJob(ParameterizedJob3.class))
             .createRuntime();
 
-    @BeforeEach
-    public void setUp() {
-        executor = Executors.newFixedThreadPool(10);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        executor.shutdownNow();
-    }
-
     @Test
-    public void testRunOnce_JobGroup() throws InterruptedException {
+    public void testRunOnce_JobGroup() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("param1", "value1");
         parameters.put("param2", 2);
 
-        Queue<JobResult> resultQueue = new LinkedBlockingQueue<>(1);
-        CountDownLatch latch = new CountDownLatch(1);
-        executor.submit(() -> {
-            try {
-                resultQueue.add(scheduler.runOnce("group1", parameters).get());
-            } finally {
-                LOGGER.info(resultQueue.element().toString());
-                latch.countDown();
-            }
-        });
-
-        boolean finished = latch.await(5, TimeUnit.SECONDS);
-        if (!finished) {
-            fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
-        }
-
-        assertEquals(1, resultQueue.size());
-        assertEquals(JobOutcome.SUCCESS, resultQueue.peek().getOutcome());
+        JobFuture future = scheduler.runOnce("group1", parameters);
+        JobResult result = future.get(5L, TimeUnit.SECONDS);
+        assertEquals(JobOutcome.SUCCESS, result.getOutcome());
     }
 
     @Test
-    public void testRunOnce_EmptyGroup() throws InterruptedException {
+    public void testRunOnce_EmptyGroup() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
-        Queue<JobResult> resultQueue = new LinkedBlockingQueue<>(1);
-        CountDownLatch latch = new CountDownLatch(1);
-        executor.submit(() -> {
-            try {
-                resultQueue.add(scheduler.runOnce("group2", Collections.emptyMap()).get());
-            } finally {
-                LOGGER.info(resultQueue.element().toString());
-                latch.countDown();
-            }
-        });
-
-        boolean finished = latch.await(5, TimeUnit.SECONDS);
-        if (!finished) {
-            fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
-        }
-
-        assertEquals(1, resultQueue.size());
-        assertEquals(JobOutcome.SUCCESS, resultQueue.peek().getOutcome());
+        JobFuture future = scheduler.runOnce("group2", Collections.emptyMap());
+        JobResult result = future.get(5L, TimeUnit.SECONDS);
+        assertEquals(JobOutcome.SUCCESS, result.getOutcome());
     }
 }
