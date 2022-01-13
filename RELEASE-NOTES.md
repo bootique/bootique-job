@@ -6,6 +6,7 @@
 * #91 Transaction ids for jobs within job groups
 * #92 Replace job log listener with a Job wrapper
 * #93 LockHandlers to be contributed via extenders to a DI Map
+* #94 Bump spring-core from 5.3.9 to 5.3.14
 
 ## 2.0.M1
 
