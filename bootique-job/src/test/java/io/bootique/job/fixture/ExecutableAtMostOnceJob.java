@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class ExecutableAtMostOnceJob extends BaseJob {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutableAtMostOnceJob.class);
 
-    private final long runningTime;
+    private final long runIterations;
     private final boolean shouldFail;
 
     private volatile boolean executed;
@@ -41,13 +41,13 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
 
     private final ReentrantLock executionLock;
 
-    public ExecutableAtMostOnceJob(JobMetadata metadata, long runningTime) {
-        this(metadata, runningTime, false);
+    public ExecutableAtMostOnceJob(JobMetadata metadata, long runIterations) {
+        this(metadata, runIterations, false);
     }
 
-    public ExecutableAtMostOnceJob(JobMetadata metadata, long runningTime, boolean shouldFail) {
+    public ExecutableAtMostOnceJob(JobMetadata metadata, long runIterations, boolean shouldFail) {
         super(metadata);
-        this.runningTime = runningTime;
+        this.runIterations = runIterations;
         this.executionLock = new ReentrantLock();
         this.shouldFail = shouldFail;
     }
@@ -81,15 +81,15 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
         }
         this.params = params;
         startedAt = System.nanoTime();
-        busyWait(runningTime);
+        busyWait(runIterations);
         finishedAt = System.nanoTime();
         executed = true;
         return shouldFail ? JobResult.failure(getMetadata()) : JobResult.success(getMetadata());
     }
 
-    private void busyWait(long time) {
+    private void busyWait(long iterations) {
         long i = 0;
-        while (i++ < time)
+        while (i++ < iterations)
             ;
     }
 

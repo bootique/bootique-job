@@ -30,7 +30,7 @@ public class SerialJob1 extends Job1 {
         this(DEFAULT_RUNNING_TIME);
     }
 
-    public SerialJob1(long runningTime) {
-        super(JobMetadata.build(SerialJob1.class), runningTime);
+    public SerialJob1(long runIterations) {
+        super(JobMetadata.build(SerialJob1.class), runIterations);
     }
 }

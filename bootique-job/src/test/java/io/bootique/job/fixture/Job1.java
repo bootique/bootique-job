@@ -27,20 +27,20 @@ public class Job1 extends ExecutableAtMostOnceJob {
         this(0);
     }
 
-    public Job1(long runningTime) {
-        this(JobMetadata.build(Job1.class), runningTime, false);
+    public Job1(long runIterations) {
+        this(JobMetadata.build(Job1.class), runIterations, false);
     }
 
-    public Job1(long runningTime, boolean shouldFail) {
-        this(JobMetadata.build(Job1.class), runningTime, shouldFail);
+    public Job1(long runIterations, boolean shouldFail) {
+        this(JobMetadata.build(Job1.class), runIterations, shouldFail);
     }
 
     public Job1(JobMetadata metadata) {
         this(metadata, 0, false);
     }
 
-    public Job1(JobMetadata metadata, long runningTime) {
-        super(metadata, runningTime, false);
+    public Job1(JobMetadata metadata, long runIterations) {
+        super(metadata, runIterations, false);
     }
 
     public Job1(JobMetadata metadata, long runningTime, boolean shouldFail) {
