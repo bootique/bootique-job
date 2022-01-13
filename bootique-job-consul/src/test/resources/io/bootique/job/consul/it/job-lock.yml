@@ -3,6 +3,5 @@ scheduler:
 
 job-consul:
   consulHost: localhost
-  consulPort: 8500
   dataCenter: dc1
   serviceGroup: TestJobs

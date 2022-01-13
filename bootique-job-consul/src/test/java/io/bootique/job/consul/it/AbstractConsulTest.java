@@ -1,9 +1,6 @@
 package io.bootique.job.consul.it;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
+import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.job.consul.ConsulJobModule;
 import io.bootique.job.consul.it.job.LockJob;
@@ -16,24 +13,12 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.function.Consumer;
-
 @Testcontainers
 @BQTest
 public abstract class AbstractConsulTest {
 
-    private static final int HOST_PORT = 8500;
-    private static final int CONTAINER_EXPOSED_PORT = 8500;
-    private static final Consumer<CreateContainerCmd> MAPPING_CMD =
-            e -> e.withPortBindings(
-                    new PortBinding(Ports.Binding.bindPort(HOST_PORT),
-                            new ExposedPort(CONTAINER_EXPOSED_PORT))
-            );
-
     @Container
-    static final GenericContainer consul = new GenericContainer("consul:latest")
-            .withCreateContainerCmdModifier(MAPPING_CMD)
-            .withExposedPorts(CONTAINER_EXPOSED_PORT);
+    static final GenericContainer consul = new GenericContainer("consul:latest").withExposedPorts(8500);
 
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
@@ -41,6 +26,7 @@ public abstract class AbstractConsulTest {
     protected Scheduler getSchedulerFromRuntime(String yamlConfigPath) {
         BQRuntime bqRuntime = testFactory
                 .app(yamlConfigPath)
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.job-consul.consulPort", String.valueOf(consul.getMappedPort(8500))))
                 .override(JobModule.class).with(ConsulJobModule.class)
                 .module(new JobModule())
                 .module(b -> JobModule.extend(b).addJob(LockJob.class))
