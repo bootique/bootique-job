@@ -52,7 +52,23 @@ public class MappedListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_Ordering1() throws Exception {
+    public void testAddListener_AlterParams() {
+        String val = "12345_abcde";
+        Job_ParamsChange job = new Job_ParamsChange();
+        Listener_ParamsChange listener = new Listener_ParamsChange(val);
+
+        testFactory.app("--exec", "--job=job_paramschange")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b)
+                        .addJob(job)
+                        .addListener(listener))
+                .run();
+
+        assertEquals(val, job.getActualParam());
+    }
+
+    @Test
+    public void testAddMappedListener_Ordering1() {
         Job1 job1 = new Job1(0);
         Set<? extends Job> jobs = Collections.singleton(job1);
 
@@ -190,6 +206,39 @@ public class MappedListenerIT {
                 SharedState.append("_L3_finished");
             });
             SharedState.append("_L3_started");
+        }
+    }
+
+    public static class Job_ParamsChange implements Job {
+
+        private String actualParam;
+
+        @Override
+        public JobMetadata getMetadata() {
+            return JobMetadata.build(Job_ParamsChange.class);
+        }
+
+        public String getActualParam() {
+            return actualParam;
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            this.actualParam = (String) params.get("LP");
+            return JobResult.success(getMetadata());
+        }
+    }
+
+    public static class Listener_ParamsChange implements JobListener {
+        private final String setParam;
+
+        public Listener_ParamsChange(String setParam) {
+            this.setParam = setParam;
+        }
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+            parameters.put("LP", setParam);
         }
     }
 }
