@@ -23,15 +23,11 @@ import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.runnable.JobResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 class JobListenerDecorator implements Job {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobListenerDecorator.class);
 
     private final Job delegate;
     private final Collection<MappedJobListener> listeners;
@@ -75,13 +71,7 @@ class JobListenerDecorator implements Job {
         }
 
         public void onStart(Collection<MappedJobListener> listeners, Map<String, Object> parameters) {
-            listeners.stream().map(MappedJobListener::getListener).forEach(l -> {
-                try {
-                    l.onJobStarted(jobName, parameters, this);
-                } catch (Exception e) {
-                    LOGGER.error("Error invoking job listener for job: " + jobName, e);
-                }
-            });
+            listeners.stream().map(MappedJobListener::getListener).forEach(l -> l.onJobStarted(jobName, parameters, this));
         }
 
         public void onFinish(JobResult result) {
@@ -89,11 +79,7 @@ class JobListenerDecorator implements Job {
             // invoke backwards - last callbacks are notified first
             ListIterator<Consumer<JobResult>> it = callbacks.listIterator(callbacks.size());
             while (it.hasPrevious()) {
-                try {
-                    it.previous().accept(result);
-                } catch (Exception e) {
-                    LOGGER.error("Error invoking completion callback for job: " + jobName, e);
-                }
+                it.previous().accept(result);
             }
         }
     }

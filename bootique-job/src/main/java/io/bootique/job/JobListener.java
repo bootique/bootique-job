@@ -32,12 +32,12 @@ public interface JobListener {
 
     /**
      * A method invoked when a job is started. The listener may optionally decide to get notified when the job is
-     * finished by registering a callback function with provided "finishEventSource".
+     * finished by registering a callback function with provided "onFinishedCallbackRegistry".
      *
      * @param jobName           the name of a job that generated start event.
      * @param parameters        parameters passed to the job.
-     * @param finishEventSource an object that will notify registered consumers when the job that generated this start
+     * @param onFinishedCallbackRegistry an object that will notify registered consumers when the job that generated this start
      *                          event is finished.
      */
-    void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource);
+    void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry);
 }

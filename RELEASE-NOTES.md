@@ -7,6 +7,7 @@
 * #92 Replace job log listener with a Job wrapper
 * #93 LockHandlers to be contributed via extenders to a DI Map
 * #94 Bump spring-core from 5.3.9 to 5.3.14
+* #95 Failure in JobListener must fail the job
 
 ## 2.0.M1
 

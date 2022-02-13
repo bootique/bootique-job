@@ -38,11 +38,11 @@ public class ExecutionRateListener implements JobListener {
     }
 
     @Override
-    public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+    public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
         Execution previousExecution = executions.peekLast();
         long startedAt = System.currentTimeMillis();
 
-        finishEventSource.accept(result -> {
+        onFinishedCallbackRegistry.accept(result -> {
             executions.add(new Execution(startedAt, System.currentTimeMillis()));
             if (previousExecution != null) {
                 recalculateAverageRate(startedAt - previousExecution.getFinishedAt());

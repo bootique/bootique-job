@@ -19,10 +19,13 @@
 
 package io.bootique.job;
 
+import io.bootique.BQRuntime;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
+import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
+import io.bootique.job.scheduler.Scheduler;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -32,8 +35,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
 public class ListenerIT {
@@ -44,6 +46,40 @@ public class ListenerIT {
     @BeforeEach
     public void before() {
         SharedState.reset();
+    }
+
+    @Test
+    public void testListenerException_OnStart() {
+        Job1 job = new Job1(0);
+
+        BQRuntime runtime = testFactory
+                .app()
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b)
+                        .addJob(job)
+                        .addListener(Listener_StartException.class))
+                .createRuntime();
+
+        JobResult result = runtime.getInstance(Scheduler.class).runOnce("job1").get();
+        assertEquals(JobOutcome.FAILURE, result.getOutcome());
+        assertEquals("This listener always throws on start", result.getThrowable().getMessage());
+    }
+
+    @Test
+    public void testListenerException_OnFinish() {
+        Job1 job = new Job1(0);
+
+        BQRuntime runtime = testFactory
+                .app()
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b)
+                        .addJob(job)
+                        .addListener(Listener_EndException.class))
+                .createRuntime();
+
+        JobResult result = runtime.getInstance(Scheduler.class).runOnce("job1").get();
+        assertEquals(JobOutcome.FAILURE, result.getOutcome());
+        assertEquals("This listener always throws on finish", result.getThrowable().getMessage());
     }
 
     @Test
@@ -154,8 +190,8 @@ public class ListenerIT {
 
     public static class Listener1 implements JobListener {
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
-            finishEventSource.accept(result -> SharedState.append("_L1_finished"));
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            onFinishedCallbackRegistry.accept(result -> SharedState.append("_L1_finished"));
 
             SharedState.append("_L1_started");
         }
@@ -164,8 +200,8 @@ public class ListenerIT {
     public static class Listener2 implements JobListener {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
-            finishEventSource.accept(result -> SharedState.append("_L2_finished"));
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            onFinishedCallbackRegistry.accept(result -> SharedState.append("_L2_finished"));
             SharedState.append("_L2_started");
         }
     }
@@ -173,8 +209,8 @@ public class ListenerIT {
     public static class Listener3 implements JobListener {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
-            finishEventSource.accept(result -> SharedState.append("_L3_finished"));
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            onFinishedCallbackRegistry.accept(result -> SharedState.append("_L3_finished"));
             SharedState.append("_L3_started");
         }
     }
@@ -207,8 +243,26 @@ public class ListenerIT {
         }
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
             parameters.put("LP", setParam);
+        }
+    }
+
+    public static class Listener_StartException implements JobListener {
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            throw new RuntimeException("This listener always throws on start");
+        }
+    }
+
+    public static class Listener_EndException implements JobListener {
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            onFinishedCallbackRegistry.accept(r -> {
+                throw new RuntimeException("This listener always throws on finish");
+            });
         }
     }
 }

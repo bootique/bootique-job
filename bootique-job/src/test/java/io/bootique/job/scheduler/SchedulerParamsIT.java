@@ -101,9 +101,9 @@ public class SchedulerParamsIT {
         }
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
             this.params = new HashMap<>(parameters);
-            finishEventSource.accept(jr -> this.result = jr);
+            onFinishedCallbackRegistry.accept(jr -> this.result = jr);
         }
 
         public ParamsTester run(String config) {
