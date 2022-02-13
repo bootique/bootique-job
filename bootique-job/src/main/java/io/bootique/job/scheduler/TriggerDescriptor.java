@@ -39,9 +39,10 @@ public class TriggerDescriptor {
     private Duration fixedRate;
     private Duration initialDelay;
 
-    private Map<String, Object> params = Collections.emptyMap();
+    private Map<String, Object> params;
 
     public TriggerDescriptor() {
+        this.params = Collections.emptyMap();
         this.trigger = UUID.randomUUID().toString().replace("-", ""); // 32 chars
         this.initialDelay = new Duration(10 * 1000);
     }
@@ -80,9 +81,6 @@ public class TriggerDescriptor {
         return fixedDelay;
     }
 
-    /**
-     * @param fixedDelay
-     */
     @BQConfigProperty("Delay between job executions in some time units." +
             " New job executions will be scheduled to run in D units after the completion of the preceding instance.")
     public void setFixedDelay(Duration fixedDelay) {
@@ -96,9 +94,6 @@ public class TriggerDescriptor {
         return fixedRate;
     }
 
-    /**
-     * @param fixedRate
-     */
     @BQConfigProperty("Fixed rate in some time units. New job instances will be run exactly every R units.")
     public void setFixedRate(Duration fixedRate) {
         this.fixedRate = fixedRate;
@@ -111,18 +106,15 @@ public class TriggerDescriptor {
         return initialDelay;
     }
 
-    /**
-     * @param initialDelay
-     */
     @BQConfigProperty("Initial delay in some time units. Applies to periodic and fixed-rate triggers.")
     public void setInitialDelay(Duration initialDelay) {
         this.initialDelay = initialDelay;
     }
 
     /**
-     * Returns a human-readable String with trigger parameters description. Used mainly for debugging.
+     * Returns a human-readable String with trigger parameters' description. Used mainly for debugging.
      *
-     * @return A human-readable String with trigger parameters description.
+     * @return A human-readable String with trigger parameters' description.
      */
     public String describeTrigger() {
         if (cron != null && cron.getExpression() != null) {

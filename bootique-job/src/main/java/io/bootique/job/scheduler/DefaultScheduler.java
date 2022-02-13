@@ -191,7 +191,7 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public JobFuture runOnce(String jobName) {
-        return runOnce(jobName, Collections.emptyMap());
+        return runOnce(jobRegistry.getJob(jobName));
     }
 
     @Override
@@ -202,7 +202,8 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public JobFuture runOnce(Job job) {
-        return runOnce(job, Collections.emptyMap());
+        // parameters map must be mutable, as listeners are allowed to modify it
+        return runOnce(job, new HashMap<>());
     }
 
     @Override

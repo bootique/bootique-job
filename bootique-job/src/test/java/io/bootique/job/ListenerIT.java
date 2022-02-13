@@ -47,6 +47,22 @@ public class ListenerIT {
     }
 
     @Test
+    public void testAddListener_AlterParams() {
+        String val = "12345_abcde";
+        Job_ParamsChange job = new Job_ParamsChange();
+        Listener_ParamsChange listener = new Listener_ParamsChange(val);
+
+        testFactory.app("--exec", "--job=job_paramschange")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b)
+                        .addJob(job)
+                        .addListener(listener))
+                .run();
+
+        assertEquals(val, job.getActualParam());
+    }
+
+    @Test
     public void testAddMappedListener_Ordering1() {
         Job1 job = new Job1(0);
 
@@ -114,7 +130,7 @@ public class ListenerIT {
         assertTrue(job1.isExecuted());
         assertTrue(job2.isExecuted());
 
-        // no losteners should be called for subjobs of a group
+        // no listeners should be called for subjobs of a group
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
@@ -160,6 +176,39 @@ public class ListenerIT {
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
             finishEventSource.accept(result -> SharedState.append("_L3_finished"));
             SharedState.append("_L3_started");
+        }
+    }
+
+    public static class Job_ParamsChange implements Job {
+
+        private String actualParam;
+
+        @Override
+        public JobMetadata getMetadata() {
+            return JobMetadata.build(Job_ParamsChange.class);
+        }
+
+        public String getActualParam() {
+            return actualParam;
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            this.actualParam = (String) params.get("LP");
+            return JobResult.success(getMetadata());
+        }
+    }
+
+    public static class Listener_ParamsChange implements JobListener {
+        private final String setParam;
+
+        public Listener_ParamsChange(String setParam) {
+            this.setParam = setParam;
+        }
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
+            parameters.put("LP", setParam);
         }
     }
 }
