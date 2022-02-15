@@ -19,29 +19,38 @@
 
 package io.bootique.job;
 
-public abstract class JobParameterMetadata<T> {
+import java.util.function.Function;
 
-	private String name;
-	private T defaultValue;
+/**
+ * @param <T>
+ */
+public class JobParameterMetadata<T> {
 
-	public JobParameterMetadata(String name, T defaultValue) {
-		this.name = name;
-		this.defaultValue = defaultValue;
-	}
+    private final String name;
+    private final String typeName;
+    private final T defaultValue;
+    private final Function<String, T> parser;
 
-	public String getName() {
-		return name;
-	}
+    public JobParameterMetadata(String name, String typeName, Function<String, T> parser, T defaultValue) {
+        this.name = name;
+        this.typeName = typeName;
+        this.defaultValue = defaultValue;
+        this.parser = parser;
+    }
 
-	public T fromString(String stringValue) {
-		return stringValue != null ? parseValue(stringValue) : defaultValue;
-	}
-	
-	public T getDefaultValue() {
-		return defaultValue;
-	}
+    public String getName() {
+        return name;
+    }
 
-	protected abstract T parseValue(String value);
-	
-	public abstract String getTypeName();
+    public T fromString(String stringValue) {
+        return stringValue != null ? parser.apply(stringValue) : defaultValue;
+    }
+
+    public T getDefaultValue() {
+        return defaultValue;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
 }

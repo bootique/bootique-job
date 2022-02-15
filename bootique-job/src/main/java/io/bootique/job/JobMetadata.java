@@ -20,9 +20,11 @@
 package io.bootique.job;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
 
 public class JobMetadata {
 
@@ -86,8 +88,24 @@ public class JobMetadata {
 
     public static class Builder {
 
-        private String name;
-        private Collection<JobParameterMetadata<?>> parameters;
+        static Integer parseInt(String value) {
+            return value != null ? Integer.valueOf(value) : null;
+        }
+
+        static Long parseLong(String value) {
+            return value != null ? Long.valueOf(value) : null;
+        }
+
+        static LocalDate parseDate(String value) {
+            return value != null ? LocalDate.parse(value) : null;
+        }
+
+        static LocalDateTime parseDateTime(String value) {
+            return value != null ? LocalDateTime.parse(value) : null;
+        }
+
+        private final String name;
+        private final Collection<JobParameterMetadata<?>> parameters;
 
         private Builder(String name) {
             this.name = name;
@@ -99,36 +117,93 @@ public class JobMetadata {
             return this;
         }
 
+        /**
+         * @since 3.0.M1
+         */
+        public <T> Builder param(String name, String typeName, Function<String, T> parser) {
+            return param(name, typeName, null, parser);
+        }
+
+        /**
+         * @since 3.0.M1
+         */
+        public <T> Builder param(String name, String typeName, Function<String, T> parser, T defaultValue) {
+            this.parameters.add(new JobParameterMetadata<>(name, typeName, parser, defaultValue));
+            return this;
+        }
+
         public Builder stringParam(String name) {
             return stringParam(name, null);
         }
 
         public Builder stringParam(String name, String defaultValue) {
-            return param(new StringParameter(name, defaultValue));
+            return param(name, "string", v -> v, defaultValue);
         }
 
         public Builder dateParam(String name) {
-            return param(new DateParameter(name, (LocalDate) null));
+            return dateParam(name, (LocalDate) null);
         }
 
-        public Builder dateParam(String name, String isoDate) {
-            return param(new DateParameter(name, isoDate));
+        public Builder dateParam(String name, String defaultValue) {
+            return dateParam(name, parseDate(defaultValue));
         }
 
-        public Builder dateParam(String name, LocalDate date) {
-            return param(new DateParameter(name, date));
+        public Builder dateParam(String name, LocalDate defaultValue) {
+            return param(name, "date", Builder::parseDate, defaultValue);
+        }
+
+        /**
+         * @since 3.0.M1
+         */
+        public Builder dateTimeParam(String name) {
+            return dateTimeParam(name, (LocalDateTime) null);
+        }
+
+        /**
+         * @since 3.0.M1
+         */
+        public Builder dateTimeParam(String name, String defaultValue) {
+            return dateTimeParam(name, parseDateTime(defaultValue));
+        }
+
+        /**
+         * @since 3.0.M1
+         */
+        public Builder dateTimeParam(String name, LocalDateTime defaultValue) {
+            return param(name, "datetime", Builder::parseDateTime, defaultValue);
+        }
+
+        /**
+         * @since 3.0.M1
+         */
+        public Builder intParam(String name) {
+            return intParam(name, (Integer) null);
+        }
+
+        /**
+         * @since 3.0.M1
+         */
+        public Builder intParam(String name, String defaultValue) {
+            return intParam(name, parseInt(defaultValue));
+        }
+
+        /**
+         * @since 3.0.M1
+         */
+        public Builder intParam(String name, Integer defaultValue) {
+            return param(name, "int", Builder::parseInt, defaultValue);
         }
 
         public Builder longParam(String name) {
             return longParam(name, (Long) null);
         }
 
-        public Builder longParam(String name, String longValue) {
-            return param(new LongParameter(name, longValue));
+        public Builder longParam(String name, String defaultValue) {
+            return longParam(name, parseLong(defaultValue));
         }
 
-        public Builder longParam(String name, Long longValue) {
-            return param(new LongParameter(name, longValue));
+        public Builder longParam(String name, Long defaultValue) {
+            return param(name, "long", Builder::parseLong, defaultValue);
         }
 
         public JobMetadata build() {
@@ -139,6 +214,5 @@ public class JobMetadata {
 
             return new JobMetadata(name, parameters);
         }
-
     }
 }
