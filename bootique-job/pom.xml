@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>bootique-job</artifactId>
-    <name>bootique-job: Core library</name>
+    <name>bootique-job: Job scheduling framework</name>
     <description>Provides a job execution framework with Bootique integration</description>
 
     <dependencies>
