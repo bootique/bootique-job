@@ -227,7 +227,6 @@ public class DefaultScheduler implements Scheduler {
 
         return JobFuture.forJob(job.getMetadata().getName())
                 .future(jobFuture)
-                .runnable(rj)
                 .resultSupplier(() -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()))
                 .build();
     }

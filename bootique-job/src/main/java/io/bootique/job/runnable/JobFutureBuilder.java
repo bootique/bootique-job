@@ -26,17 +26,11 @@ import java.util.function.Supplier;
 public class JobFutureBuilder {
 
     private String job;
-    private RunnableJob runnable;
     private ScheduledFuture<?> future;
     private Supplier<JobResult> resultSupplier;
 
     public JobFutureBuilder(String job) {
         this.job = Objects.requireNonNull(job);
-    }
-
-    public JobFutureBuilder runnable(RunnableJob runnable) {
-        this.runnable = Objects.requireNonNull(runnable);
-        return this;
     }
 
     public JobFutureBuilder future(ScheduledFuture<?> future) {
@@ -52,6 +46,6 @@ public class JobFutureBuilder {
     public JobFuture build() {
         Objects.requireNonNull(future);
         Objects.requireNonNull(resultSupplier);
-        return new DefaultJobFuture(job, runnable, future, resultSupplier);
+        return new DefaultJobFuture(job, future, resultSupplier);
     }
 }
