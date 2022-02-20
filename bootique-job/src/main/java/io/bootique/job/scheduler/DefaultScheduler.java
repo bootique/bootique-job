@@ -44,38 +44,38 @@ public class DefaultScheduler implements Scheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScheduler.class);
 
-    private TaskScheduler taskScheduler;
-    private RunnableJobFactory runnableJobFactory;
-    private JobRegistry jobRegistry;
-    private Collection<TriggerDescriptor> triggers;
-    private Map<String, Collection<TriggerDescriptor>> triggerMap;
-    private Map<String, Collection<ScheduledJobFuture>> scheduledJobsByName;
+    private final TaskScheduler taskScheduler;
+    private final RunnableJobFactory runnableJobFactory;
+    private final JobRegistry jobRegistry;
+    private final Collection<TriggerDescriptor> triggers;
+    private final Map<String, Collection<TriggerDescriptor>> triggerMap;
+    private final Map<String, Collection<ScheduledJobFuture>> scheduledJobsByName;
+    private final AtomicBoolean started;
 
-    private AtomicBoolean started;
+    private static Map<String, Collection<TriggerDescriptor>> mapTriggers(Collection<TriggerDescriptor> triggers) {
+        Map<String, Collection<TriggerDescriptor>> map = new HashMap<>();
 
-    public DefaultScheduler(Collection<TriggerDescriptor> triggers,
-                            TaskScheduler taskScheduler,
-                            RunnableJobFactory runnableJobFactory,
-                            JobRegistry jobRegistry) {
+        for (TriggerDescriptor t : triggers) {
+            map.computeIfAbsent(t.getJob(), tn -> new ArrayList<>()).add(t);
+        }
+
+        return map;
+    }
+
+    public DefaultScheduler(
+            Collection<TriggerDescriptor> triggers,
+            TaskScheduler taskScheduler,
+            RunnableJobFactory runnableJobFactory,
+            JobRegistry jobRegistry) {
+
         this.taskScheduler = taskScheduler;
         this.runnableJobFactory = runnableJobFactory;
         this.jobRegistry = jobRegistry;
         this.triggers = triggers;
-        this.triggerMap = collectTriggers(triggers);
+        this.triggerMap = mapTriggers(triggers);
         this.scheduledJobsByName = new HashMap<>();
 
         this.started = new AtomicBoolean(false);
-    }
-
-    private Map<String, Collection<TriggerDescriptor>> collectTriggers(Collection<TriggerDescriptor> triggers) {
-        return triggers.stream().collect(
-                Collectors.toMap(
-                        TriggerDescriptor::getJob,
-                        t -> new ArrayList<>(Collections.singleton(t)),
-                        (l1, l2) -> {
-                            l1.addAll(l2);
-                            return l1;
-                        }));
     }
 
     @Override
@@ -92,43 +92,43 @@ public class DefaultScheduler implements Scheduler {
             return 0;
         }
 
-        Set<String> jobNamesSet = new TreeSet<>(jobNames);
-        Iterator<String> it = jobNamesSet.iterator();
-        while (it.hasNext()) {
-            String jobName = it.next();
+        Set<String> uniqueJobNames = new TreeSet<>(jobNames);
+
+        List<TriggerDescriptor> toSchedule = new ArrayList<>(uniqueJobNames.size());
+        for (String jobName : uniqueJobNames) {
             if (!jobRegistry.getJobNames().contains(jobName)) {
                 throw new BootiqueException(1, "Unknown job: " + jobName);
-            } else if (!triggerMap.containsKey(jobName)) {
-                LOGGER.warn("No triggers configured for job: {}. Skipping...", jobName);
-                it.remove();
             }
+
+            Collection<TriggerDescriptor> jobTriggers = triggerMap.get(jobName);
+
+            if (jobTriggers == null || jobTriggers.isEmpty()) {
+                LOGGER.warn("No triggers configured for job: {}. Skipping...", jobName);
+                continue;
+            }
+
+            toSchedule.addAll(jobTriggers);
         }
 
-        Collection<TriggerDescriptor> triggers = jobNamesSet.stream()
-                .flatMap(jobName -> triggerMap.get(jobName).stream())
-                .collect(Collectors.toList());
-
-        return scheduleTriggers(triggers);
+        return scheduleTriggers(toSchedule);
     }
 
     private int scheduleTriggers(Collection<TriggerDescriptor> triggers) {
-        int triggerCount = triggers.size();
 
-
-        String badTriggers = triggers.stream()
+        String badTriggers = triggers
+                .stream()
                 .filter(t -> !jobRegistry.getJobNames().contains(t.getJob()))
                 .map(t -> t.getJob() + ":" + t.getTrigger())
                 .collect(Collectors.joining(", "));
 
-        if (badTriggers != null && badTriggers.length() > 0) {
+        if (badTriggers.length() > 0) {
             throw new BootiqueException(1, "Trigger(s) without a job object: " + badTriggers);
         }
-
 
         tryStart();
         triggers.forEach(this::scheduleTrigger);
 
-        return triggerCount;
+        return triggers.size();
     }
 
     private void scheduleTrigger(TriggerDescriptor tc) {
@@ -142,8 +142,7 @@ public class DefaultScheduler implements Scheduler {
 
         ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
         scheduledJob.schedule(createSchedule(tc));
-        Collection<ScheduledJobFuture> futures = scheduledJobsByName.computeIfAbsent(jobName, k -> new ArrayList<>());
-        futures.add(scheduledJob);
+        scheduledJobsByName.computeIfAbsent(jobName, k -> new ArrayList<>()).add(scheduledJob);
     }
 
     private void tryStart() {
@@ -160,7 +159,7 @@ public class DefaultScheduler implements Scheduler {
 
         long fixedDelayMs = fixedDelay != null && fixedDelay.getDuration() != null ? fixedDelay.getDuration().toMillis() : 0;
         long fixedRateMs = fixedRate != null && fixedRate.getDuration() != null ? fixedRate.getDuration().toMillis() : 0;
-        long initialDelayMs = initialDelay != null  && initialDelay.getDuration() != null ? initialDelay.getDuration().toMillis() : 0;
+        long initialDelayMs = initialDelay != null && initialDelay.getDuration() != null ? initialDelay.getDuration().toMillis() : 0;
 
         if (cron != null) {
             return Schedule.cron(cron);
@@ -196,7 +195,7 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public JobFuture runOnce(String jobName, Map<String, Object> parameters) {
-        Job job  = jobRegistry.getJob(jobName);
+        Job job = jobRegistry.getJob(jobName);
         return runOnce(job, parameters);
     }
 
@@ -217,8 +216,10 @@ public class DefaultScheduler implements Scheduler {
                 (rj, result) -> taskScheduler.schedule(() -> result[0] = rj.run(), trigger));
     }
 
-    private JobFuture submit(Job job, Map<String, Object> parameters,
-                             BiFunction<RunnableJob, JobResult[], ScheduledFuture<?>> executor) {
+    private JobFuture submit(
+            Job job,
+            Map<String, Object> parameters,
+            BiFunction<RunnableJob, JobResult[], ScheduledFuture<?>> executor) {
 
         RunnableJob rj = runnableJobFactory.runnable(job, parameters);
         JobResult[] result = new JobResult[1];
