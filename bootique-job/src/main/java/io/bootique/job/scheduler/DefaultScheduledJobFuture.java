@@ -21,7 +21,6 @@ package io.bootique.job.scheduler;
 
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.value.Cron;
 
 import java.util.Optional;
 import java.util.concurrent.Delayed;
@@ -48,27 +47,14 @@ class DefaultScheduledJobFuture implements ScheduledJobFuture {
         return jobName;
     }
 
-    @Override
-    public boolean schedule(Cron cron) {
-        return schedule(Schedule.cron(cron));
-    }
-
-    @Override
-    public boolean scheduleAtFixedRate(long fixedRateMs, long initialDelayMs) {
-        return schedule(Schedule.fixedRate(fixedRateMs, initialDelayMs));
-    }
-
-    @Override
-    public boolean scheduleWithFixedDelay(long fixedDelayMs, long initialDelayMs) {
-        return schedule(Schedule.fixedDelay(fixedDelayMs, initialDelayMs));
-    }
-
     // explicit fool-proof synchronization to avoid double-scheduling
     @Override
     public synchronized boolean schedule(Schedule schedule) {
+
         if (isScheduled()) {
             return false;
         }
+
         this.schedule = Optional.of(schedule);
         this.futureOptional = Optional.of(scheduler.apply(schedule));
         this.cancelled = false;

@@ -34,7 +34,9 @@ public interface ScheduledJobFuture extends JobFuture {
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
      */
-    boolean schedule(Cron cron);
+    default boolean schedule(Cron cron) {
+        return schedule(Schedule.cron(cron));
+    }
 
     /**
      * Re-schedule this job to run at fixed rate, indepedent of whether the preceding execution has finished or not.
@@ -45,7 +47,9 @@ public interface ScheduledJobFuture extends JobFuture {
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
      */
-    boolean scheduleAtFixedRate(long fixedRateMs, long initialDelayMs);
+    default boolean scheduleAtFixedRate(long fixedRateMs, long initialDelayMs) {
+        return schedule(Schedule.fixedRate(fixedRateMs, initialDelayMs));
+    }
 
     /**
      * Re-schedule this job to run with fixed interval between executions.
@@ -56,7 +60,9 @@ public interface ScheduledJobFuture extends JobFuture {
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
      */
-    boolean scheduleWithFixedDelay(long fixedDelayMs, long initialDelayMs);
+    default boolean scheduleWithFixedDelay(long fixedDelayMs, long initialDelayMs) {
+        return schedule(Schedule.fixedDelay(fixedDelayMs, initialDelayMs));
+    }
 
     /**
      * Re-schedule this job based on the provided schedule.
