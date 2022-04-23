@@ -10,6 +10,7 @@
 * #95 Failure in JobListener must fail the job
 * #96 Enhanced API for job parameters
 * #97 Bump spring-core from 5.3.14 to 5.3.18
+* #98 Bump spring-core from 5.3.18 to 5.3.19
 
 ## 2.0.M1
 
