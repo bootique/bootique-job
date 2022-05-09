@@ -22,20 +22,13 @@ package io.bootique.job;
 import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.BootiqueException;
-import io.bootique.job.fixture.ExecutableAtMostOnceJob;
-import io.bootique.job.fixture.Job1;
-import io.bootique.job.fixture.Job2;
-import io.bootique.job.fixture.Job3;
-import io.bootique.job.fixture.ParameterizedJob1;
-import io.bootique.job.fixture.ParameterizedJob2;
+import io.bootique.job.fixture.*;
 import io.bootique.job.runtime.JobModule;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ExecutionIT extends BaseJobExecIT {
@@ -246,6 +239,32 @@ public class ExecutionIT extends BaseJobExecIT {
                 .run();
 
         assertExecutedWithParams(job, Collections.singletonMap("longp", 35l));
+    }
+
+    @Test
+    public void testExecution_Param_Default() {
+        ParameterizedJob4 job = new ParameterizedJob4();
+
+        testFactory.app("--exec", "--job=parameterizedjob4")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job))
+                .createRuntime()
+                .run();
+
+        assertEquals(Map.of("xp", "_default_"), job.getParams());
+    }
+
+    @Test
+    public void testExecution_Param_Default_Null() {
+        ParameterizedJob5 job = new ParameterizedJob5();
+
+        testFactory.app("--exec", "--job=parameterizedjob5")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job))
+                .createRuntime()
+                .run();
+
+        assertEquals(Collections.singletonMap("xp", null), job.getParams());
     }
 
     @Test

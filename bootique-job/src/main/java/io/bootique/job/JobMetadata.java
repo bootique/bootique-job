@@ -121,7 +121,7 @@ public class JobMetadata {
          * @since 3.0.M1
          */
         public <T> Builder param(String name, String typeName, Function<String, T> parser) {
-            return param(name, typeName, null, parser);
+            return param(name, typeName, parser, null);
         }
 
         /**
