@@ -124,15 +124,15 @@ public class ExecutionIT extends BaseJobExecIT {
         List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job2, job1);
         executeJobs(jobs, args);
         assertExecutedInOrder(jobs);
-        assertExecutedWithParams(job1, new HashMap<String, Object>() {{
+        assertExecutedWithParams(job1, new HashMap<>() {{
             put("a", "default");
             put("b", "overriden");
         }});
-        assertExecutedWithParams(job2, new HashMap<String, Object>() {{
+        assertExecutedWithParams(job2, new HashMap<>() {{
             put("e", "default");
             put("z", "added");
         }});
-        assertExecutedWithParams(job3, new HashMap<String, Object>() {{
+        assertExecutedWithParams(job3, new HashMap<>() {{
             put("i", "default");
             put("k", "overriden");
             put("y", "added");
@@ -210,7 +210,7 @@ public class ExecutionIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testExecution_ParameterizedJob1_DefaultParameterValue() {
+    public void testExecution_DefaultParameterValue() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
         String[] args = new String[]{"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
                 "--exec", "--job=parameterizedjob1"};
@@ -220,7 +220,7 @@ public class ExecutionIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testExecution_ParameterizedJob1_ParametersOverriddenWithProps() {
+    public void testExecution_ParametersOverriddenWithProps() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
         testFactory.app("--exec", "--job=parameterizedjob2")
@@ -234,7 +234,7 @@ public class ExecutionIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testExecution_ParameterizedJob1_ParametersOverriddenWithVars() {
+    public void testExecution_ParametersOverriddenWithVars() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
         testFactory.app("--exec", "--job=parameterizedjob2")
