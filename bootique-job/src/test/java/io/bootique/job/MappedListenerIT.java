@@ -22,10 +22,13 @@ package io.bootique.job;
 import io.bootique.BQRuntime;
 import io.bootique.di.Key;
 import io.bootique.di.TypeLiteral;
+import io.bootique.job.fixture.ExceptionJob;
 import io.bootique.job.fixture.Job1;
+import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runtime.JobModule;
 import io.bootique.job.runtime.JobModuleExtender;
+import io.bootique.job.scheduler.Scheduler;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -37,8 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
 public class MappedListenerIT {
@@ -49,6 +51,24 @@ public class MappedListenerIT {
     @BeforeEach
     public void before() {
         SharedState.reset();
+    }
+
+    @Test
+    public void testJobException() {
+        ExceptionJob job = new ExceptionJob();
+        Listener_JobResultCapture listener = new Listener_JobResultCapture();
+
+        BQRuntime runtime = testFactory
+                .app()
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
+                .createRuntime();
+
+        JobResult result = runtime.getInstance(Scheduler.class).runOnce("exception").get();
+        assertSame(result, listener.result);
+        assertEquals(JobOutcome.FAILURE, result.getOutcome());
+        assertTrue(result.getThrowable() instanceof RuntimeException);
+        assertEquals(ExceptionJob.EXCEPTION_MESSAGE, result.getThrowable().getMessage());
     }
 
     @Test
@@ -239,6 +259,18 @@ public class MappedListenerIT {
         @Override
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> finishEventSource) {
             parameters.put("LP", setParam);
+        }
+    }
+
+    public static class Listener_JobResultCapture implements JobListener {
+
+        private JobResult result;
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            onFinishedCallbackRegistry.accept(r -> {
+                this.result = r;
+            });
         }
     }
 }
