@@ -17,44 +17,24 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.fixture;
 
-import io.bootique.job.Job;
+import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
 
 import java.util.Map;
 
-/**
- * @since 3.0
- */
-class JobExceptionsHandlerDecorator implements Job {
+public class ExceptionJob extends BaseJob {
 
-    private final Job delegate;
+    public static final String EXCEPTION_MESSAGE = "Emulated Exception";
 
-    JobExceptionsHandlerDecorator(Job delegate) {
-        this.delegate = delegate;
-    }
-
-    @Override
-    public JobMetadata getMetadata() {
-        return delegate.getMetadata();
+    public ExceptionJob() {
+        super(JobMetadata.build(ExceptionJob.class));
     }
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        return runWithExceptionHandling(getMetadata(), delegate, params);
+        throw new RuntimeException(EXCEPTION_MESSAGE);
     }
-
-    // reusable method that can be used by this and other decorators for consistent error handling
-    static JobResult runWithExceptionHandling(JobMetadata metadata, Job delegate, Map<String, Object> params) {
-        try {
-            JobResult result = delegate.run(params);
-            return result != null ? result : JobResult.unknown(metadata);
-        } catch (Exception e) {
-            // not logging the failure here.. JobLogDecorator will do the logging
-            return JobResult.failure(metadata, e);
-        }
-    }
-
 }

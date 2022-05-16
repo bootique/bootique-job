@@ -191,7 +191,8 @@ public class DefaultJobRegistry implements JobRegistry {
         // curried parameter values
         Job withParamBindings = decorateWithParamBindings(withListeners, prebindParams);
 
-        // finally catch exceptions and log the outcome
+        // finally, catch exceptions and log the outcome. Note that while listeners decorator catches Job exceptions,
+        // this handler will only catch listener exceptions
         Job withExceptionsCaught = decorateWithExceptionsHandler(withParamBindings);
         return decorateWithLogger(withExceptionsCaught);
     }

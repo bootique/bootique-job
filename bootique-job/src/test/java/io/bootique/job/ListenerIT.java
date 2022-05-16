@@ -20,6 +20,8 @@
 package io.bootique.job;
 
 import io.bootique.BQRuntime;
+import io.bootique.job.fixture.ExceptionJob;
+import io.bootique.job.fixture.FailureJob;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
 import io.bootique.job.runnable.JobOutcome;
@@ -46,6 +48,42 @@ public class ListenerIT {
     @BeforeEach
     public void before() {
         SharedState.reset();
+    }
+
+    @Test
+    public void testJobException() {
+        ExceptionJob job = new ExceptionJob();
+        Listener_JobResultCapture listener = new Listener_JobResultCapture();
+
+        BQRuntime runtime = testFactory
+                .app()
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
+                .createRuntime();
+
+        JobResult result = runtime.getInstance(Scheduler.class).runOnce("exception").get();
+        assertSame(result, listener.result);
+        assertEquals(JobOutcome.FAILURE, result.getOutcome());
+        assertTrue(result.getThrowable() instanceof RuntimeException);
+        assertEquals(ExceptionJob.EXCEPTION_MESSAGE, result.getThrowable().getMessage());
+    }
+
+    @Test
+    public void testJobFailure() {
+        FailureJob job = new FailureJob();
+        Listener_JobResultCapture listener = new Listener_JobResultCapture();
+
+        BQRuntime runtime = testFactory
+                .app()
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
+                .createRuntime();
+
+        JobResult result = runtime.getInstance(Scheduler.class).runOnce("failure").get();
+        assertSame(result, listener.result);
+        assertEquals(JobOutcome.FAILURE, result.getOutcome());
+        assertNull(result.getThrowable());
+        assertEquals(FailureJob.FAILURE_MESSAGE, result.getMessage());
     }
 
     @Test
@@ -262,6 +300,18 @@ public class ListenerIT {
         public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
             onFinishedCallbackRegistry.accept(r -> {
                 throw new RuntimeException("This listener always throws on finish");
+            });
+        }
+    }
+
+    public static class Listener_JobResultCapture implements JobListener {
+
+        private JobResult result;
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            onFinishedCallbackRegistry.accept(r -> {
+                this.result = r;
             });
         }
     }

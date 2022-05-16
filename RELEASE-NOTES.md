@@ -11,6 +11,7 @@
 * #96 Enhanced API for job parameters
 * #97 Bump spring-core from 5.3.14 to 5.3.18
 * #98 Bump spring-core from 5.3.18 to 5.3.19
+* #100 Job listeners are not notified when a job throws an exception
 
 ## 2.0.M1
 
