@@ -12,6 +12,7 @@
 * #97 Bump spring-core from 5.3.14 to 5.3.18
 * #98 Bump spring-core from 5.3.18 to 5.3.19
 * #100 Job listeners are not notified when a job throws an exception
+* #101 Bump spring-core from 5.3.19 to 5.3.20
 
 ## 2.0.M1
 
