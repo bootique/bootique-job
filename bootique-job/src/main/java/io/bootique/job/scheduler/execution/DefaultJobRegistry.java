@@ -20,8 +20,8 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.*;
-import io.bootique.job.config.JobDefinition;
-import io.bootique.job.config.SingleJobDefinition;
+import io.bootique.job.descriptor.JobDescriptor;
+import io.bootique.job.descriptor.SingleJobDescriptor;
 import io.bootique.job.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +39,7 @@ public class DefaultJobRegistry implements JobRegistry {
     protected final Provider<Scheduler> scheduler;
     protected final Collection<MappedJobListener> listeners;
     protected final Map<String, Job> standaloneJobs;
-    protected final Map<String, JobDefinition> allJobDefinitions;
+    protected final Map<String, JobDescriptor> allJobDescriptors;
     protected final Set<String> allJobsAndGroupNames;
 
     // Lazily populated map of decorated runnable jobs (either standalone or groups)
@@ -47,21 +47,21 @@ public class DefaultJobRegistry implements JobRegistry {
 
     public DefaultJobRegistry(
             Collection<Job> standaloneJobs,
-            Map<String, JobDefinition> jobDefinitions,
+            Map<String, JobDescriptor> jobDescriptors,
             Provider<Scheduler> scheduler,
             Collection<MappedJobListener> listeners) {
 
         this.standaloneJobs = jobsByName(standaloneJobs);
-        this.allJobsAndGroupNames = allJobsAndGroupNames(this.standaloneJobs, jobDefinitions);
-        this.allJobDefinitions = allJobDefinitions(this.standaloneJobs.keySet(), jobDefinitions);
-        this.decoratedJobAndGroups = new ConcurrentHashMap<>((int) (jobDefinitions.size() / 0.75d) + 1);
+        this.allJobsAndGroupNames = allJobsAndGroupNames(this.standaloneJobs, jobDescriptors);
+        this.allJobDescriptors = allDescriptors(this.standaloneJobs.keySet(), jobDescriptors);
+        this.decoratedJobAndGroups = new ConcurrentHashMap<>((int) (jobDescriptors.size() / 0.75d) + 1);
         this.scheduler = scheduler;
         this.listeners = listeners;
     }
 
     private Set<String> allJobsAndGroupNames(
             Map<String, Job> standaloneJobs,
-            Map<String, JobDefinition> jobDefinitions) {
+            Map<String, JobDescriptor> jobDefinitions) {
 
         // TODO: how do we check for conflicts between standalone job names and group names?
         Set<String> jobNames = new HashSet<>(standaloneJobs.keySet());
@@ -69,17 +69,17 @@ public class DefaultJobRegistry implements JobRegistry {
         return jobNames;
     }
 
-    private Map<String, JobDefinition> allJobDefinitions(
+    private Map<String, JobDescriptor> allDescriptors(
             Set<String> standaloneJobsNames,
-            Map<String, JobDefinition> configured) {
+            Map<String, JobDescriptor> configured) {
 
-        // combine explicit job definitions from config with default definitions for the existing jobs
-        Map<String, JobDefinition> combined = new HashMap<>(configured);
+        // combine explicit job descriptors from config with default descriptors for the existing jobs
+        Map<String, JobDescriptor> combined = new HashMap<>(configured);
 
-        // create definition for each job, that is not present in config
+        // create descriptor for each job, that is not present in config
         standaloneJobsNames.stream()
                 .filter(n -> !combined.containsKey(n))
-                .forEach(n -> combined.put(n, new SingleJobDefinition()));
+                .forEach(n -> combined.put(n, new SingleJobDescriptor()));
 
         return combined;
     }
@@ -111,7 +111,7 @@ public class DefaultJobRegistry implements JobRegistry {
 
         checkJobExists(jobName);
 
-        DIGraph<JobExecution> graph = new JobGraphBuilder(allJobDefinitions, standaloneJobs).createGraph(jobName);
+        DIGraph<JobExecution> graph = new JobGraphBuilder(allJobDescriptors, standaloneJobs).createGraph(jobName);
         List<Job> standaloneJobsInGraph = standaloneJobsInGraph(graph);
 
         switch (standaloneJobsInGraph.size()) {

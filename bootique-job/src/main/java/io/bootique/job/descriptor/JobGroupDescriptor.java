@@ -17,33 +17,33 @@
  * under the License.
  */
 
-package io.bootique.job.runtime;
+package io.bootique.job.descriptor;
 
-import io.bootique.BQModuleProvider;
-import io.bootique.di.BQModule;
-import io.bootique.job.descriptor.JobDescriptorFactory;
-import io.bootique.job.scheduler.SchedulerFactory;
-import io.bootique.type.TypeRef;
-
-import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class JobModuleProvider implements BQModuleProvider {
+/**
+ * @since 3.0
+ */
+public class JobGroupDescriptor implements JobDescriptor {
 
-    @Override
-    public BQModule module() {
-        return new JobModule();
+    private final Map<String, SingleJobDescriptor> jobs;
+
+    public JobGroupDescriptor(Map<String, SingleJobDescriptor> jobs) {
+        this.jobs = jobs;
     }
 
     @Override
-    public Map<String, Type> configs() {
+    public void accept(JobDescriptorVisitor v) {
+        v.visitGroup(this);
+    }
 
-        TypeRef<Map<String, JobDescriptorFactory>> jobs = new TypeRef<>() {};
+    public Map<String, SingleJobDescriptor> getJobs() {
+        return jobs;
+    }
 
-        Map<String, Type> configs = new HashMap<>();
-        configs.put("scheduler", SchedulerFactory.class);
-        configs.put("jobs", jobs.getType());
-        return configs;
+    @Override
+    public String toString() {
+        return "job group => jobs: " + jobs.keySet().stream().collect(Collectors.joining(",", "[", "]"));
     }
 }

@@ -23,9 +23,10 @@ import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobParameterMetadata;
-import io.bootique.job.config.JobDefinition;
-import io.bootique.job.config.JobGroupDefinition;
-import io.bootique.job.config.SingleJobDefinition;
+import io.bootique.job.descriptor.JobDescriptor;
+import io.bootique.job.descriptor.JobDescriptorVisitor;
+import io.bootique.job.descriptor.JobGroupDescriptor;
+import io.bootique.job.descriptor.SingleJobDescriptor;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,10 +36,10 @@ class JobGraphBuilder {
 
     private final Map<String, JobExecution> knownExecutions;
     private final Map<String, Job> standaloneJobs;
-    private final JobDefinitions definitions;
+    private final JobDescriptors descriptors;
 
-    JobGraphBuilder(Map<String, JobDefinition> definitions, Map<String, Job> standaloneJobs) {
-        this.definitions = new JobDefinitions(definitions);
+    JobGraphBuilder(Map<String, JobDescriptor> descriptors, Map<String, Job> standaloneJobs) {
+        this.descriptors = new JobDescriptors(descriptors);
         this.standaloneJobs = standaloneJobs;
         this.knownExecutions = new LinkedHashMap<>();
     }
@@ -48,7 +49,7 @@ class JobGraphBuilder {
      */
     public DIGraph<JobExecution> createGraph(String rootJobName) {
         DIGraph<JobExecution> graph = new DIGraph<>();
-        populateWithDependencies(rootJobName, null, graph, definitions, new HashMap<>());
+        populateWithDependencies(rootJobName, null, graph, descriptors, new HashMap<>());
         return graph;
     }
 
@@ -56,60 +57,64 @@ class JobGraphBuilder {
             String jobName,
             JobExecution childExecution,
             DIGraph<JobExecution> graph,
-            JobDefinitions jobDefinitions,
+            JobDescriptors descriptors,
             Map<String, JobExecution> childExecutions) {
 
-        JobDefinition jobDefinition = jobDefinitions.getDefinition(jobName);
-        if (jobDefinition instanceof SingleJobDefinition) {
-            SingleJobDefinition singleJob = (SingleJobDefinition) jobDefinition;
-            JobExecution execution = getOrCreateExecution(jobName, singleJob);
-            graph.add(execution);
-            if (childExecution != null) {
-                graph.add(execution, childExecution);
+        JobDescriptor descriptor = descriptors.getDescriptor(jobName);
+
+        descriptor.accept(new JobDescriptorVisitor() {
+            @Override
+            public void visitSingle(SingleJobDescriptor descriptor) {
+                JobExecution execution = getOrCreateExecution(jobName, descriptor);
+                graph.add(execution);
+                if (childExecution != null) {
+                    graph.add(execution, childExecution);
+                }
+                populateWithSingleJobDependencies(execution, graph, descriptors, childExecutions);
             }
-            populateWithSingleJobDependencies(execution, graph, jobDefinitions, childExecutions);
 
-        } else if (jobDefinition instanceof JobGroupDefinition) {
-            JobGroupDefinition group = (JobGroupDefinition) jobDefinition;
-            group.getJobs().forEach((name, definition) -> {
-                JobDefinitions groupDefinitions = new JobDefinitions(group.getJobs(), jobDefinitions);
-                populateWithDependencies(name, childExecution, graph, groupDefinitions, childExecutions);
-            });
-
-        } else {
-            throw createUnexpectedJobDefinitionError(jobDefinition);
-        }
+            @Override
+            public void visitGroup(JobGroupDescriptor descriptor) {
+                descriptor.getJobs().forEach((name, definition) -> populateWithDependencies(
+                        name,
+                        childExecution,
+                        graph,
+                        new JobDescriptors(descriptor.getJobs(), descriptors), childExecutions)
+                );
+            }
+        });
     }
 
     private void populateWithSingleJobDependencies(
             JobExecution execution,
             DIGraph<JobExecution> graph,
-            JobDefinitions jobDefinitions,
+            JobDescriptors descriptors,
             Map<String, JobExecution> childExecutions) {
 
         String jobName = execution.getJobName();
         childExecutions.put(jobName, execution);
-        ((SingleJobDefinition) jobDefinitions.getDefinition(jobName)).getDependsOn().ifPresent(parents ->
-                parents.forEach(parentName -> {
-                    if (childExecutions.containsKey(parentName)) {
-                        throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
-                    }
-                    populateWithDependencies(parentName, execution, graph, jobDefinitions, childExecutions);
-                }));
+
+        ((SingleJobDescriptor) descriptors.getDescriptor(jobName)).getDependsOn().forEach(parentName -> {
+            if (childExecutions.containsKey(parentName)) {
+                throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
+            }
+            populateWithDependencies(parentName, execution, graph, descriptors, childExecutions);
+        });
         childExecutions.remove(jobName);
     }
 
-    private JobExecution getOrCreateExecution(String jobName, SingleJobDefinition definition) {
+    private JobExecution getOrCreateExecution(String jobName, SingleJobDescriptor definition) {
+        return knownExecutions.computeIfAbsent(jobName, jn -> createExecution(jn, definition));
+    }
 
-        return knownExecutions.computeIfAbsent(jobName, jn -> {
-            Job job = standaloneJobs.get(jobName);
+    private JobExecution createExecution(String jobName, SingleJobDescriptor definition) {
+        Job job = standaloneJobs.get(jobName);
 
-            if (job == null) {
-                throw new BootiqueException(1, "No job object for name '" + jobName + "'");
-            }
+        if (job == null) {
+            throw new BootiqueException(1, "No job object for name '" + jobName + "'");
+        }
 
-            return new JobExecution(jobName, convertParams(job.getMetadata(), definition.getParams()));
-        });
+        return new JobExecution(jobName, convertParams(job.getMetadata(), definition.getParams()));
     }
 
     private Map<String, Object> convertParams(JobMetadata jobMD, Map<String, String> params) {
@@ -121,9 +126,5 @@ class JobGraphBuilder {
             convertedParams.put(param.getName(), value);
         }
         return convertedParams;
-    }
-
-    private RuntimeException createUnexpectedJobDefinitionError(JobDefinition definition) {
-        return new IllegalArgumentException("Unexpected job definition type: " + definition.getClass().getName());
     }
 }

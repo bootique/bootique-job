@@ -16,15 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.bootique.job.descriptor;
 
-package io.bootique.job.config;
+/**
+ * @since 3.0
+ */
+public interface JobDescriptorVisitor {
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.bootique.annotation.BQConfig;
-import io.bootique.config.PolymorphicConfiguration;
+    void visitSingle(SingleJobDescriptor descriptor);
 
-@BQConfig("Job of a given type.")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = SingleJobDefinition.class)
-public interface JobDefinition extends PolymorphicConfiguration {
-
+    void visitGroup(JobGroupDescriptor descriptor);
 }

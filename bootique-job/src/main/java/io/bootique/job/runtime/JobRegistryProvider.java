@@ -23,7 +23,8 @@ import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.MappedJobListener;
-import io.bootique.job.config.JobDefinition;
+import io.bootique.job.descriptor.JobDescriptor;
+import io.bootique.job.descriptor.JobDescriptorFactory;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
 import io.bootique.type.TypeRef;
@@ -62,15 +63,20 @@ public class JobRegistryProvider implements Provider<JobRegistry> {
     public JobRegistry get() {
         return new DefaultJobRegistry(
                 standaloneJobs,
-                jobConfigs(),
+                jobDescriptors(),
                 scheduler,
                 combineListeners());
     }
 
-    protected Map<String, JobDefinition> jobConfigs() {
-        TypeRef<Map<String, JobDefinition>> ref = new TypeRef<>() {
+    protected Map<String, JobDescriptor> jobDescriptors() {
+
+        Map<String, JobDescriptor> descriptors = new HashMap<>();
+
+        TypeRef<Map<String, JobDescriptorFactory>> ref = new TypeRef<>() {
         };
-        return configFactory.config(ref, JobModule.JOBS_CONFIG_PREFIX);
+        configFactory.config(ref, JobModule.JOBS_CONFIG_PREFIX).forEach((k, v) -> descriptors.put(k, v.create()));
+
+        return descriptors;
     }
 
     protected List<MappedJobListener> combineListeners() {

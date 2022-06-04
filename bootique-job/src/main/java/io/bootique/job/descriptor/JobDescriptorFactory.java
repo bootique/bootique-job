@@ -17,33 +17,18 @@
  * under the License.
  */
 
-package io.bootique.job.runtime;
+package io.bootique.job.descriptor;
 
-import io.bootique.BQModuleProvider;
-import io.bootique.di.BQModule;
-import io.bootique.job.descriptor.JobDescriptorFactory;
-import io.bootique.job.scheduler.SchedulerFactory;
-import io.bootique.type.TypeRef;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.bootique.annotation.BQConfig;
+import io.bootique.config.PolymorphicConfiguration;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
+/**
+ * @since 3.0
+ */
+@BQConfig("Job of a given type.")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = SingleJobDescriptorFactory.class)
+public interface JobDescriptorFactory<T extends JobDescriptor> extends PolymorphicConfiguration {
 
-public class JobModuleProvider implements BQModuleProvider {
-
-    @Override
-    public BQModule module() {
-        return new JobModule();
-    }
-
-    @Override
-    public Map<String, Type> configs() {
-
-        TypeRef<Map<String, JobDescriptorFactory>> jobs = new TypeRef<>() {};
-
-        Map<String, Type> configs = new HashMap<>();
-        configs.put("scheduler", SchedulerFactory.class);
-        configs.put("jobs", jobs.getType());
-        return configs;
-    }
+    T create();
 }
