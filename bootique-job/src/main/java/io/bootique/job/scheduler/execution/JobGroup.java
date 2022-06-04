@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @since 3.0
@@ -66,11 +67,15 @@ public class JobGroup extends BaseJob {
             return;
         }
 
+        // to ensure parallel execution, must collect futures in an explicit collection,
+        // and then "get" them in a separate stream
+        List<JobFuture> futures = batch.stream()
+                .map(j -> submitGroupMember(j, params))
+                .collect(Collectors.toList());
+
         Set<JobResult> failures = new HashSet<>();
 
-        batch.stream()
-                .map(j -> submitGroupMember(j, params))
-                .map(JobFuture::get)
+        futures.stream().map(JobFuture::get)
                 .forEach(r -> processJobResult(r, failures));
 
         processBatchFailures(failures);
