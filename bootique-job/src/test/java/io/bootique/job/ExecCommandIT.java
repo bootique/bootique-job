@@ -24,6 +24,7 @@ import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.fixture.Job1;
 import io.bootique.job.fixture.Job2;
 import io.bootique.job.fixture.Job3;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -146,36 +147,28 @@ public class ExecCommandIT extends BaseJobExecIT {
         return new Random().nextInt(inverseProb) == 0;
     }
 
-    @Test
+    @RepeatedTest(10)
     public void testMultipleGroups_Parallel() {
-        String[] args = new String[]{
+        List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
+        CommandOutcome outcome = executeJobs(jobs,
                 "--config=classpath:io/bootique/job/config_exec.yml",
                 "--exec",
                 "--job=group2",
-                "--job=group1"};
-
-        for (int i = 0; i < 100; i++) {
-            List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
-            CommandOutcome outcome = executeJobs(jobs, args);
-            assertExecuted(jobs);
-            assertSuccess(outcome);
-        }
+                "--job=group1");
+        assertExecuted(jobs);
+        assertSuccess(outcome);
     }
 
-    @Test
+    @RepeatedTest(10)
     public void testMultipleGroups_Serial() {
-        String[] args = new String[]{
+        List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
+        CommandOutcome outcome = executeJobs(jobs,
                 "--config=classpath:io/bootique/job/config_exec.yml",
                 "--exec",
                 "--job=group2",
                 "--job=group1",
-                "--serial"};
-
-        for (int i = 0; i < 100; i++) {
-            List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
-            CommandOutcome outcome = executeJobs(jobs, args);
-            assertExecutedInOrder(jobs);
-            assertSuccess(outcome);
-        }
+                "--serial");
+        assertExecutedInOrder(jobs);
+        assertSuccess(outcome);
     }
 }
