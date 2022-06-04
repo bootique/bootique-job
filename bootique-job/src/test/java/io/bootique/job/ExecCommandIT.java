@@ -37,14 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ExecCommandIT extends BaseJobExecIT {
 
     @Test
-    public void testExec_SingleJob() {
+    public void testSingleJob() {
         Job1 job1 = new Job1(0);
         executeJobs(Collections.singleton(job1), "--exec", "--job=job1");
         assertTrue(job1.isExecuted());
     }
 
     @Test
-    public void testExec_SingleJob_Failure() {
+    public void testSingleJob_Failure() {
         Job1 job1 = new Job1(0, true);
         CommandOutcome outcome = executeJobs(Collections.singleton(job1), "--exec", "--job=job1");
         assertTrue(job1.isExecuted());
@@ -52,23 +52,23 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testExec_MultipleJobs_Parallel() {
-        testExec_MultipleJobs(false, false);
+    public void testMultipleJobs_Parallel() {
+        testMultipleJobs(false, false);
     }
 
     @Test
-    public void testExec_MultipleJobs_Parallel_Failure() {
-        testExec_MultipleJobs(false, true);
+    public void testMultipleJobs_Parallel_Failure() {
+        testMultipleJobs(false, true);
     }
 
     @Test
-    public void testExec_MultipleJobs_Serial() {
-        testExec_MultipleJobs(true, false);
+    public void testMultipleJobs_Serial() {
+        testMultipleJobs(true, false);
     }
 
     @Test
-    public void testExec_MultipleJobs_Serial_Failure() {
-        testExec_MultipleJobs(true, true);
+    public void testMultipleJobs_Serial_Failure() {
+        testMultipleJobs(true, true);
     }
 
     /**
@@ -77,7 +77,7 @@ public class ExecCommandIT extends BaseJobExecIT {
      * => to increase the prob. of other orders of execution (incl. overlapping executions)
      * we make the first submitted job the most time-consuming
      **/
-    private void testExec_MultipleJobs(boolean serial, boolean shouldFail) {
+    private void testMultipleJobs(boolean serial, boolean shouldFail) {
         List<String> args = new ArrayList<>(asList("--exec", "--job=job1", "--job=job2", "--job=job3"));
 
         if (serial) {
@@ -147,7 +147,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testExec_MultipleGroups_Parallel() {
+    public void testMultipleGroups_Parallel() {
         String[] args = new String[]{
                 "--config=classpath:io/bootique/job/config_exec.yml",
                 "--exec",
@@ -163,7 +163,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testExec_MultipleGroups_Serial() {
+    public void testMultipleGroups_Serial() {
         String[] args = new String[]{
                 "--config=classpath:io/bootique/job/config_exec.yml",
                 "--exec",

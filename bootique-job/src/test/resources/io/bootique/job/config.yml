@@ -39,7 +39,7 @@ jobs:
     jobs:
       job1:
         params:
-          a: overriden
+          a: overridden
       job2:
         params:
           y: added
@@ -51,13 +51,13 @@ jobs:
           - job2
       job2:
         params:
-          e: overriden
+          e: overridden
   group5:
     type: group
     jobs:
       job1:
         params:
-          b: overriden
+          b: overridden
         dependsOn:
           - job2
       job2:
@@ -67,11 +67,11 @@ jobs:
           - job3
       job3:
         params:
-          k: overriden
+          k: overridden
           y: added
   group6:
     type: group
     jobs:
       job1:
         params:
-          a: overriden
+          a: overridden
