@@ -42,9 +42,7 @@ public class ExecutionIT extends BaseJobExecIT {
 
     @Test
     public void testGroup1_SingleJob_DefaultParams() {
-        Job1 job1 = new Job1();
-
-        List<ExecutableAtMostOnceJob> jobs = List.of(job1);
+        List<ExecutableAtMostOnceJob> jobs = List.of(new Job1());
         executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group1");
         assertExecuted(jobs);
     }
@@ -60,10 +58,7 @@ public class ExecutionIT extends BaseJobExecIT {
 
     @Test
     public void testGroup2_MultipleJobs_Parallel_DefaultParams() {
-        Job1 job1 = new Job1();
-        Job2 job2 = new Job2();
-
-        List<ExecutableAtMostOnceJob> jobs = List.of(job1, job2);
+        List<ExecutableAtMostOnceJob> jobs = List.of(new Job1(), new Job2());
         executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group2");
         assertExecuted(jobs);
     }
