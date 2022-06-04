@@ -14,7 +14,6 @@
 # limitations under the License.
 
 jobs:
-  # job1, job2 and job3 are added implicitly via DI contribution
   group1:
     type: group
     jobs:

@@ -20,7 +20,6 @@ jobs:
   job2:
     dependsOn:
       - job3
-  # job3 is added implicitly via DI contribution
   group1:
     type: group
     jobs:
