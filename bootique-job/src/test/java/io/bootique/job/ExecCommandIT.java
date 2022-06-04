@@ -27,12 +27,12 @@ import io.bootique.job.fixture.Job3;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExecCommandIT extends BaseJobExecIT {
 
@@ -79,24 +79,18 @@ public class ExecCommandIT extends BaseJobExecIT {
      **/
     private void testExec_MultipleJobs(boolean serial, boolean shouldFail) {
         List<String> args = new ArrayList<>();
-        args.addAll(Arrays.asList("--exec", "--job=job1", "--job=job2", "--job=job3"));
+        args.addAll(asList("--exec", "--job=job1", "--job=job2", "--job=job3"));
 
         if (serial) {
             args.add("--serial");
         }
 
-        Job1 job1;
-        Job2 job2;
-        Job3 job3;
         int jobCount = 3;
-        boolean firstShouldFail;
-        boolean secondShouldFail;
-        boolean thirdShouldFail;
 
         for (int i = 0; i < 100; i++) {
-            firstShouldFail = shouldFail && randomizedBoolean(jobCount);
-            secondShouldFail = shouldFail && randomizedBoolean(jobCount);
-            thirdShouldFail = shouldFail && randomizedBoolean(jobCount);
+            boolean firstShouldFail = shouldFail && randomizedBoolean(jobCount);
+            boolean secondShouldFail = shouldFail && randomizedBoolean(jobCount);
+            boolean thirdShouldFail = shouldFail && randomizedBoolean(jobCount);
 
             if (shouldFail && !firstShouldFail && !secondShouldFail && !thirdShouldFail) {
                 switch (new Random().nextInt(3)) {
@@ -112,12 +106,12 @@ public class ExecCommandIT extends BaseJobExecIT {
                 }
             }
 
-            job1 = new Job1(100000, firstShouldFail);
-            job2 = new Job2(10000, secondShouldFail);
-            job3 = new Job3(1000, thirdShouldFail);
+            List<ExecutableAtMostOnceJob> jobs = List.of(
+                    new Job1(100000, firstShouldFail),
+                    new Job2(10000, secondShouldFail),
+                    new Job3(1000, thirdShouldFail));
 
-            List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job1, job2, job3);
-            CommandOutcome outcome = executeJobs(jobs, args.toArray(new String[args.size()]));
+            CommandOutcome outcome = executeJobs(jobs, args.toArray(new String[0]));
 
             if (serial) {
                 List<ExecutableAtMostOnceJob> expectedToExecute = new ArrayList<>();
@@ -155,40 +149,33 @@ public class ExecCommandIT extends BaseJobExecIT {
 
     @Test
     public void testExec_MultipleGroups_Parallel() {
-        testExec_MultipleGroups(false);
+        String[] args = new String[]{
+                "--config=classpath:io/bootique/job/config_exec.yml",
+                "--exec",
+                "--job=group2",
+                "--job=group1"};
+
+        for (int i = 0; i < 100; i++) {
+            List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
+            CommandOutcome outcome = executeJobs(jobs, args);
+            assertExecuted(jobs);
+            assertSuccess(outcome);
+        }
     }
 
     @Test
     public void testExec_MultipleGroups_Serial() {
-        testExec_MultipleGroups(true);
-    }
+        String[] args = new String[]{
+                "--config=classpath:io/bootique/job/config_exec.yml",
+                "--exec",
+                "--job=group2",
+                "--job=group1",
+                "--serial"};
 
-    private void testExec_MultipleGroups(boolean serial) {
-        List<String> args = new ArrayList<>();
-        args.add("--config=classpath:io/bootique/job/config_exec.yml");
-        args.addAll(Arrays.asList("--exec", "--job=group2", "--job=group1"));
-
-        if (serial) {
-            args.add("--serial");
-        }
-
-        Job1 job1;
-        Job2 job2;
-        Job3 job3;
         for (int i = 0; i < 100; i++) {
-            job1 = new Job1();
-            job2 = new Job2(1000);
-            job3 = new Job3(10000);
-
-            List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job3, job2, job1);
-            CommandOutcome outcome = executeJobs(jobs, args.toArray(new String[args.size()]));
-
-            if (serial) {
-                assertExecutedInOrder(jobs);
-            } else {
-                assertExecuted(jobs);
-            }
-
+            List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
+            CommandOutcome outcome = executeJobs(jobs, args);
+            assertExecutedInOrder(jobs);
             assertSuccess(outcome);
         }
     }

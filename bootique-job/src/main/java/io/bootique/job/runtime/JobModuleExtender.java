@@ -27,6 +27,7 @@ import io.bootique.job.MappedJobListener;
 import io.bootique.job.lock.LockHandler;
 
 import javax.inject.Provider;
+import java.util.function.Consumer;
 
 public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
 
@@ -46,6 +47,17 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
         contributeJobs();
         contributeLockHandlers();
 
+        return this;
+    }
+
+    /**
+     * Provides syntactic sugar for extender configuration, allowing e.g. to load multiple jobs from a collection
+     * without assigning extender to a variable.
+     *
+     * @since 3.0
+     */
+    public JobModuleExtender config(Consumer<JobModuleExtender> configurator) {
+        configurator.accept(this);
         return this;
     }
 
@@ -82,7 +94,6 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     }
 
     /**
-     *
      * @param lockHandler class that implements LockHandler
      * @return this
      */
@@ -165,21 +176,21 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     }
 
     protected SetBuilder<JobListener> contributeListeners() {
-        if(listeners == null) {
+        if (listeners == null) {
             listeners = newSet(JobListener.class);
         }
         return listeners;
     }
 
     protected SetBuilder<MappedJobListener> contributeMappedListeners() {
-        if(mappedListeners == null) {
+        if (mappedListeners == null) {
             mappedListeners = newSet(MappedJobListener.class);
         }
         return mappedListeners;
     }
 
     protected MapBuilder<String, LockHandler> contributeLockHandlers() {
-        if(lockHandlers == null) {
+        if (lockHandlers == null) {
             lockHandlers = newMap(String.class, LockHandler.class);
         }
         return lockHandlers;

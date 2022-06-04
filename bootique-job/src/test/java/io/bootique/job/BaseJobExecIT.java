@@ -22,7 +22,6 @@ package io.bootique.job;
 import io.bootique.command.CommandOutcome;
 import io.bootique.job.fixture.ExecutableAtMostOnceJob;
 import io.bootique.job.runtime.JobModule;
-import io.bootique.job.runtime.JobModuleExtender;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -35,15 +34,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public abstract class BaseJobExecIT {
 
     @BQTestTool
-    public BQTestFactory testFactory = new BQTestFactory();
+    protected final BQTestFactory testFactory = new BQTestFactory();
 
     protected CommandOutcome executeJobs(Collection<? extends Job> jobs, String... args) {
         return testFactory.app(args)
                 .module(new JobModule())
-                .module(binder -> {
-                    JobModuleExtender extender = JobModule.extend(binder);
-                    jobs.forEach(extender::addJob);
-                }).createRuntime()
+                .module(b  -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .run();
     }
 

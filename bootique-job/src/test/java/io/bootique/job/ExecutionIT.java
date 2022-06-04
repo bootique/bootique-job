@@ -220,7 +220,6 @@ public class ExecutionIT extends BaseJobExecIT {
                 .autoLoadModules()
                 .module(b -> JobModule.extend(b).addJob(job))
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.parameterizedjob2.params.longp", "35"))
-                .createRuntime()
                 .run();
 
         assertExecutedWithParams(job, Collections.singletonMap("longp", 35l));
@@ -279,10 +278,12 @@ public class ExecutionIT extends BaseJobExecIT {
     @Test
     public void testExecution_Group1_ParametersConversion() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
-        String[] args = new String[]{"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
-                "--exec", "--job=group1"};
 
-        executeJobs(Collections.singleton(job1), args);
+        executeJobs(Collections.singleton(job1),
+                "--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                "--exec",
+                "--job=group1");
+
         assertExecutedWithParams(job1, Collections.singletonMap("longp", 1L));
     }
 
