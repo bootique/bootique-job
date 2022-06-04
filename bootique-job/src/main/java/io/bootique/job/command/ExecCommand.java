@@ -38,81 +38,79 @@ import java.util.stream.Collectors;
 
 public class ExecCommand extends CommandWithMetadata {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExecCommand.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecCommand.class);
 
-	public static final String SERIAL_OPTION = "serial";
+    public static final String SERIAL_OPTION = "serial";
 
-	private final Provider<Scheduler> schedulerProvider;
+    private final Provider<Scheduler> schedulerProvider;
 
-	private static OptionMetadata.Builder createSerialOption() {
-		return OptionMetadata.builder(SERIAL_OPTION).description("Enforces sequential execution of the jobs, " +
-				"specified with '--job' options.");
-	}
+    private static OptionMetadata.Builder createSerialOption() {
+        return OptionMetadata.builder(SERIAL_OPTION).description("Enforces sequential execution of the jobs, " +
+                "specified with '--job' options.");
+    }
 
-	private static CommandMetadata createMetadata() {
-		return CommandMetadata.builder(ExecCommand.class)
-				.description("Executes one or more jobs. Jobs are specified with '--job' options")
-				.addOption(createSerialOption()).build();
-	}
+    private static CommandMetadata createMetadata() {
+        return CommandMetadata.builder(ExecCommand.class)
+                .description("Executes one or more jobs. Jobs are specified with '--job' options")
+                .addOption(createSerialOption()).build();
+    }
 
-	// using Provider for lazy init
-	@Inject
-	public ExecCommand(Provider<Scheduler> schedulerProvider) {
-		super(createMetadata());
-		this.schedulerProvider = schedulerProvider;
-	}
+    // using Provider for lazy init
+    @Inject
+    public ExecCommand(Provider<Scheduler> schedulerProvider) {
+        super(createMetadata());
+        this.schedulerProvider = schedulerProvider;
+    }
 
-	@Override
-	public CommandOutcome run(Cli cli) {
+    @Override
+    public CommandOutcome run(Cli cli) {
 
-		List<String> jobNames = cli.optionStrings(JobModule.JOB_OPTION);
-		if (jobNames == null || jobNames.isEmpty()) {
-			return CommandOutcome.failed(1,
-					String.format("No jobs specified. Use '--%s' option to provide job names", JobModule.JOB_OPTION));
-		}
+        List<String> jobNames = cli.optionStrings(JobModule.JOB_OPTION);
+        if (jobNames == null || jobNames.isEmpty()) {
+            return CommandOutcome.failed(1,
+                    String.format("No jobs specified. Use '--%s' option to provide job names", JobModule.JOB_OPTION));
+        }
 
-		LOGGER.info("Will run job(s): " + jobNames);
+        LOGGER.info("Will run job(s): {}", jobNames);
 
-		Scheduler scheduler = schedulerProvider.get();
+        return cli.hasOption(SERIAL_OPTION)
+                ? runSerial(jobNames, schedulerProvider.get())
+                : runParallel(jobNames, schedulerProvider.get());
+    }
 
-		CommandOutcome outcome;
-		if (cli.hasOption(SERIAL_OPTION)) {
-			outcome = runSerial(jobNames, scheduler);
-		} else {
-			outcome = runParallel(jobNames, scheduler);
-		}
-		return outcome;
-	}
+    private CommandOutcome runParallel(List<String> jobNames, Scheduler scheduler) {
+        String failed = jobNames.stream()
+                .map(scheduler::runOnce)
+                .map(JobFuture::get)
+                .peek(this::processResult)
+                .filter(result -> !result.isSuccess())
+                .map(r -> r.getMetadata().getName())
+                .collect(Collectors.joining(", "));
 
-	private CommandOutcome runParallel(List<String> jobNames, Scheduler scheduler) {
-		List<JobFuture> futures = jobNames.stream().map(scheduler::runOnce).collect(Collectors.toList());
-		long failedCount = futures.stream()
-				.map(JobFuture::get)
-				.peek(this::processResult)
-				.filter(result -> !result.isSuccess())
-				.count();
+        return failed.isEmpty() ? CommandOutcome.succeeded() : CommandOutcome.failed(1, "Some of the jobs failed: " + failed);
+    }
 
-		return failedCount > 0 ? CommandOutcome.failed(1, "Some of the jobs failed") : CommandOutcome.succeeded();
-	}
+    private CommandOutcome runSerial(List<String> jobNames, Scheduler scheduler) {
+        for (String jobName : jobNames) {
+            JobResult result = scheduler.runOnce(jobName).get();
+            processResult(result);
+            if (!result.isSuccess()) {
+                return CommandOutcome.failed(1, "One of the jobs failed: " + jobName);
+            }
+        }
+        return CommandOutcome.succeeded();
+    }
 
-	private CommandOutcome runSerial(List<String> jobNames, Scheduler scheduler) {
-		for (String jobName : jobNames) {
-			JobResult result = scheduler.runOnce(jobName).get();
-			processResult(result);
-			if (!result.isSuccess()) {
-				return CommandOutcome.failed(1, "One of the jobs failed");
-			}
-		}
-		return CommandOutcome.succeeded();
-	}
+    private void processResult(JobResult result) {
+        String message = String.format("Finished job '%s', result: %s, message: %s",
+                result.getMetadata().getName(),
+                result.getOutcome(),
+                result.getMessage());
 
-	private void processResult(JobResult result) {
-		if (result.getThrowable() == null) {
-			LOGGER.info(String.format("Finished job '%s', result: %s, message: %s", result.getMetadata().getName(),
-					result.getOutcome(), result.getMessage()));
-		} else {
-			LOGGER.error(String.format("Finished job '%s', result: %s, message: %s", result.getMetadata().getName(),
-					result.getOutcome(), result.getMessage()), result.getThrowable());
-		}
-	}
+        if (result.getThrowable() == null) {
+            LOGGER.info(message);
+        } else {
+            LOGGER.error(message, result.getThrowable());
+        }
+    }
 }
