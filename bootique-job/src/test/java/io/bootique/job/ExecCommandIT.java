@@ -78,8 +78,7 @@ public class ExecCommandIT extends BaseJobExecIT {
      * we make the first submitted job the most time-consuming
      **/
     private void testExec_MultipleJobs(boolean serial, boolean shouldFail) {
-        List<String> args = new ArrayList<>();
-        args.addAll(asList("--exec", "--job=job1", "--job=job2", "--job=job3"));
+        List<String> args = new ArrayList<>(asList("--exec", "--job=job1", "--job=job2", "--job=job3"));
 
         if (serial) {
             args.add("--serial");
