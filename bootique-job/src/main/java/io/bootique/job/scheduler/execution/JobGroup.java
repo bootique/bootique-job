@@ -22,6 +22,7 @@ package io.bootique.job.scheduler.execution;
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
+import io.bootique.job.scheduler.execution.group.JobGroupStep;
 
 import java.util.List;
 import java.util.Map;

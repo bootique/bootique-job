@@ -23,6 +23,9 @@ import io.bootique.job.*;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.SingleJobNode;
 import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.scheduler.execution.group.JobGroupStep;
+import io.bootique.job.scheduler.execution.group.ParallelJobBatchStep;
+import io.bootique.job.scheduler.execution.group.SingleJobStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
