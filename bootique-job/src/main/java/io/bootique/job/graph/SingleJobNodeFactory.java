@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.descriptor;
+package io.bootique.job.graph;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.bootique.annotation.BQConfig;
@@ -32,19 +32,19 @@ import java.util.Map;
  */
 @BQConfig("Standalone job with optional dependencies.")
 @JsonTypeName("single")
-public class SingleJobDescriptorFactory implements JobDescriptorFactory<SingleJobDescriptor> {
+public class SingleJobNodeFactory implements JobGraphNodeFactory<SingleJobNode> {
 
     private Map<String, String> params;
     private List<String> dependsOn;
 
     @Override
-    public SingleJobDescriptor create() {
-        return new SingleJobDescriptor(
+    public SingleJobNode create() {
+        return new SingleJobNode(
                 params != null ? params : Collections.emptyMap(),
                 dependsOn != null ? dependsOn : Collections.emptyList(),
 
-                // an explicitly set empty list means that, when the descriptor is used as an override, overridden
-                // descriptor's dependencies will need to be wiped out
+                // an explicitly set empty list means that, when the node is used as an override, overridden
+                // node's dependencies will need to be wiped out
                 dependsOn != null && dependsOn.isEmpty()
         );
     }

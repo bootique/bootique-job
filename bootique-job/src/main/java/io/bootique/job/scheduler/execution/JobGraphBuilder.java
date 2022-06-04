@@ -23,10 +23,10 @@ import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobParameterMetadata;
-import io.bootique.job.descriptor.JobDescriptor;
-import io.bootique.job.descriptor.JobDescriptorVisitor;
-import io.bootique.job.descriptor.JobGroupDescriptor;
-import io.bootique.job.descriptor.SingleJobDescriptor;
+import io.bootique.job.graph.JobGraphNode;
+import io.bootique.job.graph.JobGraphNodeVisitor;
+import io.bootique.job.graph.GroupNode;
+import io.bootique.job.graph.SingleJobNode;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,10 +36,10 @@ class JobGraphBuilder {
 
     private final Map<String, JobExecution> knownExecutions;
     private final Map<String, Job> standaloneJobs;
-    private final JobDescriptors descriptors;
+    private final JobGraphNodes nodes;
 
-    JobGraphBuilder(Map<String, JobDescriptor> descriptors, Map<String, Job> standaloneJobs) {
-        this.descriptors = new JobDescriptors(descriptors);
+    JobGraphBuilder(Map<String, JobGraphNode> nodes, Map<String, Job> standaloneJobs) {
+        this.nodes = new JobGraphNodes(nodes);
         this.standaloneJobs = standaloneJobs;
         this.knownExecutions = new LinkedHashMap<>();
     }
@@ -49,7 +49,7 @@ class JobGraphBuilder {
      */
     public DIGraph<JobExecution> createGraph(String rootJobName) {
         DIGraph<JobExecution> graph = new DIGraph<>();
-        populateWithDependencies(rootJobName, null, graph, descriptors, new HashMap<>());
+        populateWithDependencies(rootJobName, null, graph, nodes, new HashMap<>());
         return graph;
     }
 
@@ -57,29 +57,29 @@ class JobGraphBuilder {
             String jobName,
             JobExecution childExecution,
             DIGraph<JobExecution> graph,
-            JobDescriptors descriptors,
+            JobGraphNodes nodes,
             Map<String, JobExecution> childExecutions) {
 
-        JobDescriptor descriptor = descriptors.getDescriptor(jobName);
+        JobGraphNode node = nodes.getNode(jobName);
 
-        descriptor.accept(new JobDescriptorVisitor() {
+        node.accept(new JobGraphNodeVisitor() {
             @Override
-            public void visitSingle(SingleJobDescriptor descriptor) {
-                JobExecution execution = getOrCreateExecution(jobName, descriptor);
+            public void visitSingle(SingleJobNode singleJob) {
+                JobExecution execution = getOrCreateExecution(jobName, singleJob);
                 graph.add(execution);
                 if (childExecution != null) {
                     graph.add(execution, childExecution);
                 }
-                populateWithSingleJobDependencies(execution, graph, descriptors, childExecutions);
+                populateWithSingleJobDependencies(execution, graph, nodes, childExecutions);
             }
 
             @Override
-            public void visitGroup(JobGroupDescriptor descriptor) {
-                descriptor.getJobs().forEach((name, definition) -> populateWithDependencies(
+            public void visitGroup(GroupNode group) {
+                group.getJobs().forEach((name, definition) -> populateWithDependencies(
                         name,
                         childExecution,
                         graph,
-                        new JobDescriptors(descriptor.getJobs(), descriptors), childExecutions)
+                        new JobGraphNodes(group.getJobs(), nodes), childExecutions)
                 );
             }
         });
@@ -88,26 +88,26 @@ class JobGraphBuilder {
     private void populateWithSingleJobDependencies(
             JobExecution execution,
             DIGraph<JobExecution> graph,
-            JobDescriptors descriptors,
+            JobGraphNodes nodes,
             Map<String, JobExecution> childExecutions) {
 
         String jobName = execution.getJobName();
         childExecutions.put(jobName, execution);
 
-        ((SingleJobDescriptor) descriptors.getDescriptor(jobName)).getDependsOn().forEach(parentName -> {
+        ((SingleJobNode) nodes.getNode(jobName)).getDependsOn().forEach(parentName -> {
             if (childExecutions.containsKey(parentName)) {
                 throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
             }
-            populateWithDependencies(parentName, execution, graph, descriptors, childExecutions);
+            populateWithDependencies(parentName, execution, graph, nodes, childExecutions);
         });
         childExecutions.remove(jobName);
     }
 
-    private JobExecution getOrCreateExecution(String jobName, SingleJobDescriptor definition) {
+    private JobExecution getOrCreateExecution(String jobName, SingleJobNode definition) {
         return knownExecutions.computeIfAbsent(jobName, jn -> createExecution(jn, definition));
     }
 
-    private JobExecution createExecution(String jobName, SingleJobDescriptor definition) {
+    private JobExecution createExecution(String jobName, SingleJobNode definition) {
         Job job = standaloneJobs.get(jobName);
 
         if (job == null) {

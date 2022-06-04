@@ -16,34 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package io.bootique.job.descriptor;
-
-import java.util.Map;
-import java.util.stream.Collectors;
+package io.bootique.job.graph;
 
 /**
  * @since 3.0
  */
-public class JobGroupDescriptor implements JobDescriptor {
+public interface JobGraphNodeVisitor {
 
-    private final Map<String, SingleJobDescriptor> jobs;
+    void visitSingle(SingleJobNode singleJob);
 
-    public JobGroupDescriptor(Map<String, SingleJobDescriptor> jobs) {
-        this.jobs = jobs;
-    }
-
-    @Override
-    public void accept(JobDescriptorVisitor v) {
-        v.visitGroup(this);
-    }
-
-    public Map<String, SingleJobDescriptor> getJobs() {
-        return jobs;
-    }
-
-    @Override
-    public String toString() {
-        return "job group => jobs: " + jobs.keySet().stream().collect(Collectors.joining(",", "[", "]"));
-    }
+    void visitGroup(GroupNode group);
 }

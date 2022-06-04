@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.descriptor;
+package io.bootique.job.graph;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.bootique.annotation.BQConfig;
@@ -27,8 +27,8 @@ import io.bootique.config.PolymorphicConfiguration;
  * @since 3.0
  */
 @BQConfig("Job of a given type.")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = SingleJobDescriptorFactory.class)
-public interface JobDescriptorFactory<T extends JobDescriptor> extends PolymorphicConfiguration {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = SingleJobNodeFactory.class)
+public interface JobGraphNodeFactory<T extends JobGraphNode> extends PolymorphicConfiguration {
 
     T create();
 }

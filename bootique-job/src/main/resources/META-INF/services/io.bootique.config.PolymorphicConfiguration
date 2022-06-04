@@ -1,3 +1,3 @@
-io.bootique.job.descriptor.JobDescriptorFactory
-io.bootique.job.descriptor.SingleJobDescriptorFactory
-io.bootique.job.descriptor.JobGroupDescriptorFactory
+io.bootique.job.graph.JobGraphNodeFactory
+io.bootique.job.graph.SingleJobNodeFactory
+io.bootique.job.graph.GroupNodeFactory

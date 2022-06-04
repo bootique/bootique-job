@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package io.bootique.job.descriptor;
+package io.bootique.job.graph;
 
 /**
  * @since 3.0
  */
-public interface JobDescriptor {
+public interface JobGraphNode {
 
-    void accept(JobDescriptorVisitor v);
+    void accept(JobGraphNodeVisitor v);
 }

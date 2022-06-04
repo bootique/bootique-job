@@ -20,37 +20,37 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.BootiqueException;
-import io.bootique.job.descriptor.JobDescriptor;
-import io.bootique.job.descriptor.SingleJobDescriptor;
+import io.bootique.job.graph.JobGraphNode;
+import io.bootique.job.graph.SingleJobNode;
 
 import java.util.*;
 
-class JobDescriptors {
+class JobGraphNodes {
 
-    private final Map<String, ? extends JobDescriptor> descriptors;
-    private final JobDescriptors defaults;
+    private final Map<String, ? extends JobGraphNode> nodes;
+    private final JobGraphNodes defaults;
 
-    JobDescriptors(Map<String, ? extends JobDescriptor> descriptors) {
-        this(descriptors, null);
+    JobGraphNodes(Map<String, ? extends JobGraphNode> nodes) {
+        this(nodes, null);
     }
 
-    JobDescriptors(Map<String, ? extends JobDescriptor> descriptors, JobDescriptors defaults) {
-        this.descriptors = Objects.requireNonNull(descriptors);
+    JobGraphNodes(Map<String, ? extends JobGraphNode> nodes, JobGraphNodes defaults) {
+        this.nodes = Objects.requireNonNull(nodes);
         this.defaults = defaults;
     }
 
-    JobDescriptor getDescriptor(String jobName) {
-        JobDescriptor descriptor = descriptors.get(jobName);
-        JobDescriptor defaultDescriptor = defaults != null ? defaults.getDescriptor(jobName) : null;
+    JobGraphNode getNode(String jobName) {
+        JobGraphNode defaultNode = defaults != null ? defaults.getNode(jobName) : null;
+        JobGraphNode overrideNode = nodes.get(jobName);
 
-        if (descriptor instanceof SingleJobDescriptor && defaultDescriptor instanceof SingleJobDescriptor) {
-            return ((SingleJobDescriptor) defaultDescriptor).merge((SingleJobDescriptor) descriptor);
+        if (overrideNode instanceof SingleJobNode && defaultNode instanceof SingleJobNode) {
+            return ((SingleJobNode) defaultNode).merge((SingleJobNode) overrideNode);
         }
 
-        if (descriptor == null && defaultDescriptor == null) {
+        if (overrideNode == null && defaultNode == null) {
             throw new BootiqueException(1, "No job object for name '" + jobName + "'");
         }
 
-        return descriptor != null ? descriptor : defaultDescriptor;
+        return overrideNode != null ? overrideNode : defaultNode;
     }
 }

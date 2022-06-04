@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.descriptor;
+package io.bootique.job.graph;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.bootique.annotation.BQConfig;
@@ -35,27 +35,27 @@ import java.util.Map;
         " (override parameters, that were specified in the job definition; add new parameters;" +
         " and also override the list of job's dependencies).")
 @JsonTypeName("group")
-public class JobGroupDescriptorFactory implements JobDescriptorFactory<JobGroupDescriptor> {
+public class GroupNodeFactory implements JobGraphNodeFactory<GroupNode> {
 
     // TODO: we should be able to use groups as children, but this requires testing of the entire dispatch mechanism.
     //   E.g. JobGraphBuilder has some SingleJobDefinition casts
-    private Map<String, SingleJobDescriptorFactory> jobs;
+    private Map<String, SingleJobNodeFactory> jobs;
 
     @Override
-    public JobGroupDescriptor create() {
+    public GroupNode create() {
 
         if (jobs == null) {
-            return new JobGroupDescriptor(Collections.emptyMap());
+            return new GroupNode(Collections.emptyMap());
         }
 
-        Map<String, SingleJobDescriptor> children = new HashMap<>();
+        Map<String, SingleJobNode> children = new HashMap<>();
         jobs.forEach((k, v) -> children.put(k, v.create()));
-        return new JobGroupDescriptor(children);
+        return new GroupNode(children);
     }
 
     @BQConfigProperty("Jobs and job groups, that belong to this job group." +
             " Overriding of default parameters and dependencies can be done here.")
-    public void setJobs(Map<String, SingleJobDescriptorFactory> jobs) {
+    public void setJobs(Map<String, SingleJobNodeFactory> jobs) {
         this.jobs = jobs;
     }
 }

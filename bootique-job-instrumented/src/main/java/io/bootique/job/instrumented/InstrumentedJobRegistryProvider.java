@@ -56,7 +56,7 @@ public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
     public JobRegistry get() {
         return new InstrumentedJobRegistry(
                 standaloneJobs,
-                jobDescriptors(),
+                graphNodes(),
                 scheduler,
                 combineListeners(),
                 mdcManager,

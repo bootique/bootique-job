@@ -21,7 +21,7 @@ package io.bootique.job.instrumented;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.MappedJobListener;
-import io.bootique.job.descriptor.JobDescriptor;
+import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
 import io.bootique.job.scheduler.execution.JobGroup;
@@ -42,7 +42,7 @@ public class InstrumentedJobRegistry extends DefaultJobRegistry {
 
     public InstrumentedJobRegistry(
             Collection<Job> standaloneJobs,
-            Map<String, JobDescriptor> jobDefinitions,
+            Map<String, JobGraphNode> jobDefinitions,
             Provider<Scheduler> scheduler,
             Collection<MappedJobListener> listeners,
             JobMDCManager mdcManager,

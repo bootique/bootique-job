@@ -21,7 +21,7 @@ package io.bootique.job.runtime;
 
 import io.bootique.BQModuleProvider;
 import io.bootique.di.BQModule;
-import io.bootique.job.descriptor.JobDescriptorFactory;
+import io.bootique.job.graph.JobGraphNodeFactory;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.type.TypeRef;
 
@@ -39,7 +39,7 @@ public class JobModuleProvider implements BQModuleProvider {
     @Override
     public Map<String, Type> configs() {
 
-        TypeRef<Map<String, JobDescriptorFactory>> jobs = new TypeRef<>() {};
+        TypeRef<Map<String, JobGraphNodeFactory>> jobs = new TypeRef<>() {};
 
         Map<String, Type> configs = new HashMap<>();
         configs.put("scheduler", SchedulerFactory.class);

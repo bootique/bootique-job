@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.descriptor;
+package io.bootique.job.graph;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,32 +25,32 @@ import java.util.stream.Collectors;
 /**
  * @since 3.0
  */
-public class SingleJobDescriptor implements JobDescriptor {
+public class SingleJobNode implements JobGraphNode {
 
     private final Map<String, String> params;
     private final List<String> dependsOn;
     private final boolean forceNoDependencies;
 
-    public SingleJobDescriptor() {
+    public SingleJobNode() {
         this(Collections.emptyMap(), Collections.emptyList(), false);
     }
 
-    public SingleJobDescriptor(Map<String, String> params, List<String> dependsOn, boolean forceNoDependencies) {
+    public SingleJobNode(Map<String, String> params, List<String> dependsOn, boolean forceNoDependencies) {
         this.params = Objects.requireNonNull(params);
         this.dependsOn = Objects.requireNonNull(dependsOn);
         this.forceNoDependencies = forceNoDependencies;
 
         if (forceNoDependencies && !dependsOn.isEmpty()) {
-            throw new IllegalStateException("Descriptor is forcing no dependencies, yet the dependencies are provided");
+            throw new IllegalStateException("GraphNode is forcing no dependencies, yet the dependencies are provided");
         }
     }
 
     @Override
-    public void accept(JobDescriptorVisitor v) {
+    public void accept(JobGraphNodeVisitor v) {
         v.visitSingle(this);
     }
 
-    public SingleJobDescriptor merge(SingleJobDescriptor overriding) {
+    public SingleJobNode merge(SingleJobNode overriding) {
 
         Map<String, String> mergedParams = new HashMap<>(params);
         mergedParams.putAll(overriding.getParams());
@@ -59,7 +59,7 @@ public class SingleJobDescriptor implements JobDescriptor {
                 ? overriding.dependsOn
                 : this.dependsOn;
 
-        return new SingleJobDescriptor(mergedParams, mergedDependsOn, false);
+        return new SingleJobNode(mergedParams, mergedDependsOn, false);
     }
 
     public Map<String, String> getParams() {
