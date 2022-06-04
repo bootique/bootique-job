@@ -4,7 +4,7 @@ import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.job.consul.ConsulJobModule;
 import io.bootique.job.consul.it.job.LockJob;
-import io.bootique.job.runtime.JobModule;
+import io.bootique.job.JobModule;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;

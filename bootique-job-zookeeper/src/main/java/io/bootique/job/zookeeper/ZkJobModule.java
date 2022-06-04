@@ -3,7 +3,7 @@ package io.bootique.job.zookeeper;
 import io.bootique.ConfigModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
-import io.bootique.job.runtime.JobModule;
+import io.bootique.job.JobModule;
 import io.bootique.job.zookeeper.lock.ZkClusterLockHandler;
 import org.apache.curator.framework.CuratorFramework;
 

@@ -23,7 +23,7 @@ import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.MappedJobListener;
-import io.bootique.job.runtime.JobRegistryProvider;
+import io.bootique.job.JobRegistryProvider;
 import io.bootique.job.scheduler.Scheduler;
 
 import javax.inject.Inject;

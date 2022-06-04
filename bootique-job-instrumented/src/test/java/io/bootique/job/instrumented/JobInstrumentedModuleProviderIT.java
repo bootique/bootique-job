@@ -20,7 +20,7 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.BQRuntime;
-import io.bootique.job.runtime.JobModule;
+import io.bootique.job.JobModule;
 import io.bootique.junit5.*;
 import io.bootique.metrics.MetricsModule;
 import org.junit.jupiter.api.Test;

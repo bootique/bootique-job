@@ -23,7 +23,7 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.consul.lock.CompositeConsulLockHandler;
-import io.bootique.job.runtime.JobModule;
+import io.bootique.job.JobModule;
 import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;

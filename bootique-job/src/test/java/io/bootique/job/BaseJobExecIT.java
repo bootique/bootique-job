@@ -21,7 +21,6 @@ package io.bootique.job;
 
 import io.bootique.command.CommandOutcome;
 import io.bootique.job.fixture.ExecutableAtMostOnceJob;
-import io.bootique.job.runtime.JobModule;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;

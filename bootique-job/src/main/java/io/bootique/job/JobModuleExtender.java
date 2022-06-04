@@ -17,13 +17,10 @@
  * under the License.
  */
 
-package io.bootique.job.runtime;
+package io.bootique.job;
 
 import io.bootique.ModuleExtender;
 import io.bootique.di.*;
-import io.bootique.job.Job;
-import io.bootique.job.JobListener;
-import io.bootique.job.MappedJobListener;
 import io.bootique.job.lock.LockHandler;
 
 import javax.inject.Provider;

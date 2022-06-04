@@ -1,1 +1,1 @@
-io.bootique.job.runtime.JobModuleProvider
+io.bootique.job.JobModuleProvider

@@ -16,13 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.runtime;
+package io.bootique.job;
 
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.job.Job;
-import io.bootique.job.JobListener;
-import io.bootique.job.JobRegistry;
-import io.bootique.job.MappedJobListener;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.JobGraphNodeFactory;
 import io.bootique.job.scheduler.Scheduler;

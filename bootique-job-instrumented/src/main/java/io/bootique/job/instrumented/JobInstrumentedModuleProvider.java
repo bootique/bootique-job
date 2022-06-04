@@ -21,8 +21,8 @@ package io.bootique.job.instrumented;
 
 import io.bootique.BQModuleProvider;
 import io.bootique.di.BQModule;
-import io.bootique.job.runtime.JobModule;
-import io.bootique.job.runtime.JobModuleProvider;
+import io.bootique.job.JobModule;
+import io.bootique.job.JobModuleProvider;
 import io.bootique.metrics.MetricsModuleProvider;
 
 import java.util.Collection;

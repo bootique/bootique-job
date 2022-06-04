@@ -29,7 +29,7 @@ import io.bootique.metrics.mdc.TransactionIdMDC;
 
 import javax.inject.Singleton;
 
-import static io.bootique.job.runtime.JobModule.LOG_LISTENER_ORDER;
+import static io.bootique.job.JobModule.LOG_LISTENER_ORDER;
 
 public class JobInstrumentedModule extends ConfigModule {
 

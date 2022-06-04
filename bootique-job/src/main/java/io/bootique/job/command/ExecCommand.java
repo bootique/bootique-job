@@ -24,7 +24,7 @@ import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runtime.JobModule;
+import io.bootique.job.JobModule;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.meta.application.CommandMetadata;
 import io.bootique.meta.application.OptionMetadata;

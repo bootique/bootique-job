@@ -20,7 +20,6 @@ package io.bootique.job;
 
 import io.bootique.BQRuntime;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runtime.JobModule;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;

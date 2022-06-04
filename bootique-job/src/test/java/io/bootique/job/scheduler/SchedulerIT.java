@@ -26,7 +26,7 @@ import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.fixture.ExecutionRateListener;
 import io.bootique.job.fixture.ScheduledJob1;
-import io.bootique.job.runtime.JobModule;
+import io.bootique.job.JobModule;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.AfterEach;

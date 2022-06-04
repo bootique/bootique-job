@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.runtime;
+package io.bootique.job;
 
 import io.bootique.BQModuleProvider;
 import io.bootique.di.BQModule;

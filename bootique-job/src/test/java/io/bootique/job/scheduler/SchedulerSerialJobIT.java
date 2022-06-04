@@ -24,7 +24,7 @@ import io.bootique.Bootique;
 import io.bootique.job.fixture.SerialJob1;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runtime.JobModule;
+import io.bootique.job.JobModule;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.AfterEach;

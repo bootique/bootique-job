@@ -23,7 +23,6 @@ import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.BootiqueException;
 import io.bootique.job.fixture.*;
-import io.bootique.job.runtime.JobModule;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
