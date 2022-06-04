@@ -68,7 +68,7 @@ public class JobRegistryProvider implements Provider<JobRegistry> {
     }
 
     protected Map<String, JobDefinition> jobConfigs() {
-        TypeRef<Map<String, JobDefinition>> ref = new TypeRef<Map<String, JobDefinition>>() {
+        TypeRef<Map<String, JobDefinition>> ref = new TypeRef<>() {
         };
         return configFactory.config(ref, JobModule.JOBS_CONFIG_PREFIX);
     }

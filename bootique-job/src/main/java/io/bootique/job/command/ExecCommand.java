@@ -42,7 +42,7 @@ public class ExecCommand extends CommandWithMetadata {
 
 	public static final String SERIAL_OPTION = "serial";
 
-	private Provider<Scheduler> schedulerProvider;
+	private final Provider<Scheduler> schedulerProvider;
 
 	private static OptionMetadata.Builder createSerialOption() {
 		return OptionMetadata.builder(SERIAL_OPTION).description("Enforces sequential execution of the jobs, " +
@@ -92,7 +92,7 @@ public class ExecCommand extends CommandWithMetadata {
 				.filter(result -> !result.isSuccess())
 				.count();
 
-		return (failedCount > 0) ? CommandOutcome.failed(1, "Some of the jobs failed") : CommandOutcome.succeeded();
+		return failedCount > 0 ? CommandOutcome.failed(1, "Some of the jobs failed") : CommandOutcome.succeeded();
 	}
 
 	private CommandOutcome runSerial(List<String> jobNames, Scheduler scheduler) {
