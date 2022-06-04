@@ -215,6 +215,11 @@ public class DefaultScheduler implements Scheduler {
         return toJobFuture(jobFuture, job.getMetadata(), result);
     }
 
+    @Override
+    public JobResult runOnceBlocking(Job job, Map<String, Object> parameters) {
+        return runnableJobFactory.runnable(job, parameters).run();
+    }
+
     private JobFuture schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
         RunnableJob rj = runnableJobFactory.runnable(job, parameters);
         JobResult[] result = new JobResult[1];

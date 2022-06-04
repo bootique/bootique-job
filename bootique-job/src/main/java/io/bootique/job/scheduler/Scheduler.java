@@ -22,6 +22,7 @@ package io.bootique.job.scheduler;
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.runnable.JobFuture;
+import io.bootique.job.runnable.JobResult;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,6 +67,16 @@ public interface Scheduler {
      * @return a Future to track job progress.
      */
     JobFuture runOnce(Job job, Map<String, Object> parameters);
+
+    /**
+     * Executes a given job once. The method blocks to wait for the job to finish.
+     *
+     * @param job        Job to execute
+     * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
+     * @return a Future to track job progress.
+     * @since 3.0
+     */
+    JobResult runOnceBlocking(Job job, Map<String, Object> parameters);
 
     /**
      * Schedule execution of jobs based on configured triggers.

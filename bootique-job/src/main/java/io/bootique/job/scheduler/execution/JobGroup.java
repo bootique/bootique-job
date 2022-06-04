@@ -28,10 +28,10 @@ import io.bootique.job.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -67,35 +67,44 @@ public class JobGroup extends BaseJob {
             return;
         }
 
+
+        Map<JobResult, Integer> failures = new ConcurrentHashMap<>();
+
+        // start 2...N jobs in the background (non-blocking)
         // to ensure parallel execution, must collect futures in an explicit collection,
         // and then "get" them in a separate stream
         List<JobFuture> futures = batch.stream()
+                .skip(1)
                 .map(j -> submitGroupMember(j, params))
                 .collect(Collectors.toList());
 
-        Set<JobResult> failures = new HashSet<>();
+        // run the first job on the group thread (blocking)
+        JobResult result = scheduler.runOnceBlocking(batch.iterator().next(), params);
+        processJobResult(result, failures);
 
-        futures.stream().map(JobFuture::get)
+        //  collect results from other jobs' futures (blocking)
+        futures.stream()
+                .map(JobFuture::get)
                 .forEach(r -> processJobResult(r, failures));
 
-        processBatchFailures(failures);
+        processBatchFailures(failures.keySet());
     }
 
     protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {
         return scheduler.runOnce(job, params);
     }
 
-    protected void processJobResult(JobResult result, Set<JobResult> failures) {
+    protected void processJobResult(JobResult result, Map<JobResult, Integer> failures) {
         if (result.isSuccess()) {
             LOGGER.info("group member '{}' finished", result.getMetadata().getName());
         } else if (result.getThrowable() == null) {
-            failures.add(result);
+            failures.put(result, 1);
             LOGGER.info("group member '{}' finished: {} - {}",
                     result.getMetadata().getName(),
                     result.getOutcome(),
                     result.getMessage());
         } else {
-            failures.add(result);
+            failures.put(result, 1);
             // have to use String.format instead of LOGGER substitutions because of the throwable parameter
             LOGGER.error(String.format("group member '%s' finished: %s - %s",
                             result.getMetadata().getName(),

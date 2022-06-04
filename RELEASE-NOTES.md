@@ -13,6 +13,7 @@
 * #98 Bump spring-core from 5.3.18 to 5.3.19
 * #100 Job listeners are not notified when a job throws an exception
 * #101 Bump spring-core from 5.3.19 to 5.3.20
+* #103 Job group to reuse the group dispatch thread when possible
 
 ## 2.0.M1
 
