@@ -205,10 +205,10 @@ public class ExecutionIT extends BaseJobExecIT {
     @Test
     public void testExecution_DefaultParameterValue() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
-        String[] args = new String[]{"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
-                "--exec", "--job=parameterizedjob1"};
-
-        executeJobs(Collections.singleton(job1), args);
+        executeJobs(Collections.singleton(job1),
+                "--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                "--exec",
+                "--job=parameterizedjob1");
         assertExecutedWithParams(job1, Collections.singletonMap("longp", 777L));
     }
 
@@ -234,7 +234,6 @@ public class ExecutionIT extends BaseJobExecIT {
                 .module(b -> JobModule.extend(b).addJob(job))
                 .module(b -> BQCoreModule.extend(b).declareVar("jobs.parameterizedjob2.params.longp", "TEST_PARAM"))
                 .module(b -> BQCoreModule.extend(b).setVar("TEST_PARAM", "35"))
-                .createRuntime()
                 .run();
 
         assertExecutedWithParams(job, Collections.singletonMap("longp", 35l));
@@ -247,7 +246,6 @@ public class ExecutionIT extends BaseJobExecIT {
         testFactory.app("--exec", "--job=parameterizedjob4")
                 .autoLoadModules()
                 .module(b -> JobModule.extend(b).addJob(job))
-                .createRuntime()
                 .run();
 
         assertEquals(Map.of("xp", "_default_"), job.getParams());
@@ -260,7 +258,6 @@ public class ExecutionIT extends BaseJobExecIT {
         testFactory.app("--exec", "--job=parameterizedjob5")
                 .autoLoadModules()
                 .module(b -> JobModule.extend(b).addJob(job))
-                .createRuntime()
                 .run();
 
         assertEquals(Collections.singletonMap("xp", null), job.getParams());
@@ -291,11 +288,12 @@ public class ExecutionIT extends BaseJobExecIT {
     public void testExecution_Group2_ParametersConversion() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
         ParameterizedJob2 job2 = new ParameterizedJob2();
-        String[] args = new String[]{"--config=classpath:io/bootique/job/config_parameters_conversion.yml",
-                "--exec", "--job=group2"};
 
-        List<ExecutableAtMostOnceJob> jobs = Arrays.asList(job2, job1);
-        executeJobs(jobs, args);
+        List<ExecutableAtMostOnceJob> jobs = List.of(job2, job1);
+        executeJobs(jobs,
+                "--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                "--exec",
+                "--job=group2");
         assertExecutedInOrder(jobs);
         assertExecutedWithParams(job1, Collections.singletonMap("longp", 777L));
         assertExecutedWithParams(job2, Collections.singletonMap("longp", 33L));
