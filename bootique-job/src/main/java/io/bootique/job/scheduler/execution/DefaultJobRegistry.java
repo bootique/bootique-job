@@ -130,12 +130,12 @@ public class DefaultJobRegistry implements JobRegistry {
 
     protected JobGroup createJobGroup(String jobName, DIGraph<JobExecution> graph) {
         JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs.values());
-        List<Set<Job>> executionPlan = executionPlan(graph.reverseTopSort(), standaloneJobs);
-        return createJobGroup(groupMetadata, executionPlan);
+        List<JobGroupStep> steps = jobGroupSteps(graph.reverseTopSort(), groupMetadata);
+        return createJobGroup(groupMetadata, steps);
     }
 
-    protected JobGroup createJobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan) {
-        return new JobGroup(groupMetadata, executionPlan, scheduler.get());
+    protected JobGroup createJobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
+        return new JobGroup(groupMetadata, steps);
     }
 
     private JobMetadata groupMetadata(String jobName, Collection<Job> jobs) {
@@ -146,23 +146,41 @@ public class DefaultJobRegistry implements JobRegistry {
         return builder.build();
     }
 
-    private List<Set<Job>> executionPlan(List<Set<JobExecution>> executions, Map<String, Job> standaloneJobs) {
+    protected List<JobGroupStep> jobGroupSteps(List<Set<JobExecution>> executions, JobMetadata groupMetadata) {
 
-        List<Set<Job>> result = new ArrayList<>(executions.size());
+        List<JobGroupStep> steps = new ArrayList<>(executions.size());
 
         for (Set<JobExecution> s : executions) {
-            Set<Job> executionGroup = new HashSet<>();
+            List<Job> stepJobs = new ArrayList<>();
             for (JobExecution e : s) {
 
                 Job undecorated = standaloneJobs.get(e.getJobName());
                 Job decorated = decorateGroupMemberJob(undecorated, e.getParams());
 
-                executionGroup.add(decorated);
+                stepJobs.add(decorated);
             }
-            result.add(executionGroup);
+
+            switch (stepJobs.size()) {
+                case 0:
+                    break;
+                case 1:
+                    steps.add(createSingleJobStep(stepJobs.get(0)));
+                    break;
+                default:
+                    steps.add(createParallelGroupStep(stepJobs, groupMetadata));
+                    break;
+            }
         }
 
-        return result;
+        return steps;
+    }
+
+    protected SingleJobStep createSingleJobStep(Job job) {
+        return new SingleJobStep(scheduler.get(), job);
+    }
+
+    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs, JobMetadata groupMetadata) {
+        return new ParallelJobBatchStep(scheduler.get(), stepJobs, groupMetadata);
     }
 
     private Map<String, Job> jobsByName(Collection<Job> jobs) {
