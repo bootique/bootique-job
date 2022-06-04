@@ -24,13 +24,12 @@ import io.bootique.job.MappedJobListener;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
-import io.bootique.job.scheduler.execution.JobGroup;
+import io.bootique.job.scheduler.execution.ParallelJobBatchStep;
 
 import javax.inject.Provider;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @since 3.0
@@ -60,9 +59,7 @@ public class InstrumentedJobRegistry extends DefaultJobRegistry {
     }
 
     @Override
-    protected JobGroup createJobGroup(JobMetadata groupMetadata, List<Set<Job>> executionPlan) {
-        return new TxIdAwareJobGroup(groupMetadata, executionPlan, scheduler.get(), mdcManager.getTransactionIdMDC());
+    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs, JobMetadata groupMetadata) {
+        return new TxIdAwareJobGroupStep(scheduler.get(), stepJobs, groupMetadata, mdcManager.getTransactionIdMDC());
     }
-
-
 }

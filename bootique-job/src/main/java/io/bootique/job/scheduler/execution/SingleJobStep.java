@@ -16,39 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.BaseJob;
+import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
+import io.bootique.job.scheduler.Scheduler;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @since 3.0
  */
-public class JobGroup extends BaseJob {
+public class SingleJobStep extends JobGroupStep {
 
-    // linear steps, each one may be a single job or a set of parallel jobs
-    private final List<JobGroupStep> steps;
+    private final Job job;
 
-    public JobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
-        super(groupMetadata);
-        this.steps = steps;
+    public SingleJobStep(Scheduler scheduler, Job job) {
+        super(scheduler);
+        this.job = Objects.requireNonNull(job);
+    }
+
+    @Override
+    public JobMetadata getMetadata() {
+        return job.getMetadata();
     }
 
     @Override
     public JobResult run(Map<String, Object> params) {
-
-        for (JobGroupStep step : steps) {
-            JobResult result = step.run(params);
-            if (!result.isSuccess()) {
-                return result;
-            }
-        }
-
-        return JobResult.success(getMetadata());
+        JobResult result = scheduler.runOnceBlocking(job, params);
+        logResult(result);
+        return result;
     }
 }
