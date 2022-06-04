@@ -79,8 +79,12 @@ public class ExecCommand extends CommandWithMetadata {
     }
 
     private CommandOutcome runParallel(List<String> jobNames, Scheduler scheduler) {
-        String failed = jobNames.stream()
-                .map(scheduler::runOnce)
+
+        // to ensure parallel execution, must collect  futures first, and then process them in a separate stream
+        List<JobFuture> futures = jobNames.stream().map(scheduler::runOnce).collect(Collectors.toList());
+
+
+        String failed = futures.stream()
                 .map(JobFuture::get)
                 .peek(this::processResult)
                 .filter(result -> !result.isSuccess())
