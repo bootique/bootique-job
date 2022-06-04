@@ -30,7 +30,8 @@ import java.util.Map;
 public interface Scheduler {
 
     /**
-     * Executes a given job once.
+     * Executes a given job once. The method does not block to wait for the job to finish. Instead, it returns a
+     * future object to track job progress.
      *
      * @param jobName the name of the job to execute.
      * @return a Future to track job progress.
@@ -38,7 +39,8 @@ public interface Scheduler {
     JobFuture runOnce(String jobName);
 
     /**
-     * Executes a given job once.
+     * Executes a given job once.  The method does not block to wait for the job to finish. Instead, it returns a
+     * future object to track job progress.
      *
      * @param jobName    the name of the job to execute.
      * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
@@ -47,7 +49,8 @@ public interface Scheduler {
     JobFuture runOnce(String jobName, Map<String, Object> parameters);
 
     /**
-     * Executes a given job once.
+     * Executes a given job once.  The method does not block to wait for the job to finish. Instead, it returns a
+     * future object to track job progress.
      *
      * @param job Job to execute
      * @return a Future to track job progress.
@@ -55,9 +58,10 @@ public interface Scheduler {
     JobFuture runOnce(Job job);
 
     /**
-     * Executes a given job once.
+     * Executes a given job once.  The method does not block to wait for the job to finish. Instead, it returns a
+     * future object to track job progress.
      *
-     * @param job Job to execute
+     * @param job        Job to execute
      * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
      * @return a Future to track job progress.
      */
@@ -94,7 +98,7 @@ public interface Scheduler {
     /**
      * @param jobName Job name
      * @return Scheduled job executions for a given job, or an empty collection, if the job is unknown,
-     *         triggers are not configured for this job or the scheduler has not been started yet
+     * triggers are not configured for this job or the scheduler has not been started yet
      */
     Collection<ScheduledJobFuture> getScheduledJobs(String jobName);
 }

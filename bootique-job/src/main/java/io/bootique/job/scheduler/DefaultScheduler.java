@@ -21,6 +21,7 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
@@ -36,7 +37,6 @@ import org.springframework.scheduling.Trigger;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -207,27 +207,26 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public JobFuture runOnce(Job job, Map<String, Object> parameters) {
-        return submit(job, parameters,
-                (rj, result) -> taskScheduler.schedule(() -> result[0] = rj.run(), new Date()));
-    }
-
-    private JobFuture schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
-        return submit(job, parameters,
-                (rj, result) -> taskScheduler.schedule(() -> result[0] = rj.run(), trigger));
-    }
-
-    private JobFuture submit(
-            Job job,
-            Map<String, Object> parameters,
-            BiFunction<RunnableJob, JobResult[], ScheduledFuture<?>> executor) {
 
         RunnableJob rj = runnableJobFactory.runnable(job, parameters);
         JobResult[] result = new JobResult[1];
-        ScheduledFuture<?> jobFuture = executor.apply(rj, result);
+        ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), new Date());
 
-        return JobFuture.forJob(job.getMetadata().getName())
-                .future(jobFuture)
-                .resultSupplier(() -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()))
+        return toJobFuture(jobFuture, job.getMetadata(), result);
+    }
+
+    private JobFuture schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
+        RunnableJob rj = runnableJobFactory.runnable(job, parameters);
+        JobResult[] result = new JobResult[1];
+        ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), trigger);
+
+        return toJobFuture(jobFuture, job.getMetadata(), result);
+    }
+
+    private JobFuture toJobFuture(ScheduledFuture<?> future, JobMetadata md, JobResult[] resultCollector) {
+        return JobFuture.forJob(md.getName())
+                .future(future)
+                .resultSupplier(() -> resultCollector[0] != null ? resultCollector[0] : JobResult.unknown(md))
                 .build();
     }
 }
