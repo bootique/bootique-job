@@ -28,10 +28,7 @@ import io.bootique.job.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -67,12 +64,11 @@ public class JobGroup extends BaseJob {
             return;
         }
 
-
-        Map<JobResult, Integer> failures = new ConcurrentHashMap<>();
+        List<JobResult> failures = new ArrayList<>();
 
         // start 2...N jobs in the background (non-blocking)
         // to ensure parallel execution, must collect futures in an explicit collection,
-        // and then "get" them in a separate stream
+        // and then "get" them in a separate stream / loop
         List<JobFuture> futures = batch.stream()
                 .skip(1)
                 .map(j -> submitGroupMember(j, params))
@@ -83,28 +79,28 @@ public class JobGroup extends BaseJob {
         processJobResult(result, failures);
 
         //  collect results from other jobs' futures (blocking)
-        futures.stream()
-                .map(JobFuture::get)
-                .forEach(r -> processJobResult(r, failures));
+        for (JobFuture f : futures) {
+            processJobResult(f.get(), failures);
+        }
 
-        processBatchFailures(failures.keySet());
+        processBatchFailures(failures);
     }
 
     protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {
         return scheduler.runOnce(job, params);
     }
 
-    protected void processJobResult(JobResult result, Map<JobResult, Integer> failures) {
+    protected void processJobResult(JobResult result, List<JobResult> failures) {
         if (result.isSuccess()) {
             LOGGER.info("group member '{}' finished", result.getMetadata().getName());
         } else if (result.getThrowable() == null) {
-            failures.put(result, 1);
+            failures.add(result);
             LOGGER.info("group member '{}' finished: {} - {}",
                     result.getMetadata().getName(),
                     result.getOutcome(),
                     result.getMessage());
         } else {
-            failures.put(result, 1);
+            failures.add(result);
             // have to use String.format instead of LOGGER substitutions because of the throwable parameter
             LOGGER.error(String.format("group member '%s' finished: %s - %s",
                             result.getMetadata().getName(),
@@ -114,7 +110,7 @@ public class JobGroup extends BaseJob {
         }
     }
 
-    protected void processBatchFailures(Set<JobResult> failures) {
+    protected void processBatchFailures(Collection<JobResult> failures) {
         if (!failures.isEmpty()) {
 
             // TODO: report all failure, not just the first one
