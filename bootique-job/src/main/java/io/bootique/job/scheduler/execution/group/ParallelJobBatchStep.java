@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.scheduler.execution.group;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,25 +35,14 @@ import java.util.stream.Collectors;
 public class ParallelJobBatchStep extends JobGroupStep {
 
     private final List<Job> jobs;
-    private final JobMetadata metadata;
 
-    public ParallelJobBatchStep(
-            Scheduler scheduler,
-            List<Job> jobs,
-            JobMetadata metadata) {
-
+    public ParallelJobBatchStep(Scheduler scheduler, List<Job> jobs) {
         super(scheduler);
         this.jobs = Objects.requireNonNull(jobs);
-        this.metadata = Objects.requireNonNull(metadata);
     }
 
     @Override
-    public JobMetadata getMetadata() {
-        return metadata;
-    }
-
-    @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobGroupStepResult run(Map<String, Object> params) {
 
         // schedule 2...N jobs in the background (non-blocking)
         // to ensure parallel execution, must collect futures in an explicit collection,
@@ -69,21 +58,31 @@ public class ParallelJobBatchStep extends JobGroupStep {
 
         if (!blockingResult.isSuccess()) {
             // TODO: don't bother to cancel other running jobs?
-            return blockingResult;
+            return JobGroupStepResult.failed(blockingResult);
         }
 
-        //  collect results from other jobs' futures (blocking)
+        //  check other jobs' futures (non-blocking), and yield if any one of them is unfinished
+        List<JobFuture> unfinished = new ArrayList<>();
         for (JobFuture f : futures) {
-            JobResult result = f.get();
-            logResult(result);
 
-            // TODO: don't bother to cancel other running jobs?
-            if (!result.isSuccess()) {
-                return result;
+            if (f.isDone()) {
+
+                JobResult result = f.get();
+                logResult(result);
+
+                if (!result.isSuccess()) {
+                    // TODO: don't bother to cancel other running jobs?
+                    return JobGroupStepResult.failed(result);
+                }
+            }
+            else {
+                unfinished.add(f);
             }
         }
 
-        return JobResult.success(getMetadata());
+        return unfinished.isEmpty()
+                ? JobGroupStepResult.succeeded(blockingResult)
+                : JobGroupStepResult.yielded(unfinished);
     }
 
     protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {

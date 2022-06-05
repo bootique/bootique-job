@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.scheduler.execution.group;
 
-import io.bootique.job.Job;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @since 3.0
  */
-public abstract class JobGroupStep implements Job {
+public abstract class JobGroupStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobGroupStep.class);
 
@@ -40,6 +40,8 @@ public abstract class JobGroupStep implements Job {
     protected JobGroupStep(Scheduler scheduler) {
         this.scheduler = Objects.requireNonNull(scheduler);
     }
+
+    public abstract JobGroupStepResult run(Map<String, Object> params);
 
     protected void logResult(JobResult result) {
         if (result.isSuccess()) {

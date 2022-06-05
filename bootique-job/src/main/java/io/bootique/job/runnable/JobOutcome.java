@@ -21,5 +21,10 @@ package io.bootique.job.runnable;
 
 public enum JobOutcome {
 
-	SUCCESS, FAILURE, PARTIAL_SUCCESS, UNKNOWN, SKIPPED
+	SUCCESS, FAILURE, PARTIAL_SUCCESS, UNKNOWN, SKIPPED,
+
+	/**
+	 * @since 3.0
+	 */
+	YIELDED;
 }

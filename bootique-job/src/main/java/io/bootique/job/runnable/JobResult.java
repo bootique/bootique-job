@@ -44,6 +44,20 @@ public class JobResult {
 		return new JobResult(metadata, JobOutcome.FAILURE, th, null);
 	}
 
+	/**
+	 * @since 3.0
+	 */
+	public static JobResult partialSuccess(JobMetadata metadata) {
+		return new JobResult(metadata, JobOutcome.PARTIAL_SUCCESS, null, null);
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	public static JobResult yielded(JobMetadata metadata) {
+		return new JobResult(metadata, JobOutcome.YIELDED, null, null);
+	}
+
 	public static JobResult unknown(JobMetadata metadata) {
 		return new JobResult(metadata, JobOutcome.UNKNOWN, null, null);
 	}
