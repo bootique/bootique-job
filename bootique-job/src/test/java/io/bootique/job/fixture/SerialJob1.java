@@ -23,7 +23,7 @@ import io.bootique.job.JobMetadata;
 import io.bootique.job.SerialJob;
 
 @SerialJob
-public class SerialJob1 extends Job1 {
+public class SerialJob1 extends ExecutableAtMostOnceJob {
     private static final long DEFAULT_RUNNING_TIME = 10_000_000_000L; // not a real time, but approx. CPU cycles
 
     public SerialJob1() {

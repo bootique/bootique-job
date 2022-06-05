@@ -35,14 +35,6 @@ public class Job2 extends ExecutableAtMostOnceJob {
         this(JobMetadata.build(Job2.class), runningTime, shouldFail);
     }
 
-    public Job2(JobMetadata metadata) {
-        this(metadata, 0, false);
-    }
-
-    public Job2(JobMetadata metadata, long runningTime) {
-        super(metadata, runningTime, false);
-    }
-
     public Job2(JobMetadata metadata, long runningTime, boolean shouldFail) {
         super(metadata, runningTime, shouldFail);
     }

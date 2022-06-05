@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * A job dependency graph node representing a single job.
+ *
  * @since 3.0
  */
 public class SingleJobNode implements JobGraphNode {
@@ -38,6 +40,9 @@ public class SingleJobNode implements JobGraphNode {
     public SingleJobNode(Map<String, String> params, List<String> dependsOn, boolean forceNoDependencies) {
         this.params = Objects.requireNonNull(params);
         this.dependsOn = Objects.requireNonNull(dependsOn);
+
+        // Helps to distinguish between empty dependencies and no dependencies.
+        // Used in the node merge logic
         this.forceNoDependencies = forceNoDependencies;
 
         if (forceNoDependencies && !dependsOn.isEmpty()) {

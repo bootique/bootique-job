@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class ExecutableAtMostOnceJob extends BaseJob {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutableAtMostOnceJob.class);
 
     private final long runIterations;

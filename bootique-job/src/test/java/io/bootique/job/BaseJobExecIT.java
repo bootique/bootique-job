@@ -26,7 +26,9 @@ import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
@@ -37,8 +39,8 @@ public abstract class BaseJobExecIT {
 
     protected CommandOutcome executeJobs(Collection<? extends Job> jobs, String... args) {
         return testFactory.app(args)
-                .module(new JobModule())
-                .module(b  -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .run();
     }
 
@@ -59,24 +61,23 @@ public abstract class BaseJobExecIT {
 
         assertExecuted(jobs);
 
-        List<ExecutableAtMostOnceJob> jobList = new ArrayList<>(jobs);
-        jobList.sort((j1, j2) -> {
+        List<ExecutableAtMostOnceJob> sorted = new ArrayList<>(jobs);
+        sorted.sort((j1, j2) -> {
             long diff = j1.getStartedAt() - j2.getStartedAt();
             assertNotEquals(0, diff, () -> "Jobs started at the same time: " + collectNames(j1, j2));
             return (int) diff;
         });
 
-        Iterator<ExecutableAtMostOnceJob> iter = jobList.iterator();
-        ExecutableAtMostOnceJob previous = iter.next(), next;
-        while (iter.hasNext()) {
-            next = iter.next();
-            assertTrue(previous.getFinishedAt() < next.getStartedAt(), "Execution of jobs overlapped: " + collectNames(previous, next));
+        for (int i = 1; i < sorted.size(); i++) {
+            ExecutableAtMostOnceJob p = sorted.get(i - 1);
+            ExecutableAtMostOnceJob n = sorted.get(i);
+            assertTrue(p.getFinishedAt() < n.getStartedAt(), "Execution of jobs overlapped: " + collectNames(p, n));
         }
 
         try {
-            assertArrayEquals(jobs.toArray(), jobList.toArray());
+            assertArrayEquals(jobs.toArray(), sorted.toArray());
         } catch (Throwable e) {
-            throw new RuntimeException("Expected: " + collectNames(jobs) + ", actual: " + collectNames(jobList));
+            throw new RuntimeException("Expected: " + collectNames(jobs) + ", actual: " + collectNames(sorted));
         }
     }
 
@@ -95,13 +96,12 @@ public abstract class BaseJobExecIT {
 
     @SafeVarargs
     private static <T extends Job> String collectNames(T... jobs) {
-        return collectNames(Arrays.asList(jobs));
+        return collectNames(asList(jobs));
     }
 
     private static String collectNames(List<? extends Job> jobs) {
-        return jobs.stream().collect(
-                StringBuilder::new,
-                (acc, job) -> acc.append(acc.length() > 0 ? "," + job.getMetadata().getName() : job.getMetadata().getName()),
-                (acc1, acc2) -> acc1.append(acc2.toString())).toString();
+        return jobs.stream().
+                map(j -> j.getMetadata().getName())
+                .collect(Collectors.joining(","));
     }
 }

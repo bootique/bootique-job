@@ -19,11 +19,20 @@
 
 package io.bootique.job.fixture;
 
+import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.JobResult;
 
-public class ScheduledJob1 extends RepeatableJob {
+import java.util.Map;
+
+public class ScheduledJob1 extends BaseJob {
 
     public ScheduledJob1() {
-        super(JobMetadata.build(ScheduledJob1.class), 0);
+        super(JobMetadata.build(ScheduledJob1.class));
+    }
+
+    @Override
+    public JobResult run(Map<String, Object> params) {
+        return JobResult.success(getMetadata());
     }
 }

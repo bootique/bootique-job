@@ -297,12 +297,16 @@ public class ExecCommandIT extends BaseJobExecIT {
 
     @Test
     public void testDefaultParameterValue() {
-        ParameterizedJob1 job1 = new ParameterizedJob1();
-        executeJobs(Collections.singleton(job1),
-                "--config=classpath:io/bootique/job/config_parameters_conversion.yml",
-                "--exec",
-                "--job=parameterizedjob1");
-        assertExecutedWithParams(job1, Map.of("longp", 777L));
+        ParameterizedJob1 job = new ParameterizedJob1();
+
+        testFactory.app("--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                        "--exec",
+                        "--job=parameterizedjob1")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job))
+                .run();
+
+        job.assertExecuted(Map.of("longp", 777L));
     }
 
     @Test
@@ -315,7 +319,7 @@ public class ExecCommandIT extends BaseJobExecIT {
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.parameterizedjob2.params.longp", "35"))
                 .run();
 
-        assertExecutedWithParams(job, Map.of("longp", 35L));
+        job.assertExecuted(Map.of("longp", 35L));
     }
 
     @Test
@@ -329,7 +333,7 @@ public class ExecCommandIT extends BaseJobExecIT {
                 .module(b -> BQCoreModule.extend(b).setVar("TEST_PARAM", "35"))
                 .run();
 
-        assertExecutedWithParams(job, Map.of("longp", 35L));
+        job.assertExecuted(Map.of("longp", 35L));
     }
 
     @Test
@@ -367,14 +371,16 @@ public class ExecCommandIT extends BaseJobExecIT {
 
     @Test
     public void testGroup1_ParametersConversion() {
-        ParameterizedJob1 job1 = new ParameterizedJob1();
+        ParameterizedJob1 job = new ParameterizedJob1();
 
-        executeJobs(Collections.singleton(job1),
-                "--config=classpath:io/bootique/job/config_parameters_conversion.yml",
-                "--exec",
-                "--job=group1");
+        testFactory.app("--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                        "--exec",
+                        "--job=group1")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job))
+                .run();
 
-        assertExecutedWithParams(job1, Map.of("longp", 1L));
+        job.assertExecuted(Map.of("longp", 1L));
     }
 
     @Test
@@ -382,13 +388,15 @@ public class ExecCommandIT extends BaseJobExecIT {
         ParameterizedJob1 job1 = new ParameterizedJob1();
         ParameterizedJob2 job2 = new ParameterizedJob2();
 
-        List<ExecutableAtMostOnceJob> jobs = List.of(job2, job1);
-        executeJobs(jobs,
-                "--config=classpath:io/bootique/job/config_parameters_conversion.yml",
-                "--exec",
-                "--job=group2");
-        assertExecutedInOrder(jobs);
-        assertExecutedWithParams(job1, Map.of("longp", 777L));
-        assertExecutedWithParams(job2, Map.of("longp", 33L));
+        testFactory.app("--config=classpath:io/bootique/job/config_parameters_conversion.yml",
+                        "--exec",
+                        "--job=group2")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job1).addJob(job2))
+                .run();
+
+        job1.assertExecuted(Map.of("longp", 777L));
+        job2.assertExecuted(Map.of("longp", 33L));
+        job2.assertExecutedBefore(job1);
     }
 }

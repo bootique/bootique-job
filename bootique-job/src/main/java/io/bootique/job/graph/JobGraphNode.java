@@ -20,6 +20,8 @@
 package io.bootique.job.graph;
 
 /**
+ * A node in a job dependency graph.
+ *
  * @since 3.0
  */
 public interface JobGraphNode {
