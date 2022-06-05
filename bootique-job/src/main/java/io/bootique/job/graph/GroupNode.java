@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * A job dependency graph node representing a group of jobs.
+ *
  * @since 3.0
  */
 public class GroupNode implements JobGraphNode {
