@@ -19,13 +19,13 @@
 
 package io.bootique.job;
 
-import java.util.Map;
-
 import io.bootique.job.runnable.JobResult;
+
+import java.util.Map;
 
 public abstract class BaseJob implements Job {
 
-	private JobMetadata metadata;
+	private final JobMetadata metadata;
 
 	public BaseJob(JobMetadata metadata) {
 		this.metadata = metadata;

@@ -23,10 +23,11 @@ import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
-import io.bootique.job.JobRegistry;
-import io.bootique.job.fixture.ExecutionRateListener;
-import io.bootique.job.fixture.ScheduledJob1;
+import io.bootique.job.JobListener;
 import io.bootique.job.JobModule;
+import io.bootique.job.JobRegistry;
+import io.bootique.job.fixture.ScheduledJob1;
+import io.bootique.job.runnable.JobResult;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.AfterEach;
@@ -35,6 +36,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -142,5 +147,60 @@ public class SchedulerIT {
     private void assertEqualsApprox(long lower, long upper, long actual) {
         assertTrue(lower <= actual, () -> "Lower than expected rate: " + actual);
         assertTrue(upper >= actual, () -> "Higher than expected rate: " + actual);
+    }
+
+    static class ExecutionRateListener implements JobListener {
+
+        private final Deque<Execution> executions;
+
+        private volatile double averageRate;
+
+        public ExecutionRateListener() {
+            this.executions = new LinkedBlockingDeque<>();
+        }
+
+        @Override
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+            ExecutionRateListener.Execution previousExecution = executions.peekLast();
+            long startedAt = System.currentTimeMillis();
+
+            onFinishedCallbackRegistry.accept(result -> {
+                executions.add(new Execution(System.currentTimeMillis()));
+                if (previousExecution != null) {
+                    recalculateAverageRate(startedAt - previousExecution.getFinishedAt());
+                }
+            });
+        }
+
+        private synchronized void recalculateAverageRate(long sample) {
+            averageRate = rollingAverage(averageRate, sample, executions.size());
+        }
+
+        private double rollingAverage(double currentValue, double sample, int totalSamples) {
+            currentValue -= currentValue / totalSamples;
+            currentValue += sample / totalSamples;
+            return currentValue;
+        }
+
+        public synchronized void reset() {
+            this.executions.clear();
+            this.averageRate = 0;
+        }
+
+        public long getAverageRate() {
+            return (long) averageRate;
+        }
+
+        private static class Execution {
+            private final long finishedAt;
+
+            public Execution(long finishedAt) {
+                this.finishedAt = finishedAt;
+            }
+
+            public long getFinishedAt() {
+                return finishedAt;
+            }
+        }
     }
 }

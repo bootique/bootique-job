@@ -19,14 +19,9 @@
 
 package io.bootique.job;
 
-import io.bootique.BQRuntime;
-import io.bootique.job.fixture.ExceptionJob;
-import io.bootique.job.fixture.FailureJob;
-import io.bootique.job.fixture.Job1;
-import io.bootique.job.fixture.Job2;
-import io.bootique.job.runnable.JobOutcome;
+import io.bootique.BQCoreModule;
+import io.bootique.job.fixture.BaseTestJob;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.scheduler.Scheduler;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -36,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @BQTest
 public class ListenerIT {
@@ -47,76 +42,6 @@ public class ListenerIT {
     @BeforeEach
     public void before() {
         SharedState.reset();
-    }
-
-    @Test
-    public void testJobException() {
-        ExceptionJob job = new ExceptionJob();
-        Listener_JobResultCapture listener = new Listener_JobResultCapture();
-
-        BQRuntime runtime = testFactory
-                .app()
-                .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
-                .createRuntime();
-
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("exception").get();
-        assertSame(result, listener.result);
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertTrue(result.getThrowable() instanceof RuntimeException);
-        assertEquals(ExceptionJob.EXCEPTION_MESSAGE, result.getThrowable().getMessage());
-    }
-
-    @Test
-    public void testJobFailure() {
-        FailureJob job = new FailureJob();
-        Listener_JobResultCapture listener = new Listener_JobResultCapture();
-
-        BQRuntime runtime = testFactory
-                .app()
-                .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
-                .createRuntime();
-
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("failure").get();
-        assertSame(result, listener.result);
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertNull(result.getThrowable());
-        assertEquals(FailureJob.FAILURE_MESSAGE, result.getMessage());
-    }
-
-    @Test
-    public void testListenerException_OnStart() {
-        Job1 job = new Job1(0);
-
-        BQRuntime runtime = testFactory
-                .app()
-                .autoLoadModules()
-                .module(b -> JobModule.extend(b)
-                        .addJob(job)
-                        .addListener(Listener_StartException.class))
-                .createRuntime();
-
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("job1").get();
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This listener always throws on start", result.getThrowable().getMessage());
-    }
-
-    @Test
-    public void testListenerException_OnFinish() {
-        Job1 job = new Job1(0);
-
-        BQRuntime runtime = testFactory
-                .app()
-                .autoLoadModules()
-                .module(b -> JobModule.extend(b)
-                        .addJob(job)
-                        .addListener(Listener_EndException.class))
-                .createRuntime();
-
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("job1").get();
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This listener always throws on finish", result.getThrowable().getMessage());
     }
 
     @Test
@@ -137,9 +62,9 @@ public class ListenerIT {
 
     @Test
     public void testAddMappedListener_Ordering1() {
-        Job1 job = new Job1(0);
+        XJob job = new XJob();
 
-        testFactory.app("--exec", "--job=job1")
+        testFactory.app("--exec", "--job=x")
                 .module(new JobModule())
                 .module(binder -> JobModule.extend(binder)
                         .addJob(job)
@@ -148,15 +73,15 @@ public class ListenerIT {
                         .addMappedListener(new MappedJobListener<>(new Listener3(), 3)))
                 .run();
 
-        assertTrue(job.isExecuted());
+        job.assertExecuted();
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
     public void testAddMappedListener_Ordering2() {
-        Job1 job = new Job1(0);
+        XJob job = new XJob();
 
-        testFactory.app("--exec", "--job=job1")
+        testFactory.app("--exec", "--job=x")
                 .module(new JobModule())
                 .module(binder -> JobModule.extend(binder)
                         .addJob(job)
@@ -165,15 +90,15 @@ public class ListenerIT {
                         .addMappedListener(new MappedJobListener<>(new Listener2(), 2)))
                 .run();
 
-        assertTrue(job.isExecuted());
+        job.assertExecuted();
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
     public void testAddMappedListener_AddListener_Ordering() {
-        Job1 job = new Job1(0);
+        XJob job = new XJob();
 
-        testFactory.app("--exec", "--job=job1")
+        testFactory.app("--exec", "--job=x")
                 .module(new JobModule())
                 .module(binder -> JobModule.extend(binder).addJob(job)
                         .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
@@ -181,27 +106,30 @@ public class ListenerIT {
                         .addMappedListener(new MappedJobListener<>(new Listener3(), 2)))
                 .run();
 
-        assertTrue(job.isExecuted());
+        job.assertExecuted();
         assertEquals("_L1_started_L3_started_L2_started_L2_finished_L3_finished_L1_finished", SharedState.getAndReset());
     }
 
     @Test
     public void testAddMappedListener_JobGroup_Ordering() {
-        Job1 job1 = new Job1(0);
-        Job2 job2 = new Job2(0);
+        XJob x = new XJob();
+        YJob y = new YJob();
 
-        testFactory.app("--exec", "--job=g1", "--config=classpath:io/bootique/job/config_jobgroup_listeners.yml")
-                .module(new JobModule())
+        testFactory.app("--exec", "--job=g1")
+                .autoLoadModules()
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.g1.type", "group")
+                        .setProperty("bq.jobs.g1.jobs.x.type", "single")
+                        .setProperty("bq.jobs.g1.jobs.y.type", "single"))
                 .module(b -> JobModule.extend(b)
-                        .addJob(job1)
-                        .addJob(job2)
+                        .addJob(x)
+                        .addJob(y)
                         .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
                         .addMappedListener(new MappedJobListener<>(new Listener2(), 2))
                         .addMappedListener(new MappedJobListener<>(new Listener3(), 3)))
                 .run();
 
-        assertTrue(job1.isExecuted());
-        assertTrue(job2.isExecuted());
+        x.assertExecuted();
+        y.assertExecuted();
 
         // no listeners should be called for subjobs of a group
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
@@ -252,7 +180,7 @@ public class ListenerIT {
         }
     }
 
-    public static class Job_ParamsChange implements Job {
+    static class Job_ParamsChange implements Job {
 
         private String actualParam;
 
@@ -272,7 +200,7 @@ public class ListenerIT {
         }
     }
 
-    public static class Listener_ParamsChange implements JobListener {
+    static class Listener_ParamsChange implements JobListener {
         private final String setParam;
 
         public Listener_ParamsChange(String setParam) {
@@ -285,33 +213,15 @@ public class ListenerIT {
         }
     }
 
-    public static class Listener_StartException implements JobListener {
-
-        @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            throw new RuntimeException("This listener always throws on start");
+    static class XJob extends BaseTestJob<XJob> {
+        public XJob() {
+            super(XJob.class);
         }
     }
 
-    public static class Listener_EndException implements JobListener {
-
-        @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            onFinishedCallbackRegistry.accept(r -> {
-                throw new RuntimeException("This listener always throws on finish");
-            });
-        }
-    }
-
-    public static class Listener_JobResultCapture implements JobListener {
-
-        private JobResult result;
-
-        @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            onFinishedCallbackRegistry.accept(r -> {
-                this.result = r;
-            });
+    static class YJob extends BaseTestJob<YJob> {
+        public YJob() {
+            super(YJob.class);
         }
     }
 }
