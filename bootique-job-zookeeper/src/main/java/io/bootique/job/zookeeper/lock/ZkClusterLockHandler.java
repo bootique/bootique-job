@@ -21,7 +21,6 @@ package io.bootique.job.zookeeper.lock;
 
 import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import org.apache.curator.framework.CuratorFramework;
@@ -56,8 +55,7 @@ public class ZkClusterLockHandler implements LockHandler {
             ZkMutex lock = ZkMutex.acquire(curator.get(), lockName);
             if (lock == null) {
                 LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-                return new JobResult(metadata, JobOutcome.SKIPPED, null,
-                        "Another job instance owns the lock. Skipping execution");
+                return JobResult.skipped(metadata, "Another job instance owns the lock. Skipping execution");
             }
 
             try {

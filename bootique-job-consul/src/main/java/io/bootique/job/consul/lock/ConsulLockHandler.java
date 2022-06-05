@@ -21,7 +21,6 @@ package io.bootique.job.consul.lock;
 import com.orbitz.consul.KeyValueClient;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import org.slf4j.Logger;
@@ -55,8 +54,7 @@ public class ConsulLockHandler implements LockHandler {
             boolean acquired = kvClient.acquireLock(lockName, sessionId);
             if (!acquired) {
                 LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-                return new JobResult(metadata, JobOutcome.SKIPPED, null,
-                        "Another job instance owns the lock. Skipping execution");
+                return JobResult.skipped(metadata, "Another job instance owns the lock. Skipping execution");
             }
 
             try {

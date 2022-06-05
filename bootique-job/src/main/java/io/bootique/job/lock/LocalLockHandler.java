@@ -20,7 +20,6 @@
 package io.bootique.job.lock;
 
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import org.slf4j.Logger;
@@ -53,11 +52,7 @@ public class LocalLockHandler implements LockHandler {
 
             if (!lock.tryLock()) {
                 LOGGER.info("Skipping execution of '{}', another job instance owns the lock.", metadata.getName());
-                return new JobResult(
-                        metadata,
-                        JobOutcome.SKIPPED,
-                        null,
-                        "Skipping execution, another job instance owns the lock");
+                return JobResult.skipped(metadata, "Skipping execution, another job instance owns the lock");
             }
 
             LOGGER.info("Locked '{}'", metadata.getName());

@@ -88,8 +88,8 @@ public class JobGroupNonBlockingExecution extends BaseJob {
     }
 
     protected JobResult yield(Map<String, Object> params) {
-        scheduler.runOnce(this, params);
-        return JobResult.yielded(getMetadata());
+        JobFuture yieldedTo = scheduler.runOnce(this, params);
+        return JobResult.yielded(getMetadata(), yieldedTo);
     }
 
     protected boolean checkStillInProgress() {
