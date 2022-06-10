@@ -26,6 +26,7 @@ import io.bootique.annotation.BQConfigProperty;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @since 3.0
@@ -49,7 +50,12 @@ public class GroupNodeFactory implements JobGraphNodeFactory<GroupNode> {
         }
 
         Map<String, SingleJobNode> children = new HashMap<>();
-        jobs.forEach((k, v) -> children.put(k, v.create()));
+
+        for (Map.Entry<String, SingleJobNodeFactory> j : jobs.entrySet()) {
+            Objects.requireNonNull(j.getValue(), () -> "Null job definition for group job '" + j.getKey() + "'");
+            children.put(j.getKey(), j.getValue().create());
+        }
+
         return new GroupNode(children);
     }
 
