@@ -29,10 +29,6 @@
     <name>bootique-job-consul: Consul integration for Bootique Job</name>
     <description>Provides the means to use Consul for locking job instances</description>
 
-    <properties>
-        <consul-client-version>1.2.0</consul-client-version>
-    </properties>
-
     <dependencies>
         <!-- project dependencies -->
         <dependency>
@@ -40,12 +36,18 @@
             <artifactId>bootique-job</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <!-- 3-rd party dependencies -->
         <dependency>
             <groupId>com.orbitz.consul</groupId>
             <artifactId>consul-client</artifactId>
-            <version>${consul-client-version}</version>
+        </dependency>
+        <!-- Used by Consul client-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-guava</artifactId>
         </dependency>
 
         <!-- Unit test dependencies -->
