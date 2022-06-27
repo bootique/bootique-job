@@ -43,7 +43,7 @@ public abstract class Trigger {
         this.params = Objects.requireNonNull(params);
     }
 
-    protected abstract org.springframework.scheduling.Trigger springTrigger();
+    public abstract <T> T accept(TriggerVisitor<T> visitor);
 
     public String getJobName() {
         return jobName;

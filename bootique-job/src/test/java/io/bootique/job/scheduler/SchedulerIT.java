@@ -62,7 +62,7 @@ public class SchedulerIT {
 
     @AfterEach
     public void after() {
-        getScheduler().getScheduledJobs().forEach(ScheduledJobFuture::cancelInterruptibly);
+        getScheduler().getScheduledJobs().forEach(sj -> sj.cancel(true));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class SchedulerIT {
             scheduler.start(Collections.singletonList("bogusjob123"));
             fail("Exception excepted on invalid job name");
         } catch (BootiqueException e) {
-            assertTrue(e.getMessage().equals("Unknown job: bogusjob123"));
+            assertEquals("Unknown job: bogusjob123", e.getMessage());
         }
     }
 
@@ -98,13 +98,12 @@ public class SchedulerIT {
         int jobCount = scheduler.start();
         assertEquals(1, jobCount);
 
-        Collection<ScheduledJobFuture> scheduledJobs = scheduler.getScheduledJobs();
+        Collection<ScheduledJob> scheduledJobs = scheduler.getScheduledJobs();
         assertEquals(1, scheduledJobs.size());
 
-        ScheduledJobFuture scheduledJob = scheduledJobs.iterator().next();
+        ScheduledJob scheduledJob = scheduledJobs.iterator().next();
         assertEquals("scheduledjob1", scheduledJob.getJobName());
         assertTrue(scheduledJob.isScheduled());
-        assertEquals("fixed rate trigger 100 ms", scheduledJob.getTrigger().toString());
 
         JobRegistry jobRegistry = app.getInstance(JobRegistry.class);
         Job job = jobRegistry.getJob(scheduledJob.getJobName());
@@ -130,7 +129,6 @@ public class SchedulerIT {
 
         assertTrue(scheduledJob.scheduleAtFixedRate(50, 0));
         assertTrue(scheduledJob.isScheduled());
-        assertEquals("fixed rate trigger 50 ms", scheduledJob.getTrigger().toString());
 
         Thread.sleep(1000);
 

@@ -34,7 +34,6 @@ import org.springframework.scheduling.TaskScheduler;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DefaultScheduler implements Scheduler {
@@ -46,7 +45,7 @@ public class DefaultScheduler implements Scheduler {
     private final JobRegistry jobRegistry;
     private final Collection<Trigger> triggers;
     private final Map<String, Collection<Trigger>> triggersByJob;
-    private final Map<String, Collection<ScheduledJobFuture>> scheduledJobsByName;
+    private final Map<String, Collection<ScheduledJob>> scheduledJobsByName;
     private final AtomicBoolean started;
 
     private static Map<String, Collection<Trigger>> mapTriggers(Collection<Trigger> triggers) {
@@ -129,7 +128,7 @@ public class DefaultScheduler implements Scheduler {
     }
 
     private void scheduleTrigger(Trigger trigger) {
-        ScheduledJobFuture scheduled = scheduleJob(trigger);
+        ScheduledJob scheduled = scheduleJob(trigger);
         scheduledJobsByName.computeIfAbsent(trigger.getJobName(), k -> new ArrayList<>()).add(scheduled);
     }
 
@@ -145,12 +144,12 @@ public class DefaultScheduler implements Scheduler {
     }
 
     @Override
-    public Collection<ScheduledJobFuture> getScheduledJobs() {
+    public Collection<ScheduledJob> getScheduledJobs() {
         return scheduledJobsByName.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
     }
 
     @Override
-    public Collection<ScheduledJobFuture> getScheduledJobs(String jobName) {
+    public Collection<ScheduledJob> getScheduledJobs(String jobName) {
         return scheduledJobsByName.getOrDefault(jobName, Collections.emptyList());
     }
 
@@ -186,26 +185,13 @@ public class DefaultScheduler implements Scheduler {
         return runnableJobFactory.runnable(job, parameters).run();
     }
 
-    public ScheduledJobFuture scheduleJob(Trigger trigger) {
+    public ScheduledJob scheduleJob(Trigger trigger) {
         String jobName = trigger.getJobName();
         Job job = jobRegistry.getJob(jobName);
 
-        Function<Trigger, JobFuture> scheduler = t -> {
-            LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, t));
-            return schedule(job, t);
-        };
-
-        ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
+        ScheduledJob scheduledJob = new SpringScheduledJob(job, runnableJobFactory, taskScheduler);
         scheduledJob.schedule(trigger);
         return scheduledJob;
-    }
-
-    private JobFuture schedule(Job job, Trigger trigger) {
-        RunnableJob rj = runnableJobFactory.runnable(job, trigger.getParams());
-        JobResult[] result = new JobResult[1];
-        ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), trigger.springTrigger());
-
-        return toJobFuture(jobFuture, job.getMetadata(), result);
     }
 
     static JobFuture toJobFuture(ScheduledFuture<?> future, JobMetadata md, JobResult[] resultCollector) {

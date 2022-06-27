@@ -18,8 +18,6 @@
  */
 package io.bootique.job.scheduler;
 
-import org.springframework.scheduling.support.PeriodicTrigger;
-
 import java.util.Map;
 
 /**
@@ -43,11 +41,16 @@ public class FixedDelayTrigger extends Trigger {
     }
 
     @Override
-    protected org.springframework.scheduling.Trigger springTrigger() {
-        PeriodicTrigger pt = new PeriodicTrigger(fixedDelayMs);
-        pt.setFixedRate(false);
-        pt.setInitialDelay(initialDelayMs);
-        return pt;
+    public <T> T accept(TriggerVisitor<T> visitor) {
+        return visitor.visitFixedDelay(this);
+    }
+
+    public long getInitialDelayMs() {
+        return initialDelayMs;
+    }
+
+    public long getFixedDelayMs() {
+        return fixedDelayMs;
     }
 
     @Override

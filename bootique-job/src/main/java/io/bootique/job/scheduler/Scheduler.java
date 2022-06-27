@@ -104,12 +104,12 @@ public interface Scheduler {
     /**
      * @return Collection of scheduled job executions for all known jobs
      */
-    Collection<ScheduledJobFuture> getScheduledJobs();
+    Collection<ScheduledJob> getScheduledJobs();
 
     /**
      * @param jobName Job name
      * @return Scheduled job executions for a given job, or an empty collection, if the job is unknown,
      * triggers are not configured for this job or the scheduler has not been started yet
      */
-    Collection<ScheduledJobFuture> getScheduledJobs(String jobName);
+    Collection<ScheduledJob> getScheduledJobs(String jobName);
 }

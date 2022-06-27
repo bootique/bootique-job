@@ -41,8 +41,12 @@ public class CronTrigger extends Trigger {
     }
 
     @Override
-    protected org.springframework.scheduling.Trigger springTrigger() {
-        return new org.springframework.scheduling.support.CronTrigger(cron.getExpression());
+    public <T> T accept(TriggerVisitor<T> visitor) {
+        return visitor.visitCron(this);
+    }
+
+    public Cron getCron() {
+        return cron;
     }
 
     @Override

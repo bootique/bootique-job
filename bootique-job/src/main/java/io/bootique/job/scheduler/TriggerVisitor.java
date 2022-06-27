@@ -18,43 +18,14 @@
  */
 package io.bootique.job.scheduler;
 
-import java.util.Map;
-
 /**
  * @since 3.0
  */
-public class FixedRateTrigger extends Trigger {
+public interface TriggerVisitor<T> {
 
-    private final long fixedRateMs;
-    private final long initialDelayMs;
+    T visitCron(CronTrigger trigger);
 
-    public FixedRateTrigger(
-            String jobName,
-            String triggerName,
-            Map<String, Object> params,
-            long fixedRateMs,
-            long initialDelayMs) {
+    T visitFixedRate(FixedRateTrigger trigger);
 
-        super(jobName, triggerName, params);
-        this.fixedRateMs = fixedRateMs;
-        this.initialDelayMs = initialDelayMs;
-    }
-
-    @Override
-    public <T> T accept(TriggerVisitor<T> visitor) {
-        return visitor.visitFixedRate(this);
-    }
-
-    public long getFixedRateMs() {
-        return fixedRateMs;
-    }
-
-    public long getInitialDelayMs() {
-        return initialDelayMs;
-    }
-
-    @Override
-    public String toString() {
-        return "fixed rate trigger " + fixedRateMs + " ms";
-    }
+    T visitFixedDelay(FixedDelayTrigger trigger);
 }
