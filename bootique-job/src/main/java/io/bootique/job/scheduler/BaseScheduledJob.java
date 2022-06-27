@@ -33,7 +33,7 @@ public abstract class BaseScheduledJob implements ScheduledJob {
 
     private final Job job;
     private final RunnableJobFactory runnableJobFactory;
-    private ScheduledJobState state;
+    private volatile ScheduledJobState state;
 
     public BaseScheduledJob(Job job, RunnableJobFactory runnableJobFactory) {
         this.job = job;
