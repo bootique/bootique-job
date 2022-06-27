@@ -22,7 +22,6 @@ package io.bootique.job.scheduler;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
 
-import java.util.Optional;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -31,15 +30,14 @@ class DefaultScheduledJobFuture implements ScheduledJobFuture {
 
     private final String jobName;
     private final Function<Trigger, JobFuture> scheduler;
-    private Optional<Trigger> trigger;
-    private Optional<JobFuture> futureOptional;
+
+    private Trigger trigger;
+    private JobFuture future;
     private boolean cancelled;
 
     public DefaultScheduledJobFuture(String jobName, Function<Trigger, JobFuture> scheduler) {
         this.jobName = jobName;
         this.scheduler = scheduler;
-        this.trigger = Optional.empty();
-        this.futureOptional = Optional.empty();
     }
 
     @Override
@@ -55,32 +53,41 @@ class DefaultScheduledJobFuture implements ScheduledJobFuture {
             return false;
         }
 
-        this.trigger = Optional.of(trigger);
-        this.futureOptional = Optional.of(scheduler.apply(trigger));
+        this.future = scheduler.apply(trigger);
+        this.trigger = trigger;
         this.cancelled = false;
         return true;
     }
 
     @Override
-    public Optional<Trigger> getTrigger() {
+    public Trigger getTrigger() {
+        checkScheduled();
         return trigger;
     }
 
     @Override
     public boolean isScheduled() {
-        return futureOptional.isPresent();
+        return future != null;
     }
 
     @Override
     public synchronized boolean cancel(boolean mayInterruptIfRunning) {
-        if (!isScheduled()) {
+
+        if (cancelled) {
             return false;
         }
-        boolean cancelled = futureOptional.get().cancel(mayInterruptIfRunning);
-        if (cancelled) {
-            trigger = Optional.empty();
-            futureOptional = Optional.empty();
+
+        JobFuture future = this.future;
+        if (future == null) {
+            return false;
         }
+
+        boolean cancelled = future.cancel(mayInterruptIfRunning);
+        if (cancelled) {
+            this.trigger = null;
+            this.future = null;
+        }
+
         this.cancelled = cancelled;
         return cancelled;
     }
@@ -92,34 +99,34 @@ class DefaultScheduledJobFuture implements ScheduledJobFuture {
 
     @Override
     public boolean isDone() {
-        return isScheduled() && futureOptional.get().isDone();
+        return future != null && future.isDone();
     }
 
     @Override
     public long getDelay(TimeUnit unit) {
-        assertIsScheduled();
-        return futureOptional.get().getDelay(unit);
+        checkScheduled();
+        return future.getDelay(unit);
     }
 
     @Override
     public int compareTo(Delayed o) {
-        assertIsScheduled();
-        return futureOptional.get().compareTo(o);
+        checkScheduled();
+        return future.compareTo(o);
     }
 
     @Override
     public JobResult get() {
-        assertIsScheduled();
-        return futureOptional.get().get();
+        checkScheduled();
+        return future.get();
     }
 
     @Override
     public JobResult get(long timeout, TimeUnit unit) {
-        assertIsScheduled();
-        return futureOptional.get().get(timeout, unit);
+        checkScheduled();
+        return future.get(timeout, unit);
     }
 
-    private void assertIsScheduled() {
+    private void checkScheduled() {
         if (!isScheduled()) {
             throw new IllegalStateException("Job is not scheduled: " + jobName);
         }

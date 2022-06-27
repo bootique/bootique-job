@@ -21,8 +21,6 @@ package io.bootique.job.scheduler;
 
 import io.bootique.job.runnable.JobFuture;
 
-import java.util.Optional;
-
 public interface ScheduledJobFuture extends JobFuture {
 
     /**
@@ -37,7 +35,7 @@ public interface ScheduledJobFuture extends JobFuture {
     boolean isScheduled();
 
     /**
-     * @return Schedule, or {@link Optional#empty()}, if {@link #isScheduled()} is false
+     * @return Schedule, or throws if {@link #isScheduled()} is false
      */
-    Optional<Trigger> getTrigger();
+    Trigger getTrigger();
 }

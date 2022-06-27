@@ -104,8 +104,7 @@ public class SchedulerIT {
         ScheduledJobFuture scheduledJob = scheduledJobs.iterator().next();
         assertEquals("scheduledjob1", scheduledJob.getJobName());
         assertTrue(scheduledJob.isScheduled());
-        assertTrue(scheduledJob.getTrigger().isPresent());
-        assertEquals("fixed rate trigger 100 ms", scheduledJob.getTrigger().get().toString());
+        assertEquals("fixed rate trigger 100 ms", scheduledJob.getTrigger().toString());
 
         JobRegistry jobRegistry = app.getInstance(JobRegistry.class);
         Job job = jobRegistry.getJob(scheduledJob.getJobName());
@@ -117,7 +116,6 @@ public class SchedulerIT {
 
         assertTrue(scheduledJob.cancel(false));
         assertFalse(scheduledJob.isScheduled());
-        assertFalse(scheduledJob.getTrigger().isPresent());
 
         // allow for remaining jobs to complete gracefully
         // (Future.cancel() does not wait for actual completion)
@@ -132,8 +130,7 @@ public class SchedulerIT {
 
         assertTrue(scheduledJob.schedule(new FixedRateTrigger("scheduledjob1", "XXXX", Collections.emptyMap(), 50, 0)));
         assertTrue(scheduledJob.isScheduled());
-        assertTrue(scheduledJob.getTrigger().isPresent());
-        assertEquals("fixed rate trigger 50 ms", scheduledJob.getTrigger().get().toString());
+        assertEquals("fixed rate trigger 50 ms", scheduledJob.getTrigger().toString());
 
         Thread.sleep(1000);
 
