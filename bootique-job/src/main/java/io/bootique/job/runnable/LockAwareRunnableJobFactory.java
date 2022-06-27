@@ -28,14 +28,14 @@ import java.util.Map;
 public class LockAwareRunnableJobFactory implements RunnableJobFactory {
 
 	private RunnableJobFactory delegate;
-	private LockHandler serialJobRunner;
+	private LockHandler lockHandler;
 	private JobRegistry jobRegistry;
 
 	public LockAwareRunnableJobFactory(RunnableJobFactory delegate,
-									   LockHandler serialJobRunner,
+									   LockHandler lockHandler,
 									   JobRegistry jobRegistry) {
 		this.delegate = delegate;
-		this.serialJobRunner = serialJobRunner;
+		this.lockHandler = lockHandler;
 		this.jobRegistry = jobRegistry;
 	}
 
@@ -44,7 +44,7 @@ public class LockAwareRunnableJobFactory implements RunnableJobFactory {
 
 		RunnableJob rj = delegate.runnable(job, parameters);
 		boolean allowsSimultaneousExecutions = jobRegistry.allowsSimultaneousExecutions(job.getMetadata().getName());
-		return allowsSimultaneousExecutions ? rj : serialJobRunner.lockingJob(rj, job.getMetadata());
+		return allowsSimultaneousExecutions ? rj : lockHandler.lockingJob(rj, job.getMetadata());
 	}
 
 }

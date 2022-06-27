@@ -19,25 +19,39 @@
 
 package io.bootique.job.scheduler;
 
-import io.bootique.job.runnable.JobFuture;
+import java.util.Map;
+import java.util.Objects;
 
-import java.util.Optional;
+/**
+ * @since 3.0
+ */
+public abstract class Trigger {
 
-public interface ScheduledJobFuture extends JobFuture {
+    private final String jobName;
+    private final String triggerName;
+    private final Map<String, Object> params;
 
-    /**
-     * Reschedule this job based on the provided schedule. Has no effect, if the job has already been scheduled and
-     * hasn't finished yet.
-     */
-    boolean schedule(Trigger trigger);
+    public Trigger(
+            String jobName,
+            String triggerName,
+            Map<String, Object> params) {
 
-    /**
-     * @return true, if this has been scheduled and has not finished or been cancelled yet
-     */
-    boolean isScheduled();
+        this.jobName = Objects.requireNonNull(jobName);
+        this.triggerName = Objects.requireNonNull(triggerName);
+        this.params = Objects.requireNonNull(params);
+    }
 
-    /**
-     * @return Schedule, or {@link Optional#empty()}, if {@link #isScheduled()} is false
-     */
-    Optional<Trigger> getTrigger();
+    protected abstract org.springframework.scheduling.Trigger springTrigger();
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public String getTriggerName() {
+        return triggerName;
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
+    }
 }

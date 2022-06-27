@@ -27,12 +27,9 @@ import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
-import io.bootique.job.value.Cron;
-import io.bootique.value.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.Trigger;
 
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
@@ -47,23 +44,23 @@ public class DefaultScheduler implements Scheduler {
     private final TaskScheduler taskScheduler;
     private final RunnableJobFactory runnableJobFactory;
     private final JobRegistry jobRegistry;
-    private final Collection<TriggerDescriptor> triggers;
-    private final Map<String, Collection<TriggerDescriptor>> triggerMap;
+    private final Collection<Trigger> triggers;
+    private final Map<String, Collection<Trigger>> triggersByJob;
     private final Map<String, Collection<ScheduledJobFuture>> scheduledJobsByName;
     private final AtomicBoolean started;
 
-    private static Map<String, Collection<TriggerDescriptor>> mapTriggers(Collection<TriggerDescriptor> triggers) {
-        Map<String, Collection<TriggerDescriptor>> map = new HashMap<>();
+    private static Map<String, Collection<Trigger>> mapTriggers(Collection<Trigger> triggers) {
+        Map<String, Collection<Trigger>> map = new HashMap<>();
 
-        for (TriggerDescriptor t : triggers) {
-            map.computeIfAbsent(t.getJob(), tn -> new ArrayList<>()).add(t);
+        for (Trigger t : triggers) {
+            map.computeIfAbsent(t.getJobName(), tn -> new ArrayList<>()).add(t);
         }
 
         return map;
     }
 
     public DefaultScheduler(
-            Collection<TriggerDescriptor> triggers,
+            Collection<Trigger> triggers,
             TaskScheduler taskScheduler,
             RunnableJobFactory runnableJobFactory,
             JobRegistry jobRegistry) {
@@ -72,7 +69,7 @@ public class DefaultScheduler implements Scheduler {
         this.runnableJobFactory = runnableJobFactory;
         this.jobRegistry = jobRegistry;
         this.triggers = triggers;
-        this.triggerMap = mapTriggers(triggers);
+        this.triggersByJob = mapTriggers(triggers);
         this.scheduledJobsByName = new HashMap<>();
 
         this.started = new AtomicBoolean(false);
@@ -94,13 +91,13 @@ public class DefaultScheduler implements Scheduler {
 
         Set<String> uniqueJobNames = new TreeSet<>(jobNames);
 
-        List<TriggerDescriptor> toSchedule = new ArrayList<>(uniqueJobNames.size());
+        List<Trigger> toSchedule = new ArrayList<>(uniqueJobNames.size());
         for (String jobName : uniqueJobNames) {
             if (!jobRegistry.getJobNames().contains(jobName)) {
                 throw new BootiqueException(1, "Unknown job: " + jobName);
             }
 
-            Collection<TriggerDescriptor> jobTriggers = triggerMap.get(jobName);
+            Collection<Trigger> jobTriggers = triggersByJob.get(jobName);
 
             if (jobTriggers == null || jobTriggers.isEmpty()) {
                 LOGGER.warn("No triggers configured for job: {}. Skipping...", jobName);
@@ -113,12 +110,12 @@ public class DefaultScheduler implements Scheduler {
         return scheduleTriggers(toSchedule);
     }
 
-    private int scheduleTriggers(Collection<TriggerDescriptor> triggers) {
+    private int scheduleTriggers(Collection<Trigger> triggers) {
 
         String badTriggers = triggers
                 .stream()
-                .filter(t -> !jobRegistry.getJobNames().contains(t.getJob()))
-                .map(t -> t.getJob() + ":" + t.getTrigger())
+                .filter(t -> !jobRegistry.getJobNames().contains(t.getJobName()))
+                .map(t -> t.getJobName() + ":" + t.getTriggerName())
                 .collect(Collectors.joining(", "));
 
         if (badTriggers.length() > 0) {
@@ -131,46 +128,15 @@ public class DefaultScheduler implements Scheduler {
         return triggers.size();
     }
 
-    private void scheduleTrigger(TriggerDescriptor tc) {
-        Job job = jobRegistry.getJob(tc.getJob());
-        String jobName = job.getMetadata().getName();
-
-        Function<Schedule, JobFuture> scheduler = (schedule) -> {
-            LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, schedule.getDescription()));
-            return schedule(job, tc.getParams(), schedule.getTrigger());
-        };
-
-        ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
-        scheduledJob.schedule(createSchedule(tc));
-        scheduledJobsByName.computeIfAbsent(jobName, k -> new ArrayList<>()).add(scheduledJob);
+    private void scheduleTrigger(Trigger trigger) {
+        ScheduledJobFuture scheduled = scheduleJob(trigger);
+        scheduledJobsByName.computeIfAbsent(trigger.getJobName(), k -> new ArrayList<>()).add(scheduled);
     }
 
     private void tryStart() {
         if (!started.compareAndSet(false, true)) {
             throw new IllegalStateException("Already started");
         }
-    }
-
-    private Schedule createSchedule(TriggerDescriptor tc) {
-        Cron cron = tc.getCron();
-        Duration fixedDelay = tc.getFixedDelay();
-        Duration fixedRate = tc.getFixedRate();
-        Duration initialDelay = tc.getInitialDelay();
-
-        long fixedDelayMs = fixedDelay != null && fixedDelay.getDuration() != null ? fixedDelay.getDuration().toMillis() : 0;
-        long fixedRateMs = fixedRate != null && fixedRate.getDuration() != null ? fixedRate.getDuration().toMillis() : 0;
-        long initialDelayMs = initialDelay != null && initialDelay.getDuration() != null ? initialDelay.getDuration().toMillis() : 0;
-
-        if (cron != null) {
-            return Schedule.cron(cron);
-        } else if (fixedDelayMs > 0) {
-            return Schedule.fixedDelay(fixedDelayMs, initialDelayMs);
-        } else if (fixedRateMs > 0) {
-            return Schedule.fixedRate(fixedRateMs, initialDelayMs);
-        }
-
-        throw new BootiqueException(1,
-                "Trigger is misconfigured. Either of 'cron', 'fixedDelayMs', 'fixedRateMs' must be set.");
     }
 
     @Override
@@ -220,15 +186,29 @@ public class DefaultScheduler implements Scheduler {
         return runnableJobFactory.runnable(job, parameters).run();
     }
 
-    private JobFuture schedule(Job job, Map<String, Object> parameters, Trigger trigger) {
-        RunnableJob rj = runnableJobFactory.runnable(job, parameters);
+    public ScheduledJobFuture scheduleJob(Trigger trigger) {
+        String jobName = trigger.getJobName();
+        Job job = jobRegistry.getJob(jobName);
+
+        Function<Trigger, JobFuture> scheduler = t -> {
+            LOGGER.info(String.format("Will schedule '%s'.. (%s)", jobName, t));
+            return schedule(job, t);
+        };
+
+        ScheduledJobFuture scheduledJob = new DefaultScheduledJobFuture(jobName, scheduler);
+        scheduledJob.schedule(trigger);
+        return scheduledJob;
+    }
+
+    private JobFuture schedule(Job job, Trigger trigger) {
+        RunnableJob rj = runnableJobFactory.runnable(job, trigger.getParams());
         JobResult[] result = new JobResult[1];
-        ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), trigger);
+        ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), trigger.springTrigger());
 
         return toJobFuture(jobFuture, job.getMetadata(), result);
     }
 
-    private JobFuture toJobFuture(ScheduledFuture<?> future, JobMetadata md, JobResult[] resultCollector) {
+    static JobFuture toJobFuture(ScheduledFuture<?> future, JobMetadata md, JobResult[] resultCollector) {
         return JobFuture.forJob(md.getName())
                 .future(future)
                 .resultSupplier(() -> resultCollector[0] != null ? resultCollector[0] : JobResult.unknown(md))

@@ -30,6 +30,10 @@ import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
+import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
+import io.bootique.job.runnable.LockAwareRunnableJobFactory;
+import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.job.runnable.SimpleRunnableJobFactory;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.value.Cron;
@@ -104,12 +108,12 @@ public class JobModule extends ConfigModule {
     @Provides
     @Singleton
     Scheduler createScheduler(
-            LockHandler lockHandler,
+            RunnableJobFactory runnableJobFactory,
             JobRegistry jobRegistry,
             ConfigurationFactory configFactory,
             ShutdownManager shutdownManager) {
 
-        return config(SchedulerFactory.class, configFactory).createScheduler(lockHandler, jobRegistry, shutdownManager);
+        return config(SchedulerFactory.class, configFactory).createScheduler(runnableJobFactory, jobRegistry, shutdownManager);
     }
 
     @Provides
@@ -126,5 +130,13 @@ public class JobModule extends ConfigModule {
                         "There's more than one LockHandler defined. Can't determine the default: "
                                 + lockHandlers.keySet());
         }
+    }
+
+    @Provides
+    @Singleton
+    RunnableJobFactory provideRunnableJobFactory(LockHandler lockHandler, JobRegistry jobRegistry) {
+        RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
+        RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler, jobRegistry);
+        return new ErrorHandlingRunnableJobFactory(rf2);
     }
 }

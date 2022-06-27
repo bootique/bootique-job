@@ -104,8 +104,8 @@ public class SchedulerIT {
         ScheduledJobFuture scheduledJob = scheduledJobs.iterator().next();
         assertEquals("scheduledjob1", scheduledJob.getJobName());
         assertTrue(scheduledJob.isScheduled());
-        assertTrue(scheduledJob.getSchedule().isPresent());
-        assertEquals("fixedRateMs: 100", scheduledJob.getSchedule().get().getDescription());
+        assertTrue(scheduledJob.getTrigger().isPresent());
+        assertEquals("fixed rate trigger 100 ms", scheduledJob.getTrigger().get().toString());
 
         JobRegistry jobRegistry = app.getInstance(JobRegistry.class);
         Job job = jobRegistry.getJob(scheduledJob.getJobName());
@@ -113,11 +113,11 @@ public class SchedulerIT {
 
         Thread.sleep(1000);
 
-        assertEqualsApprox(85, 115, listener.getAverageRate());
+        assertWithinRange(85, 115, listener.getAverageRate());
 
         assertTrue(scheduledJob.cancel(false));
         assertFalse(scheduledJob.isScheduled());
-        assertFalse(scheduledJob.getSchedule().isPresent());
+        assertFalse(scheduledJob.getTrigger().isPresent());
 
         // allow for remaining jobs to complete gracefully
         // (Future.cancel() does not wait for actual completion)
@@ -130,21 +130,21 @@ public class SchedulerIT {
 
         assertEquals(0, listener.getAverageRate());
 
-        assertTrue(scheduledJob.scheduleAtFixedRate(50, 0));
+        assertTrue(scheduledJob.schedule(new FixedRateTrigger("scheduledjob1", "XXXX", Collections.emptyMap(), 50, 0)));
         assertTrue(scheduledJob.isScheduled());
-        assertTrue(scheduledJob.getSchedule().isPresent());
-        assertEquals("fixedRateMs: 50", scheduledJob.getSchedule().get().getDescription());
+        assertTrue(scheduledJob.getTrigger().isPresent());
+        assertEquals("fixed rate trigger 50 ms", scheduledJob.getTrigger().get().toString());
 
         Thread.sleep(1000);
 
-        assertEqualsApprox(40, 60, listener.getAverageRate());
+        assertWithinRange(40, 60, listener.getAverageRate());
     }
 
     private Scheduler getScheduler() {
         return app.getInstance(Scheduler.class);
     }
 
-    private void assertEqualsApprox(long lower, long upper, long actual) {
+    private void assertWithinRange(long lower, long upper, long actual) {
         assertTrue(lower <= actual, () -> "Lower than expected rate: " + actual);
         assertTrue(upper >= actual, () -> "Higher than expected rate: " + actual);
     }

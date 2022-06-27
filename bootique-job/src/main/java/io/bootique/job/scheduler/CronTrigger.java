@@ -16,28 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package io.bootique.job.scheduler;
 
-import io.bootique.job.runnable.JobFuture;
+import io.bootique.job.value.Cron;
 
-import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
 
-public interface ScheduledJobFuture extends JobFuture {
+/**
+ * @since 3.0
+ */
+public class CronTrigger extends Trigger {
 
-    /**
-     * Reschedule this job based on the provided schedule. Has no effect, if the job has already been scheduled and
-     * hasn't finished yet.
-     */
-    boolean schedule(Trigger trigger);
+    private final Cron cron;
 
-    /**
-     * @return true, if this has been scheduled and has not finished or been cancelled yet
-     */
-    boolean isScheduled();
+    public CronTrigger(
+            String jobName,
+            String triggerName,
+            Map<String, Object> params,
+            Cron cron) {
 
-    /**
-     * @return Schedule, or {@link Optional#empty()}, if {@link #isScheduled()} is false
-     */
-    Optional<Trigger> getTrigger();
+        super(jobName, triggerName, params);
+        this.cron = Objects.requireNonNull(cron);
+    }
+
+    @Override
+    protected org.springframework.scheduling.Trigger springTrigger() {
+        return new org.springframework.scheduling.support.CronTrigger(cron.getExpression());
+    }
+
+    @Override
+    public String toString() {
+        return "cron trigger " + cron.getExpression();
+    }
 }

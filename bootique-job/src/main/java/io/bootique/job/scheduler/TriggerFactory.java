@@ -28,27 +28,39 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * @since 3.0
+ */
 @BQConfig("Trigger of one of the following flavors: cron, periodic, fixed-rate.")
-public class TriggerDescriptor {
+public class TriggerFactory {
 
     private String job;
     private String trigger;
-
     private Cron cron;
     private Duration fixedDelay;
     private Duration fixedRate;
     private Duration initialDelay;
-
     private Map<String, Object> params;
 
-    public TriggerDescriptor() {
-        this.params = Collections.emptyMap();
-        this.trigger = UUID.randomUUID().toString().replace("-", ""); // 32 chars
-        this.initialDelay = new Duration(10 * 1000);
-    }
+    public Trigger createTrigger() {
 
-    public String getJob() {
-        return job;
+        String triggerName = this.trigger != null ? this.trigger : UUID.randomUUID().toString().replace("-", "");
+        Map<String, Object> params = this.params != null ? this.params : Collections.emptyMap();
+        long fixedDelayMs = fixedDelay != null && fixedDelay.getDuration() != null ? fixedDelay.getDuration().toMillis() : 0;
+        long fixedRateMs = fixedRate != null && fixedRate.getDuration() != null ? fixedRate.getDuration().toMillis() : 0;
+        long initialDelayMs = initialDelay != null && initialDelay.getDuration() != null ? initialDelay.getDuration().toMillis() : 0;
+
+
+        // TODO: use a polymorphic factory
+        if (cron != null) {
+            return new CronTrigger(job, triggerName, params, cron);
+        } else if (fixedDelayMs > 0) {
+            return new FixedDelayTrigger(job, triggerName, params, fixedDelayMs, initialDelayMs);
+        } else if (fixedRateMs > 0) {
+            return new FixedRateTrigger(job, triggerName, params, fixedRateMs, initialDelayMs);
+        }
+
+        throw new IllegalStateException("Trigger must have either cron or fixed rate or fixed delay configured");
     }
 
     @BQConfigProperty("Job that the trigger applies to.")
@@ -56,29 +68,14 @@ public class TriggerDescriptor {
         this.job = jobName;
     }
 
-    public String getTrigger() {
-        return trigger;
-    }
-
     @BQConfigProperty("Unique identifier, used in logging and reporting.")
     public void setTrigger(String triggerName) {
         this.trigger = triggerName;
     }
 
-    public Cron getCron() {
-        return cron;
-    }
-
     @BQConfigProperty("Cron expression.")
     public void setCron(Cron cronExpression) {
         this.cron = cronExpression;
-    }
-
-    /**
-     * @return a Duration corresponding to the fixed delay
-     */
-    public Duration getFixedDelay() {
-        return fixedDelay;
     }
 
     @BQConfigProperty("Delay between job executions in some time units." +
@@ -87,23 +84,9 @@ public class TriggerDescriptor {
         this.fixedDelay = fixedDelay;
     }
 
-    /**
-     * @return a Duration corresponding to the trigger "fixed rate".
-     */
-    public Duration getFixedRate() {
-        return fixedRate;
-    }
-
     @BQConfigProperty("Fixed rate in some time units. New job instances will be run exactly every R units.")
     public void setFixedRate(Duration fixedRate) {
         this.fixedRate = fixedRate;
-    }
-
-    /**
-     * @return a delay used before the trigger starts.
-     */
-    public Duration getInitialDelay() {
-        return initialDelay;
     }
 
     @BQConfigProperty("Initial delay in some time units. Applies to periodic and fixed-rate triggers.")
@@ -111,33 +94,6 @@ public class TriggerDescriptor {
         this.initialDelay = initialDelay;
     }
 
-    /**
-     * Returns a human-readable String with trigger parameters' description. Used mainly for debugging.
-     *
-     * @return A human-readable String with trigger parameters' description.
-     */
-    public String describeTrigger() {
-        if (cron != null && cron.getExpression() != null) {
-            return "cron: " + cron.getExpression();
-        } else if (fixedDelay != null && fixedDelay.getDuration() != null && fixedDelay.getDuration().toMillis() > 0) {
-            return "fixedDelay" + fixedDelay.getDuration().toMillis();
-        } else if (fixedRate != null && fixedRate.getDuration() != null && fixedRate.getDuration().toMillis() > 0) {
-            return "fixedRate" + fixedRate.getDuration().toMillis();
-        } else {
-            return "no trigger";
-        }
-    }
-
-    /**
-     * @since 2.0
-     */
-    public Map<String, Object> getParams() {
-        return params;
-    }
-
-    /**
-     * @since 2.0
-     */
     @BQConfigProperty("Optional job parameters specific to this trigger")
     public void setParams(Map<String, Object> params) {
         this.params = params;

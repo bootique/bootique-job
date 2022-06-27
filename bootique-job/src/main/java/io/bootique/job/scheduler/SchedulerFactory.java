@@ -22,18 +22,15 @@ package io.bootique.job.scheduler;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
-import io.bootique.job.runnable.LockAwareRunnableJobFactory;
 import io.bootique.job.runnable.RunnableJobFactory;
-import io.bootique.job.runnable.SimpleRunnableJobFactory;
 import io.bootique.shutdown.ShutdownManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A configuration object that is used to setup jobs runtime.
@@ -41,7 +38,7 @@ import java.util.Objects;
 @BQConfig("Job scheduler/executor.")
 public class SchedulerFactory {
 
-    private Collection<TriggerDescriptor> triggers;
+    private Collection<TriggerFactory> triggers;
     private int threadPoolSize;
 
     public SchedulerFactory() {
@@ -50,22 +47,24 @@ public class SchedulerFactory {
     }
 
     public Scheduler createScheduler(
-            LockHandler serialJobRunner,
+            RunnableJobFactory runnableJobFactory,
             JobRegistry jobRegistry,
             ShutdownManager shutdownManager) {
 
-        for (TriggerDescriptor trigger : triggers) {
-            Objects.requireNonNull(trigger, "Job is not specified for trigger: " + trigger.describeTrigger());
-        }
-
         TaskScheduler taskScheduler = createTaskScheduler(shutdownManager);
 
-        RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-        RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, serialJobRunner, jobRegistry);
-        RunnableJobFactory rf3 = new ErrorHandlingRunnableJobFactory(rf2);
+        return new DefaultScheduler(createTriggers(), taskScheduler, runnableJobFactory, jobRegistry);
+    }
 
-        // TODO: do we need to shutdown anything in the scheduler (we already do shutdown of the underlying TaskScheduler)
-        return new DefaultScheduler(triggers, taskScheduler, rf3, jobRegistry);
+    protected Collection<Trigger> createTriggers() {
+
+        if (this.triggers == null) {
+            return Collections.emptyList();
+        }
+
+        List<Trigger> triggers = new ArrayList<>();
+        this.triggers.forEach(t -> triggers.add(t.createTrigger()));
+        return triggers;
     }
 
     protected TaskScheduler createTaskScheduler(ShutdownManager shutdownManager) {
@@ -79,7 +78,7 @@ public class SchedulerFactory {
     }
 
     @BQConfigProperty("Collection of job triggers.")
-    public void setTriggers(Collection<TriggerDescriptor> triggers) {
+    public void setTriggers(Collection<TriggerFactory> triggers) {
         this.triggers = triggers;
     }
 

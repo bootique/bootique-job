@@ -30,15 +30,15 @@ import java.util.function.Function;
 class DefaultScheduledJobFuture implements ScheduledJobFuture {
 
     private final String jobName;
-    private final Function<Schedule, JobFuture> scheduler;
-    private Optional<Schedule> schedule;
+    private final Function<Trigger, JobFuture> scheduler;
+    private Optional<Trigger> trigger;
     private Optional<JobFuture> futureOptional;
     private boolean cancelled;
 
-    public DefaultScheduledJobFuture(String jobName, Function<Schedule, JobFuture> scheduler) {
+    public DefaultScheduledJobFuture(String jobName, Function<Trigger, JobFuture> scheduler) {
         this.jobName = jobName;
         this.scheduler = scheduler;
-        this.schedule = Optional.empty();
+        this.trigger = Optional.empty();
         this.futureOptional = Optional.empty();
     }
 
@@ -49,21 +49,21 @@ class DefaultScheduledJobFuture implements ScheduledJobFuture {
 
     // explicit fool-proof synchronization to avoid double-scheduling
     @Override
-    public synchronized boolean schedule(Schedule schedule) {
+    public synchronized boolean schedule(Trigger trigger) {
 
         if (isScheduled()) {
             return false;
         }
 
-        this.schedule = Optional.of(schedule);
-        this.futureOptional = Optional.of(scheduler.apply(schedule));
+        this.trigger = Optional.of(trigger);
+        this.futureOptional = Optional.of(scheduler.apply(trigger));
         this.cancelled = false;
         return true;
     }
 
     @Override
-    public Optional<Schedule> getSchedule() {
-        return schedule;
+    public Optional<Trigger> getTrigger() {
+        return trigger;
     }
 
     @Override
@@ -78,7 +78,7 @@ class DefaultScheduledJobFuture implements ScheduledJobFuture {
         }
         boolean cancelled = futureOptional.get().cancel(mayInterruptIfRunning);
         if (cancelled) {
-            schedule = Optional.empty();
+            trigger = Optional.empty();
             futureOptional = Optional.empty();
         }
         this.cancelled = cancelled;
