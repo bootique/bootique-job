@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * Defines execution schedule for a given job.
+ *
  * @since 3.0
  */
 public abstract class Trigger {

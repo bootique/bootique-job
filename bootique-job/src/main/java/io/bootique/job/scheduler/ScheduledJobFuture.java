@@ -46,7 +46,7 @@ public interface ScheduledJobFuture extends JobFuture {
      * Re-schedule this job to run at fixed rate, indepedent of whether the preceding execution has finished or not.
      * Has no effect, if the job has already been scheduled and hasn't finished yet.
      *
-     * @param fixedRateMs Fixed rate in millis
+     * @param fixedRateMs    Fixed rate in millis
      * @param initialDelayMs Initial delay in millis
      * @return true, if the job has been re-scheduled.
      * @see #isScheduled()
@@ -81,12 +81,12 @@ public interface ScheduledJobFuture extends JobFuture {
     boolean schedule(Trigger trigger);
 
     /**
-     * @return true, if this has been scheduled and has not finished or been cancelled yet
+     * Retruns true, if this has been scheduled and has not finished or been cancelled yet
      */
     boolean isScheduled();
 
     /**
-     * @return Schedule, or throws if {@link #isScheduled()} is false
+     * Returns the trigger associated with this future, or throws if {@link #isScheduled()} is false
      */
     Trigger getTrigger();
 }
