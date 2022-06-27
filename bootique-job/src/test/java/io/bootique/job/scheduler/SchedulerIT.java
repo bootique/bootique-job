@@ -128,7 +128,7 @@ public class SchedulerIT {
 
         assertEquals(0, listener.getAverageRate());
 
-        assertTrue(scheduledJob.schedule(new FixedRateTrigger("scheduledjob1", "XXXX", Collections.emptyMap(), 50, 0)));
+        assertTrue(scheduledJob.scheduleAtFixedRate(50, 0));
         assertTrue(scheduledJob.isScheduled());
         assertEquals("fixed rate trigger 50 ms", scheduledJob.getTrigger().toString());
 

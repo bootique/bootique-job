@@ -42,9 +42,13 @@ public class TriggerFactory {
     private Duration initialDelay;
     private Map<String, Object> params;
 
+    static String generateTriggerName() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
     public Trigger createTrigger() {
 
-        String triggerName = this.trigger != null ? this.trigger : UUID.randomUUID().toString().replace("-", "");
+        String triggerName = this.trigger != null ? this.trigger : generateTriggerName();
         Map<String, Object> params = this.params != null ? this.params : Collections.emptyMap();
         long fixedDelayMs = fixedDelay != null && fixedDelay.getDuration() != null ? fixedDelay.getDuration().toMillis() : 0;
         long fixedRateMs = fixedRate != null && fixedRate.getDuration() != null ? fixedRate.getDuration().toMillis() : 0;
