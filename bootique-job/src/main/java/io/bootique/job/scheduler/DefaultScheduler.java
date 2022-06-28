@@ -126,7 +126,7 @@ public class DefaultScheduler implements Scheduler {
     }
 
     private void scheduleTrigger(Trigger trigger) {
-        ScheduledJob scheduled = scheduleJob(trigger);
+        ScheduledJob scheduled = schedule(trigger);
         scheduledJobsByName.computeIfAbsent(trigger.getJobName(), k -> new ArrayList<>()).add(scheduled);
     }
 
@@ -187,7 +187,7 @@ public class DefaultScheduler implements Scheduler {
         return runnableJobFactory.runnable(job, parameters).run();
     }
 
-    public ScheduledJob scheduleJob(Trigger trigger) {
+    protected ScheduledJob schedule(Trigger trigger) {
         String jobName = trigger.getJobName();
         Job job = jobRegistry.getJob(jobName);
 
