@@ -134,9 +134,9 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    RunnableJobFactory provideRunnableJobFactory(LockHandler lockHandler, JobRegistry jobRegistry) {
+    RunnableJobFactory provideRunnableJobFactory(LockHandler lockHandler) {
         RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-        RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler, jobRegistry);
+        RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
         return new ErrorHandlingRunnableJobFactory(rf2);
     }
 }

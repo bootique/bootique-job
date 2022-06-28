@@ -19,16 +19,15 @@
 
 package io.bootique.job;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * Annotation for a job that should not be run in parallel with other instances
- * of self, locally or across the cluster.
+ * Annotation for a job that should not be run in parallel with other instances of self, locally or across the cluster.
  */
 @Documented
 @Retention(RUNTIME)

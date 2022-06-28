@@ -39,5 +39,13 @@ public interface JobRegistry {
 
     Job getJob(String jobName);
 
-    boolean allowsSimultaneousExecutions(String jobName);
+
+    /**
+     * @see JobMetadata#isSerial()
+     * @deprecated since 3.0, as this information is now available from the job metadata object.
+     */
+    @Deprecated
+    default boolean allowsSimultaneousExecutions(String jobName) {
+        return !getJob(jobName).getMetadata().isSerial();
+    }
 }

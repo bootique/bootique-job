@@ -97,16 +97,6 @@ public class DefaultJobRegistry implements JobRegistry {
         return decoratedJobAndGroups.computeIfAbsent(jobName, this::createJob);
     }
 
-    @Override
-    public boolean allowsSimultaneousExecutions(String jobName) {
-        checkJobExists(jobName);
-
-        Job job = standaloneJobs.get(jobName);
-        // simultaneous executions are allowed for job groups (in this case job is null)
-        // and real jobs, that haven't been annotated with @SerialJob
-        return job == null || !job.getClass().isAnnotationPresent(SerialJob.class);
-    }
-
     /**
      * @since 3.0
      */

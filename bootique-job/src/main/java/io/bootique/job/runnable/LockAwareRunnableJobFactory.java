@@ -20,31 +20,24 @@
 package io.bootique.job.runnable;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobRegistry;
 import io.bootique.job.lock.LockHandler;
 
 import java.util.Map;
 
 public class LockAwareRunnableJobFactory implements RunnableJobFactory {
 
-	private RunnableJobFactory delegate;
-	private LockHandler lockHandler;
-	private JobRegistry jobRegistry;
+    private RunnableJobFactory delegate;
+    private LockHandler lockHandler;
 
-	public LockAwareRunnableJobFactory(RunnableJobFactory delegate,
-									   LockHandler lockHandler,
-									   JobRegistry jobRegistry) {
-		this.delegate = delegate;
-		this.lockHandler = lockHandler;
-		this.jobRegistry = jobRegistry;
-	}
+    public LockAwareRunnableJobFactory(RunnableJobFactory delegate, LockHandler lockHandler) {
+        this.delegate = delegate;
+        this.lockHandler = lockHandler;
+    }
 
-	@Override
-	public RunnableJob runnable(Job job, Map<String, Object> parameters) {
-
-		RunnableJob rj = delegate.runnable(job, parameters);
-		boolean allowsSimultaneousExecutions = jobRegistry.allowsSimultaneousExecutions(job.getMetadata().getName());
-		return allowsSimultaneousExecutions ? rj : lockHandler.lockingJob(rj, job.getMetadata());
-	}
+    @Override
+    public RunnableJob runnable(Job job, Map<String, Object> parameters) {
+        RunnableJob rj = delegate.runnable(job, parameters);
+        return job.getMetadata().isSerial() ? lockHandler.lockingJob(rj, job.getMetadata()) : rj;
+    }
 
 }

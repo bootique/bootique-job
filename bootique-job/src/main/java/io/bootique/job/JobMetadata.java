@@ -28,12 +28,14 @@ import java.util.function.Function;
 
 public class JobMetadata {
 
-    private String name;
-    private Collection<JobParameterMetadata<?>> parameters;
+    private final String name;
+    private final Collection<JobParameterMetadata<?>> parameters;
+    private final boolean serial;
 
-    JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters) {
+    JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters, boolean serial) {
         this.name = name;
         this.parameters = parameters;
+        this.serial = serial;
     }
 
     /**
@@ -69,7 +71,11 @@ public class JobMetadata {
      * @return a new instance of a metadata builder.
      */
     public static Builder builder(Class<?> jobType) {
-        return builder(toName(jobType));
+        return builder(toName(jobType)).serial(isSerial(jobType));
+    }
+
+    private static boolean isSerial(Class<?> jobType) {
+        return jobType.isAnnotationPresent(SerialJob.class);
     }
 
     private static String toName(Class<?> jobType) {
@@ -84,6 +90,13 @@ public class JobMetadata {
 
     public Collection<JobParameterMetadata<?>> getParameters() {
         return parameters != null ? parameters : Collections.emptyList();
+    }
+
+    /**
+     * @since 3.0
+     */
+    public boolean isSerial() {
+        return serial;
     }
 
     public static class Builder {
@@ -106,10 +119,19 @@ public class JobMetadata {
 
         private final String name;
         private final Collection<JobParameterMetadata<?>> parameters;
+        private boolean serial;
 
         private Builder(String name) {
             this.name = name;
             this.parameters = new ArrayList<>();
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder serial(boolean serial) {
+            this.serial = serial;
+            return this;
         }
 
         public Builder param(JobParameterMetadata<?> param) {
@@ -118,14 +140,14 @@ public class JobMetadata {
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public <T> Builder param(String name, String typeName, Function<String, T> parser) {
             return param(name, typeName, parser, null);
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public <T> Builder param(String name, String typeName, Function<String, T> parser, T defaultValue) {
             this.parameters.add(new JobParameterMetadata<>(name, typeName, parser, defaultValue));
@@ -212,7 +234,7 @@ public class JobMetadata {
                 throw new IllegalStateException("Job name is not configured");
             }
 
-            return new JobMetadata(name, parameters);
+            return new JobMetadata(name, parameters, serial);
         }
     }
 }
