@@ -23,76 +23,124 @@ import io.bootique.job.JobMetadata;
 
 public class JobResult {
 
-	private JobMetadata metadata;
-	private JobOutcome outcome;
-	private Throwable throwable;
-	private String message;
+    private final JobMetadata metadata;
+    private final JobOutcome outcome;
+    private final Throwable throwable;
+    private final String message;
+    private final JobFuture yieldedTo;
 
-	public static JobResult success(JobMetadata metadata) {
-		return new JobResult(metadata, JobOutcome.SUCCESS, null, null);
-	}
+    public static JobResult success(JobMetadata metadata) {
+        return new JobResult(metadata, JobOutcome.SUCCESS, null, null, null);
+    }
 
-	public static JobResult failure(JobMetadata metadata) {
-		return new JobResult(metadata, JobOutcome.FAILURE, null, null);
-	}
-	
-	public static JobResult failure(JobMetadata metadata, String message) {
-		return new JobResult(metadata, JobOutcome.FAILURE, null, message);
-	}
+    public static JobResult failure(JobMetadata metadata) {
+        return new JobResult(metadata, JobOutcome.FAILURE, null, null, null);
+    }
 
-	public static JobResult failure(JobMetadata metadata, Throwable th) {
-		return new JobResult(metadata, JobOutcome.FAILURE, th, null);
-	}
+    public static JobResult failure(JobMetadata metadata, String message) {
+        return new JobResult(metadata, JobOutcome.FAILURE, null, message, null);
+    }
 
-	public static JobResult unknown(JobMetadata metadata) {
-		return new JobResult(metadata, JobOutcome.UNKNOWN, null, null);
-	}
+    public static JobResult failure(JobMetadata metadata, Throwable th) {
+        return new JobResult(metadata, JobOutcome.FAILURE, th, null, null);
+    }
 
-	public static JobResult unknown(JobMetadata metadata, Throwable th) {
-		return new JobResult(metadata, JobOutcome.UNKNOWN, th, null);
-	}
+    /**
+     * @since 3.0
+     */
+    public static JobResult failure(JobMetadata metadata, String message, Throwable th) {
+        return new JobResult(metadata, JobOutcome.FAILURE, th, message, null);
+    }
 
-	public JobResult(JobMetadata metadata, JobOutcome outcome, Throwable throwable, String message) {
-		this.metadata = metadata;
-		this.outcome = outcome;
-		this.throwable = throwable;
-		this.message = message;
-	}
+    /**
+     * @since 3.0
+     */
+    public static JobResult partialSuccess(JobMetadata metadata) {
+        return new JobResult(metadata, JobOutcome.PARTIAL_SUCCESS, null, null, null);
+    }
 
-	public JobMetadata getMetadata() {
-		return metadata;
-	}
+    public static JobResult unknown(JobMetadata metadata) {
+        return new JobResult(metadata, JobOutcome.UNKNOWN, null, null, null);
+    }
 
-	public JobOutcome getOutcome() {
-		return outcome;
-	}
+    public static JobResult unknown(JobMetadata metadata, Throwable th) {
+        return new JobResult(metadata, JobOutcome.UNKNOWN, th, null, null);
+    }
 
-	public boolean isSuccess() {
-		return outcome == JobOutcome.SUCCESS;
-	}
+    /**
+     * @since 3.0
+     */
+    public static JobResult skipped(JobMetadata metadata) {
+        return new JobResult(metadata, JobOutcome.SKIPPED, null, null, null);
+    }
 
-	public Throwable getThrowable() {
-		return throwable;
-	}
+    /**
+     * @since 3.0
+     */
+    public static JobResult skipped(JobMetadata metadata, String message) {
+        return new JobResult(metadata, JobOutcome.SKIPPED, null, message, null);
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    /**
+     * @deprecated since 3.0 in favor of one of the static factory methods.
+     */
+    @Deprecated
+    public JobResult(JobMetadata metadata, JobOutcome outcome, Throwable throwable, String message) {
+        this(metadata, outcome, throwable, message, null);
+    }
 
-	@Override
-	public String toString() {
+    /**
+     * @since 3.0
+     */
+    protected JobResult(JobMetadata metadata, JobOutcome outcome, Throwable throwable, String message, JobFuture yieldedTo) {
+        this.metadata = metadata;
+        this.outcome = outcome;
+        this.throwable = throwable;
+        this.message = message;
+        this.yieldedTo = yieldedTo;
+    }
 
-		String message = this.message;
+    public JobMetadata getMetadata() {
+        return metadata;
+    }
 
-		if (message == null && throwable != null) {
-			message = throwable.getMessage();
-		}
+    public JobOutcome getOutcome() {
+        return outcome;
+    }
 
-		StringBuilder buffer = new StringBuilder().append("[").append(outcome);
-		if (message != null) {
-			buffer.append(": ").append(message);
-		}
+    public boolean isSuccess() {
+        return outcome == JobOutcome.SUCCESS;
+    }
 
-		return buffer.append("]").toString();
-	}
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    /**
+     * @since 3.0
+     */
+    public JobFuture getYieldedTo() {
+        return yieldedTo;
+    }
+
+    @Override
+    public String toString() {
+
+        String message = this.message;
+
+        if (message == null && throwable != null) {
+            message = throwable.getMessage();
+        }
+
+        StringBuilder buffer = new StringBuilder().append("[").append(outcome);
+        if (message != null) {
+            buffer.append(": ").append(message);
+        }
+
+        return buffer.append("]").toString();
+    }
 }

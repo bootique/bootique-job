@@ -82,25 +82,28 @@ class JobLogger implements Job {
     }
 
     private void logJobFinished(JobResult result, long timeMs) {
-        if (result.isSuccess()) {
-            LOGGER.info("job '{}' finished in {} ms", name, timeMs);
-            return;
-        }
 
-        String message = result.getMessage();
-        if (message == null && result.getThrowable() != null) {
-            message = result.getThrowable().getMessage();
-        }
+        switch (result.getOutcome()) {
+            case SUCCESS:
+                LOGGER.info("job '{}' finished in {} ms", name, timeMs);
+                return;
 
-        if (message == null) {
-            message = "";
-        }
+            default:
+                String message = result.getMessage();
+                if (message == null && result.getThrowable() != null) {
+                    message = result.getThrowable().getMessage();
+                }
 
-        if (result.getThrowable() != null) {
-            LOGGER.info("job exception", result.getThrowable());
-        }
+                if (message == null) {
+                    message = "";
+                }
 
-        LOGGER.warn("job '{}' finished in {} ms: {} - {} ", name, timeMs, result.getOutcome(), message);
+                if (result.getThrowable() != null) {
+                    LOGGER.info("job exception", result.getThrowable());
+                }
+
+                LOGGER.warn("job '{}' finished in {} ms: {} - {} ", name, timeMs, result.getOutcome(), message);
+        }
     }
 
 }
