@@ -28,9 +28,6 @@ public interface JobFuture extends ScheduledFuture<JobResult> {
         return new JobFutureBuilder(job);
     }
 
-    /**
-     * @return Job name
-     */
     String getJobName();
 
     /**

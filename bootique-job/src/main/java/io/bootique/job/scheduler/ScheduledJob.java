@@ -32,8 +32,8 @@ public interface ScheduledJob {
     String getJobName();
 
     /**
-     * Re-schedule this job based on the provided cron expression. Has no effect, if the job has already been scheduled.
-     * Make sure to call {@link #cancel(boolean)} before changing the schedule.
+     * Reschedule this job using the provided cron expression. Has no effect, if the job is already scheduled, so make
+     * sure to call {@link #cancel(boolean)} before changing the schedule.
      *
      * @param cron Cron expression
      * @return true, if the job has been re-scheduled.
@@ -41,8 +41,8 @@ public interface ScheduledJob {
     boolean schedule(Cron cron);
 
     /**
-     * Re-schedule this job to run at fixed rate. Has no effect, if the job has already been scheduled. Make sure to
-     * call {@link #cancel(boolean)} before changing the schedule.
+     * Reschedule this job to run at fixed rate. Has no effect, if the job is already scheduled, so make
+     * sure to call {@link #cancel(boolean)} before changing the schedule.
      *
      * @param fixedRateMs    Fixed rate in millis
      * @param initialDelayMs Initial delay in millis
@@ -51,10 +51,11 @@ public interface ScheduledJob {
     boolean scheduleAtFixedRate(long fixedRateMs, long initialDelayMs);
 
     /**
-     * Re-schedule this job to run with fixed interval between executions. Has no effect, if the job has already been
-     * scheduled. Make sure to call {@link #cancel(boolean)} before changing the schedule.
+     * Reschedule this job to run with fixed interval between executions. Has no effect, if the job is already scheduled,
+     * so make sure to call {@link #cancel(boolean)} before changing the schedule.
      *
-     * @param fixedDelayMs   Fixed delay in millis to wait after the completion of the preceding execution before starting next
+     * @param fixedDelayMs   Fixed delay in millis to wait after the completion of the preceding execution before
+     *                       starting next
      * @param initialDelayMs Initial delay in millis
      * @return true, if the job has been re-scheduled.
      */
@@ -69,7 +70,7 @@ public interface ScheduledJob {
     boolean cancel(boolean mayInterruptIfRunning);
 
     /**
-     * Retruns true, if this has been scheduled and has not finished or been cancelled yet
+     * Returns true if the job has been scheduled and has not been cancelled.
      */
     boolean isScheduled();
 
