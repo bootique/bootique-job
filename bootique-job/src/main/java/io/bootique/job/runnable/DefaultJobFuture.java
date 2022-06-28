@@ -25,12 +25,12 @@ import java.util.function.Supplier;
 public class DefaultJobFuture implements JobFuture {
 
     private String jobName;
-    private ScheduledFuture<?> delegate;
+    private Future<?> delegate;
     private Supplier<JobResult> resultSupplier;
 
     public DefaultJobFuture(
             String jobName,
-            ScheduledFuture<?> delegate,
+            Future<?> delegate,
             Supplier<JobResult> resultSupplier) {
 
         this.jobName = jobName;
@@ -39,18 +39,13 @@ public class DefaultJobFuture implements JobFuture {
     }
 
     @Override
-    public long getDelay(TimeUnit unit) {
-        return delegate.getDelay(unit);
+    public String getJobName() {
+        return jobName;
     }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         return delegate.cancel(mayInterruptIfRunning);
-    }
-
-    @Override
-    public int compareTo(Delayed o) {
-        return delegate.compareTo(o);
     }
 
     @Override
@@ -87,10 +82,4 @@ public class DefaultJobFuture implements JobFuture {
 
         return resultSupplier.get();
     }
-
-    @Override
-    public String getJobName() {
-        return jobName;
-    }
-
 }

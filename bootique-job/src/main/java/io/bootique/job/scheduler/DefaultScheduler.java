@@ -21,18 +21,16 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runnable.RunnableJob;
 import io.bootique.job.runnable.RunnableJobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -173,11 +171,15 @@ public class DefaultScheduler implements Scheduler {
     @Override
     public JobFuture runOnce(Job job, Map<String, Object> parameters) {
 
-        RunnableJob rj = runnableJobFactory.runnable(job, parameters);
         JobResult[] result = new JobResult[1];
-        ScheduledFuture<?> jobFuture = taskScheduler.schedule(() -> result[0] = rj.run(), new Date());
+        Future<?> future = taskScheduler.schedule(
+                () -> result[0] = runOnceBlocking(job, parameters),
+                new Date());
 
-        return toJobFuture(jobFuture, job.getMetadata(), result);
+        return JobFuture.forJob(job.getMetadata().getName())
+                .future(future)
+                .resultSupplier(() -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()))
+                .build();
     }
 
     @Override
@@ -192,12 +194,5 @@ public class DefaultScheduler implements Scheduler {
         ScheduledJob scheduledJob = new SpringScheduledJob(job, runnableJobFactory, taskScheduler);
         scheduledJob.schedule(trigger);
         return scheduledJob;
-    }
-
-    static JobFuture toJobFuture(ScheduledFuture<?> future, JobMetadata md, JobResult[] resultCollector) {
-        return JobFuture.forJob(md.getName())
-                .future(future)
-                .resultSupplier(() -> resultCollector[0] != null ? resultCollector[0] : JobResult.unknown(md))
-                .build();
     }
 }

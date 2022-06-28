@@ -20,20 +20,20 @@
 package io.bootique.job.runnable;
 
 import java.util.Objects;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class JobFutureBuilder {
 
-    private String job;
-    private ScheduledFuture<?> future;
+    private final String job;
+    private Future<?> future;
     private Supplier<JobResult> resultSupplier;
 
     public JobFutureBuilder(String job) {
         this.job = Objects.requireNonNull(job);
     }
 
-    public JobFutureBuilder future(ScheduledFuture<?> future) {
+    public JobFutureBuilder future(Future<?> future) {
         this.future = future;
         return this;
     }

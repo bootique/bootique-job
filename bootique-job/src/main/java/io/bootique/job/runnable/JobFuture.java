@@ -19,10 +19,13 @@
 
 package io.bootique.job.runnable;
 
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public interface JobFuture extends ScheduledFuture<JobResult> {
+/**
+ * A specialized future for a single job execution that hides checked exceptions and provides job execution result.
+ */
+public interface JobFuture extends Future<JobResult> {
 
     static JobFutureBuilder forJob(String job) {
         return new JobFutureBuilder(job);
@@ -33,24 +36,15 @@ public interface JobFuture extends ScheduledFuture<JobResult> {
     /**
      * Waits till the job is done and then returns the result.
      */
+    // override super to hide checked exceptions
     @Override
     JobResult get();
 
     /**
-     * Waits till the job is done and then returns the result.
-     * Throws an exception, if time elapses before the job has finished.
+     * Waits till the job is done and then returns the result. Throws an exception, if timeout elapses before the job
+     * has finished.
      */
+    // override super to hide checked exceptions
     @Override
     JobResult get(long timeout, TimeUnit unit);
-
-    /**
-     * Convenient shortcut for {@link java.util.concurrent.Future#cancel(boolean)}.
-     *
-     * @return {@code false} if the task could not be cancelled,
-     * typically because it has already completed normally;
-     * {@code true} otherwise
-     */
-    default boolean cancelInterruptibly() {
-        return cancel(true);
-    }
 }
