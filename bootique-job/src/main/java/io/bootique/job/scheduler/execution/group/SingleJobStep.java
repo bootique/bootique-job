@@ -19,7 +19,6 @@
 package io.bootique.job.scheduler.execution.group;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
 import io.bootique.job.scheduler.Scheduler;
 
@@ -39,14 +38,10 @@ public class SingleJobStep extends JobGroupStep {
     }
 
     @Override
-    public JobMetadata getMetadata() {
-        return job.getMetadata();
-    }
-
-    @Override
-    public JobResult run(Map<String, Object> params) {
-        JobResult result = scheduler.runOnceBlocking(job, params);
+    public JobGroupStepResult run(Map<String, Object> params) {
+        JobResult result = scheduler.runBuilder().job(job).params(params).runBlocking();
         logResult(result);
-        return result;
+
+        return result.isSuccess() ? JobGroupStepResult.succeeded(result) : JobGroupStepResult.failed(result);
     }
 }

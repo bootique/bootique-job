@@ -19,7 +19,6 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.group.ParallelJobBatchStep;
@@ -35,8 +34,8 @@ public class TxIdAwareJobGroupStep extends ParallelJobBatchStep {
 
     private final TransactionIdMDC transactionIdMDC;
 
-    public TxIdAwareJobGroupStep(Scheduler scheduler, List<Job> jobs, JobMetadata metadata, TransactionIdMDC transactionIdMDC) {
-        super(scheduler, jobs, metadata);
+    public TxIdAwareJobGroupStep(Scheduler scheduler, List<Job> jobs, TransactionIdMDC transactionIdMDC) {
+        super(scheduler, jobs);
         this.transactionIdMDC = transactionIdMDC;
     }
 

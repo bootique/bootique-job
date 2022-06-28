@@ -22,13 +22,13 @@ package io.bootique.job.runnable;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
-public class DefaultJobFuture implements JobFuture {
+public class SimpleJobFuture implements JobFuture {
 
     private String jobName;
     private Future<?> delegate;
     private Supplier<JobResult> resultSupplier;
 
-    public DefaultJobFuture(
+    public SimpleJobFuture(
             String jobName,
             Future<?> delegate,
             Supplier<JobResult> resultSupplier) {

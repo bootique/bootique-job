@@ -138,7 +138,7 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     protected JobGroup createJobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
-        return new JobGroup(groupMetadata, steps);
+        return new JobGroup(groupMetadata, scheduler.get(), steps);
     }
 
     private JobMetadata groupMetadata(String jobName, Collection<Job> jobs) {
@@ -170,7 +170,7 @@ public class DefaultJobRegistry implements JobRegistry {
                     steps.add(createSingleJobStep(stepJobs.get(0)));
                     break;
                 default:
-                    steps.add(createParallelGroupStep(stepJobs, groupMetadata));
+                    steps.add(createParallelGroupStep(stepJobs));
                     break;
             }
         }
@@ -182,8 +182,8 @@ public class DefaultJobRegistry implements JobRegistry {
         return new SingleJobStep(scheduler.get(), job);
     }
 
-    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs, JobMetadata groupMetadata) {
-        return new ParallelJobBatchStep(scheduler.get(), stepJobs, groupMetadata);
+    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs) {
+        return new ParallelJobBatchStep(scheduler.get(), stepJobs);
     }
 
     private Map<String, Job> jobsByName(Collection<Job> jobs) {

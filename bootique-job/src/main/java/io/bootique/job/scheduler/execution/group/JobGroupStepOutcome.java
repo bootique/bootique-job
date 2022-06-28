@@ -16,31 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package io.bootique.job.runnable;
-
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+package io.bootique.job.scheduler.execution.group;
 
 /**
- * A specialized future for a single job execution that hides checked exceptions and provides job execution result.
+ * @since 3.0
  */
-public interface JobFuture extends Future<JobResult> {
+public enum JobGroupStepOutcome {
 
-    String getJobName();
-
-    /**
-     * Waits till the job is done and then returns the result.
-     */
-    // override super to hide checked exceptions
-    @Override
-    JobResult get();
-
-    /**
-     * Waits till the job is done and then returns the result. Throws an exception, if timeout elapses before the job
-     * has finished.
-     */
-    // override super to hide checked exceptions
-    @Override
-    JobResult get(long timeout, TimeUnit unit);
+    succeeded, failed;
 }

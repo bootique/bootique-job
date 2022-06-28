@@ -27,8 +27,8 @@ public class ConsulJobLockIT extends AbstractConsulTest {
     public void testConsulClusterJobLocking() throws InterruptedException {
         Scheduler scheduler_1 = getSchedulerFromRuntime();
         Scheduler scheduler_2 = getSchedulerFromRuntime();
-        scheduler_1.runOnce(new LockJob(), callsCount);
-        scheduler_2.runOnce(new LockJob(), callsCount);
+        scheduler_1.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
+        scheduler_2.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
         Thread.sleep(WAIT_TIME);
         assertEquals(1, callsCount.get(CALLS_COUNT));
     }
@@ -36,8 +36,8 @@ public class ConsulJobLockIT extends AbstractConsulTest {
     @Test
     public void testConsulLocalJobLocking() throws InterruptedException {
         Scheduler scheduler = getSchedulerFromRuntime();
-        scheduler.runOnce(new LockJob(), callsCount);
-        scheduler.runOnce(new LockJob(), callsCount);
+        scheduler.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
+        scheduler.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
         Thread.sleep(WAIT_TIME);
         assertEquals(1, callsCount.get(CALLS_COUNT));
     }

@@ -51,7 +51,7 @@ public class Listener_FailuresIT {
                 .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("exception").get();
+        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("exception").runNonBlocking().get();
         assertSame(result, listener.result);
         assertEquals(JobOutcome.FAILURE, result.getOutcome());
         assertTrue(result.getThrowable() instanceof RuntimeException);
@@ -69,7 +69,7 @@ public class Listener_FailuresIT {
                 .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("failure").get();
+        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
         assertSame(result, listener.result);
         assertEquals(JobOutcome.FAILURE, result.getOutcome());
         assertNull(result.getThrowable());
@@ -86,7 +86,7 @@ public class Listener_FailuresIT {
                 .module(b -> JobModule.extend(b).addJob(job).addListener(Listener_StartException.class))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("x").get();
+        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertNotExecuted();
 
         assertEquals(JobOutcome.FAILURE, result.getOutcome());
@@ -103,7 +103,7 @@ public class Listener_FailuresIT {
                 .module(b -> JobModule.extend(b).addJob(job).addListener(Listener_EndException.class))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runOnce("x").get();
+        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertExecuted();
 
         assertEquals(JobOutcome.FAILURE, result.getOutcome());

@@ -23,14 +23,13 @@ import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.runnable.JobFuture;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.runnable.JobRunBuilder;
 import io.bootique.job.runnable.RunnableJobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -152,39 +151,8 @@ public class DefaultScheduler implements Scheduler {
     }
 
     @Override
-    public JobFuture runOnce(String jobName) {
-        return runOnce(jobRegistry.getJob(jobName));
-    }
-
-    @Override
-    public JobFuture runOnce(String jobName, Map<String, Object> parameters) {
-        Job job = jobRegistry.getJob(jobName);
-        return runOnce(job, parameters);
-    }
-
-    @Override
-    public JobFuture runOnce(Job job) {
-        // parameters map must be mutable, as listeners are allowed to modify it
-        return runOnce(job, new HashMap<>());
-    }
-
-    @Override
-    public JobFuture runOnce(Job job, Map<String, Object> parameters) {
-
-        JobResult[] result = new JobResult[1];
-        Future<?> future = taskScheduler.schedule(
-                () -> result[0] = runOnceBlocking(job, parameters),
-                new Date());
-
-        return JobFuture.forJob(job.getMetadata().getName())
-                .future(future)
-                .resultSupplier(() -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()))
-                .build();
-    }
-
-    @Override
-    public JobResult runOnceBlocking(Job job, Map<String, Object> parameters) {
-        return runnableJobFactory.runnable(job, parameters).run();
+    public JobRunBuilder runBuilder() {
+        return new JobRunBuilder(jobRegistry, taskScheduler, runnableJobFactory);
     }
 
     protected ScheduledJob schedule(Trigger trigger) {

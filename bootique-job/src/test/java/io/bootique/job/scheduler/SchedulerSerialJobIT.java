@@ -72,7 +72,7 @@ public class SchedulerSerialJobIT {
         for (int i = 0; i < count; i++) {
             executor.submit(() -> {
                 try {
-                    resultQueue.add(scheduler.runOnce(jobName).get());
+                    resultQueue.add(scheduler.runBuilder().jobName(jobName).runNonBlocking().get());
                 } catch (Exception e) {
                     LOGGER.error("Failed to run job", e);
                 } finally {

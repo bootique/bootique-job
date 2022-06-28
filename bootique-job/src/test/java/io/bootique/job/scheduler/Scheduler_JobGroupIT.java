@@ -21,17 +21,16 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
+import io.bootique.job.JobModule;
 import io.bootique.job.fixture.ParameterizedJob3;
 import io.bootique.job.fixture.SerialJob1;
 import io.bootique.job.runnable.JobFuture;
 import io.bootique.job.runnable.JobOutcome;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.JobModule;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +54,7 @@ public class Scheduler_JobGroupIT {
         parameters.put("param1", "value1");
         parameters.put("param2", 2);
 
-        JobFuture future = scheduler.runOnce("group1", parameters);
+        JobFuture future = scheduler.runBuilder().jobName("group1").params(parameters).runNonBlocking();
         JobResult result = future.get(5L, TimeUnit.SECONDS);
         assertEquals(JobOutcome.SUCCESS, result.getOutcome());
     }
@@ -64,7 +63,7 @@ public class Scheduler_JobGroupIT {
     public void testRunOnce_EmptyGroup() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
-        JobFuture future = scheduler.runOnce("group2", Collections.emptyMap());
+        JobFuture future = scheduler.runBuilder().jobName("group2").runNonBlocking();
         JobResult result = future.get(5L, TimeUnit.SECONDS);
         assertEquals(JobOutcome.SUCCESS, result.getOutcome());
     }

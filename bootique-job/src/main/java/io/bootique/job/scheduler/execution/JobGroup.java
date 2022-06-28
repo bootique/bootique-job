@@ -22,7 +22,10 @@ package io.bootique.job.scheduler.execution;
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
+import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.group.JobGroupStep;
+import io.bootique.job.scheduler.execution.group.JobGroupStepOutcome;
+import io.bootique.job.scheduler.execution.group.JobGroupStepResult;
 
 import java.util.List;
 import java.util.Map;
@@ -34,19 +37,21 @@ public class JobGroup extends BaseJob {
 
     // linear steps, each one may be a single job or a set of parallel jobs
     private final List<JobGroupStep> steps;
+    private final Scheduler scheduler;
 
-    public JobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
+    public JobGroup(JobMetadata groupMetadata, Scheduler scheduler, List<JobGroupStep> steps) {
         super(groupMetadata);
+        this.scheduler = scheduler;
         this.steps = steps;
     }
 
     @Override
     public JobResult run(Map<String, Object> params) {
-
         for (JobGroupStep step : steps) {
-            JobResult result = step.run(params);
-            if (!result.isSuccess()) {
-                return result;
+            JobGroupStepResult result = step.run(params);
+
+            if (result.getOutcome() != JobGroupStepOutcome.succeeded) {
+                return result.getJobResult();
             }
         }
 

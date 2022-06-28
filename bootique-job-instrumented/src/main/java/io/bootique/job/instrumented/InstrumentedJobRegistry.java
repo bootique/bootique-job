@@ -19,7 +19,6 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.scheduler.Scheduler;
@@ -59,7 +58,7 @@ public class InstrumentedJobRegistry extends DefaultJobRegistry {
     }
 
     @Override
-    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs, JobMetadata groupMetadata) {
-        return new TxIdAwareJobGroupStep(scheduler.get(), stepJobs, groupMetadata, mdcManager.getTransactionIdMDC());
+    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs) {
+        return new TxIdAwareJobGroupStep(scheduler.get(), stepJobs, mdcManager.getTransactionIdMDC());
     }
 }

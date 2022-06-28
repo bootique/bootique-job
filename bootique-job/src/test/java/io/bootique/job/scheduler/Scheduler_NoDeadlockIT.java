@@ -32,6 +32,7 @@ import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,14 +61,31 @@ public class Scheduler_NoDeadlockIT {
                     .addJob(J3.class))
             .createRuntime();
 
-    @Disabled("Until a fix is available per #102")
+    @Disabled
+    @Timeout(5)
     @RepeatedTest(3)
-    public void testAttemptDeadlock() {
+    public void testAttemptDeadlock_Get() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         List<JobFuture> futures = List.of(
-                scheduler.runOnce("j1"),
-                scheduler.runOnce("j1"));
+                scheduler.runBuilder().jobName("j1").runNonBlocking(),
+                scheduler.runBuilder().jobName("j1").runNonBlocking());
+
+        for (JobFuture f : futures) {
+            JobResult r = f.get();
+            assertEquals(JobOutcome.SUCCESS, r.getOutcome());
+        }
+    }
+
+    @Disabled
+    @Timeout(5)
+    @RepeatedTest(3)
+    public void testAttemptDeadlock_GetWithTimeout() {
+        Scheduler scheduler = app.getInstance(Scheduler.class);
+
+        List<JobFuture> futures = List.of(
+                scheduler.runBuilder().jobName("j1").runNonBlocking(),
+                scheduler.runBuilder().jobName("j1").runNonBlocking());
 
         for (JobFuture f : futures) {
             JobResult r = f.get(1, TimeUnit.SECONDS);

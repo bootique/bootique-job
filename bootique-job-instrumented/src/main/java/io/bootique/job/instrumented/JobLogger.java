@@ -88,6 +88,7 @@ class JobLogger implements Job {
                 LOGGER.info("job '{}' finished in {} ms", name, timeMs);
                 return;
 
+
             default:
                 String message = result.getMessage();
                 if (message == null && result.getThrowable() != null) {

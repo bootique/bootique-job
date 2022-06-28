@@ -22,7 +22,7 @@ package io.bootique.job.scheduler;
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.runnable.JobFuture;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.runnable.JobRunBuilder;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,18 +36,26 @@ public interface Scheduler {
      *
      * @param jobName the name of the job to execute.
      * @return a Future to track job progress.
+     * @deprecated since 3.0 in favor of {@link #runBuilder()}
      */
-    JobFuture runOnce(String jobName);
+    @Deprecated
+    default JobFuture runOnce(String jobName) {
+        return runBuilder().jobName(jobName).runNonBlocking();
+    }
 
     /**
      * Executes a given job once.  The method does not block to wait for the job to finish. Instead, it returns a
      * future object to track job progress.
      *
-     * @param jobName    the name of the job to execute.
-     * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
+     * @param jobName the name of the job to execute.
+     * @param params  a Map of parameters that will be merged with the DI-provided parameters for this execution.
      * @return a Future to track job progress.
+     * @deprecated since 3.0 in favor of {@link #runBuilder()}
      */
-    JobFuture runOnce(String jobName, Map<String, Object> parameters);
+    @Deprecated
+    default JobFuture runOnce(String jobName, Map<String, Object> params) {
+        return runBuilder().jobName(jobName).params(params).runNonBlocking();
+    }
 
     /**
      * Executes a given job once.  The method does not block to wait for the job to finish. Instead, it returns a
@@ -55,28 +63,33 @@ public interface Scheduler {
      *
      * @param job Job to execute
      * @return a Future to track job progress.
+     * @deprecated since 3.0 in favor of {@link #runBuilder()}
      */
-    JobFuture runOnce(Job job);
+    @Deprecated
+    default JobFuture runOnce(Job job) {
+        return runBuilder().job(job).runNonBlocking();
+    }
 
     /**
      * Executes a given job once.  The method does not block to wait for the job to finish. Instead, it returns a
      * future object to track job progress.
      *
-     * @param job        Job to execute
-     * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
+     * @param job    Job to execute
+     * @param params a Map of parameters that will be merged with the DI-provided parameters for this execution.
      * @return a Future to track job progress.
+     * @deprecated since 3.0 in favor of {@link #runBuilder()}
      */
-    JobFuture runOnce(Job job, Map<String, Object> parameters);
+    @Deprecated
+    default JobFuture runOnce(Job job, Map<String, Object> params) {
+        return runBuilder().job(job).params(params).runNonBlocking();
+    }
 
     /**
-     * Executes a given job once. The method blocks to wait for the job to finish.
+     * Returns a builder object that can be used to build a custom job execution.
      *
-     * @param job        Job to execute
-     * @param parameters a Map of parameters that will be merged with the DI-provided parameters for this execution.
-     * @return a Future to track job progress.
      * @since 3.0
      */
-    JobResult runOnceBlocking(Job job, Map<String, Object> parameters);
+    JobRunBuilder runBuilder();
 
     /**
      * Schedule execution of jobs based on configured triggers.
