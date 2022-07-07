@@ -23,7 +23,7 @@ import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
-import io.bootique.job.scheduler.execution.group.ParallelJobBatchStep;
+import io.bootique.job.group.ParallelJobBatchStep;
 
 import javax.inject.Provider;
 import java.util.Collection;

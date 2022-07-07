@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler.execution.group;
+package io.bootique.job.group;
 
 import io.bootique.job.Job;
 import io.bootique.job.runnable.JobFuture;

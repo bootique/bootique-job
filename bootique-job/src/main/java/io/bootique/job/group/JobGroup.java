@@ -17,14 +17,11 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.group;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.scheduler.execution.group.JobGroupStep;
-import io.bootique.job.scheduler.execution.group.JobGroupStepOutcome;
-import io.bootique.job.scheduler.execution.group.JobGroupStepResult;
 
 import java.util.List;
 import java.util.Map;
