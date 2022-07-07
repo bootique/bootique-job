@@ -21,7 +21,6 @@ package io.bootique.job;
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.command.CommandOutcome;
-import io.bootique.job.runnable.JobResult;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.BeforeEach;

@@ -17,12 +17,9 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler;
+package io.bootique.job;
 
 import io.bootique.BootiqueException;
-import io.bootique.job.Job;
-import io.bootique.job.runnable.JobFuture;
-import io.bootique.job.runnable.JobRunBuilder;
 
 import java.util.Collection;
 import java.util.List;

@@ -22,7 +22,7 @@ import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.curator.CuratorModule;
 import io.bootique.job.JobModule;
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.Scheduler;
 import io.bootique.job.zookeeper.ZkJobModule;
 import io.bootique.job.zookeeper.it.job.LockJob;
 import io.bootique.junit5.BQTest;

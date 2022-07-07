@@ -16,35 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.runnable;
+
+package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
+import io.bootique.job.JobDecorator;
+import io.bootique.job.JobResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 /**
  * @since 3.0
  */
-public class DecoratedJob implements Job {
+public class ErrorHandlingJobDecorator implements JobDecorator {
 
-    private final Job job;
-    private final JobMetadata metadata;
-    private final JobDecorator decorator;
-
-    public DecoratedJob(Job job, JobMetadata metadata, JobDecorator decorator) {
-        this.job = job;
-        this.metadata = metadata;
-        this.decorator = decorator;
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingJobDecorator.class);
 
     @Override
-    public JobMetadata getMetadata() {
-        return metadata;
-    }
-
-    @Override
-    public JobResult run(Map<String, Object> params) {
-        return decorator.run(job, params);
+    public JobResult run(Job delegate, Map<String, Object> params) {
+        try {
+            return delegate.run(params);
+        } catch (Throwable th) {
+            LOGGER.info("Exception while running job '{}'", delegate.getMetadata().getName(), th);
+            return JobResult.failure(delegate.getMetadata(), th);
+        }
     }
 }

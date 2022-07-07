@@ -24,7 +24,7 @@ import io.bootique.ConfigModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.scheduler.execution.JobLogger;
+import io.bootique.job.runtime.JobLogger;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 

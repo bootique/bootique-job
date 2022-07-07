@@ -20,8 +20,8 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.runnable.JobResult;
-import io.bootique.job.scheduler.execution.JobLogger;
+import io.bootique.job.JobResult;
+import io.bootique.job.runtime.JobLogger;
 
 import java.util.Map;
 

@@ -19,8 +19,6 @@
 
 package io.bootique.job;
 
-import io.bootique.job.runnable.JobResult;
-
 import java.util.Map;
 
 public abstract class BaseJob implements Job {

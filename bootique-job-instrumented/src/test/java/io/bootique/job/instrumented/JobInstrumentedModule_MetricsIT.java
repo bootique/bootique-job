@@ -23,7 +23,7 @@ import com.codahale.metrics.MetricRegistry;
 import io.bootique.BQRuntime;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 import io.bootique.job.JobModule;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;

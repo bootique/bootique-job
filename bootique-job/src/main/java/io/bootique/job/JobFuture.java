@@ -17,7 +17,9 @@
  * under the License.
  */
 
-package io.bootique.job.runnable;
+package io.bootique.job;
+
+import io.bootique.job.JobResult;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;

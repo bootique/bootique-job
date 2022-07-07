@@ -16,13 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.DecoratedJob;
-import io.bootique.job.runnable.JobDecorator;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobDecorator;
+import io.bootique.job.JobResult;
 
 import java.util.Map;
 

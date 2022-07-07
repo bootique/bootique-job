@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.runnable;
+package io.bootique.job;
 
-import io.bootique.job.Job;
-import io.bootique.job.JobRegistry;
+import io.bootique.job.runtime.JobDecorators;
+import io.bootique.job.runtime.SimpleJobFuture;
 import org.springframework.scheduling.TaskScheduler;
 
 import java.util.Collections;

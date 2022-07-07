@@ -19,8 +19,8 @@
 package io.bootique.job.group;
 
 import io.bootique.job.Job;
-import io.bootique.job.runnable.JobResult;
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.JobResult;
+import io.bootique.job.Scheduler;
 
 import java.util.Map;
 import java.util.Objects;

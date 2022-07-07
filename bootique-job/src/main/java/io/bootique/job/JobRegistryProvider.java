@@ -21,9 +21,8 @@ package io.bootique.job;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.JobGraphNodeFactory;
-import io.bootique.job.runnable.JobDecorators;
-import io.bootique.job.scheduler.Scheduler;
-import io.bootique.job.scheduler.execution.DefaultJobRegistry;
+import io.bootique.job.runtime.DefaultJobRegistry;
+import io.bootique.job.runtime.JobDecorators;
 import io.bootique.type.TypeRef;
 
 import javax.inject.Inject;

@@ -17,11 +17,11 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
-import io.bootique.job.runnable.JobDecorator;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobDecorator;
+import io.bootique.job.JobResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

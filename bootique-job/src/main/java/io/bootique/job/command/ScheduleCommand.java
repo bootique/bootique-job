@@ -23,7 +23,7 @@ import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
 import io.bootique.job.JobModule;
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.Scheduler;
 import io.bootique.meta.application.CommandMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -18,7 +18,7 @@
  */
 package io.bootique.job.zookeeper.it;
 
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.Scheduler;
 import io.bootique.job.zookeeper.it.job.LockJob;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

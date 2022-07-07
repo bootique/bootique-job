@@ -17,7 +17,10 @@
  * under the License.
  */
 
-package io.bootique.job.runnable;
+package io.bootique.job.runtime;
+
+import io.bootique.job.JobFuture;
+import io.bootique.job.JobResult;
 
 import java.util.concurrent.*;
 import java.util.function.Supplier;

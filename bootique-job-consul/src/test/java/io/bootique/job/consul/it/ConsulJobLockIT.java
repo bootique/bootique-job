@@ -1,7 +1,7 @@
 package io.bootique.job.consul.it;
 
 import io.bootique.job.consul.it.job.LockJob;
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.Scheduler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

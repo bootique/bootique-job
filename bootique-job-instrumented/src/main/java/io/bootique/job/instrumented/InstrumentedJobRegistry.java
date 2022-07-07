@@ -20,9 +20,9 @@ package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
 import io.bootique.job.graph.JobGraphNode;
-import io.bootique.job.runnable.JobDecorators;
-import io.bootique.job.scheduler.Scheduler;
-import io.bootique.job.scheduler.execution.DefaultJobRegistry;
+import io.bootique.job.runtime.JobDecorators;
+import io.bootique.job.Scheduler;
+import io.bootique.job.runtime.DefaultJobRegistry;
 import io.bootique.job.group.ParallelJobBatchStep;
 
 import javax.inject.Provider;

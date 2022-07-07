@@ -30,12 +30,8 @@ import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.ErrorHandlingJobDecorator;
-import io.bootique.job.runnable.JobDecorator;
-import io.bootique.job.runnable.JobDecorators;
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.runtime.*;
 import io.bootique.job.scheduler.SchedulerFactory;
-import io.bootique.job.scheduler.execution.*;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
@@ -43,7 +39,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 public class JobModule extends ConfigModule {
 

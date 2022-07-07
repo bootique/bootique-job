@@ -21,7 +21,7 @@ package io.bootique.job.zookeeper.it.job;
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.SerialJob;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 import io.bootique.job.zookeeper.it.ZkJobLockIT;
 
 import java.util.Map;

@@ -19,8 +19,8 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.runnable.JobFuture;
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.JobFuture;
+import io.bootique.job.Scheduler;
 import io.bootique.job.group.ParallelJobBatchStep;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 

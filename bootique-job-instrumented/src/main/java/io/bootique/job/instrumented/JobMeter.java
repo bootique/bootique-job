@@ -19,7 +19,7 @@
 package io.bootique.job.instrumented;
 
 import com.codahale.metrics.Timer;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 
 import java.util.Objects;
 

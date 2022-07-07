@@ -22,7 +22,7 @@ package io.bootique.job.zookeeper.lock;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

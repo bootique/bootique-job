@@ -17,28 +17,9 @@
  * under the License.
  */
 
-package io.bootique.job.runnable;
+package io.bootique.job;
 
-import io.bootique.job.Job;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public enum JobOutcome {
 
-import java.util.Map;
-
-/**
- * @since 3.0
- */
-public class ErrorHandlingJobDecorator implements JobDecorator {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingJobDecorator.class);
-
-    @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
-        try {
-            return delegate.run(params);
-        } catch (Throwable th) {
-            LOGGER.info("Exception while running job '{}'", delegate.getMetadata().getName(), th);
-            return JobResult.failure(delegate.getMetadata(), th);
-        }
-    }
+	SUCCESS, FAILURE, PARTIAL_SUCCESS, UNKNOWN, SKIPPED
 }

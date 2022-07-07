@@ -21,7 +21,7 @@ package io.bootique.job.group;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 
 import java.util.List;
 import java.util.Map;

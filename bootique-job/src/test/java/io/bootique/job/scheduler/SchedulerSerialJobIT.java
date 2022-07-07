@@ -21,9 +21,10 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
+import io.bootique.job.Scheduler;
 import io.bootique.job.fixture.SerialJob1;
-import io.bootique.job.runnable.JobOutcome;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobOutcome;
+import io.bootique.job.JobResult;
 import io.bootique.job.JobModule;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;

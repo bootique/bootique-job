@@ -4,7 +4,7 @@ import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.SerialJob;
 import io.bootique.job.consul.it.ConsulJobLockIT;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 
 import java.util.Map;
 

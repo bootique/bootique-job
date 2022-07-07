@@ -16,10 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.bootique.job;
 
-package io.bootique.job.runnable;
+import io.bootique.job.runtime.DecoratedJob;
 
-public enum JobOutcome {
+import java.util.Map;
 
-	SUCCESS, FAILURE, PARTIAL_SUCCESS, UNKNOWN, SKIPPED
+/**
+ * @since 3.0
+ */
+@FunctionalInterface
+public interface JobDecorator {
+
+    default Job decorate(Job delegate, String altName, Map<String, Object> prebindParams) {
+        return isApplicable(delegate.getMetadata(), altName, prebindParams)
+                ? new DecoratedJob(delegate, delegate.getMetadata(), this)
+                : delegate;
+    }
+
+    default boolean isApplicable(JobMetadata metadata, String altName, Map<String, Object> prebindParams) {
+        return true;
+    }
+
+    JobResult run(Job delegate, Map<String, Object> params);
 }

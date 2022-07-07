@@ -22,7 +22,7 @@ import io.bootique.command.CommandOutcome;
 import io.bootique.job.Job;
 import io.bootique.job.JobListener;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 import io.bootique.job.JobModule;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;

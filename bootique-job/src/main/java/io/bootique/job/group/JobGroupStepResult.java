@@ -18,8 +18,8 @@
  */
 package io.bootique.job.group;
 
-import io.bootique.job.runnable.JobFuture;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobFuture;
+import io.bootique.job.JobResult;
 
 import java.util.Collections;
 import java.util.List;

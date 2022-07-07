@@ -17,15 +17,14 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
+import io.bootique.job.Scheduler;
 import io.bootique.job.graph.*;
 import io.bootique.job.group.JobGroup;
-import io.bootique.job.runnable.JobDecorators;
-import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.group.JobGroupStep;
 import io.bootique.job.group.ParallelJobBatchStep;
 import io.bootique.job.group.SingleJobStep;

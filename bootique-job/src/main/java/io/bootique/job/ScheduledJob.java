@@ -17,8 +17,9 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler;
+package io.bootique.job;
 
+import io.bootique.job.scheduler.Trigger;
 import io.bootique.job.value.Cron;
 
 /**

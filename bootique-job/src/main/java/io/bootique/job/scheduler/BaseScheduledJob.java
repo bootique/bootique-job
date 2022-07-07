@@ -20,6 +20,7 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.job.Job;
+import io.bootique.job.ScheduledJob;
 import io.bootique.job.value.Cron;
 
 import java.util.Collections;

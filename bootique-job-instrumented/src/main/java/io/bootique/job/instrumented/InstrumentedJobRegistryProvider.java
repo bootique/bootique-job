@@ -20,8 +20,8 @@ package io.bootique.job.instrumented;
 
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.*;
-import io.bootique.job.runnable.JobDecorators;
-import io.bootique.job.scheduler.Scheduler;
+import io.bootique.job.runtime.JobDecorators;
+import io.bootique.job.Scheduler;
 
 import javax.inject.Inject;
 import javax.inject.Provider;

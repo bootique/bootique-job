@@ -21,7 +21,7 @@ package io.bootique.job.instrumented;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

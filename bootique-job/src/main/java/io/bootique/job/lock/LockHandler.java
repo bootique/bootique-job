@@ -20,7 +20,7 @@
 package io.bootique.job.lock;
 
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.JobDecorator;
+import io.bootique.job.JobDecorator;
 
 import java.util.Map;
 

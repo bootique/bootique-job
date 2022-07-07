@@ -16,35 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
+import io.bootique.job.JobDecorator;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.JobDecorator;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 
 import java.util.Map;
 
 /**
  * @since 3.0
  */
-public class JobExceptionsHandlerDecorator implements JobDecorator {
+public class DecoratedJob implements Job {
+
+    private final Job job;
+    private final JobMetadata metadata;
+    private final JobDecorator decorator;
+
+    public DecoratedJob(Job job, JobMetadata metadata, JobDecorator decorator) {
+        this.job = job;
+        this.metadata = metadata;
+        this.decorator = decorator;
+    }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
-        return runWithExceptionHandling(delegate.getMetadata(), delegate, params);
+    public JobMetadata getMetadata() {
+        return metadata;
     }
 
-    // reusable method that can be used by this and other decorators for consistent error handling
-    static JobResult runWithExceptionHandling(JobMetadata metadata, Job delegate, Map<String, Object> params) {
-        try {
-            JobResult result = delegate.run(params);
-            return result != null ? result : JobResult.unknown(metadata);
-        } catch (Exception e) {
-            // not logging the failure here.. JobLogDecorator will do the logging
-            return JobResult.failure(metadata, e);
-        }
+    @Override
+    public JobResult run(Map<String, Object> params) {
+        return decorator.run(job, params);
     }
-
 }

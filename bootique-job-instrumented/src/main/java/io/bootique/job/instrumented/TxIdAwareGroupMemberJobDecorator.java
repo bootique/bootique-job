@@ -20,7 +20,7 @@ package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 
 import java.util.Map;

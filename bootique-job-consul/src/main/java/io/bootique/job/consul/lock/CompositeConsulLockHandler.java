@@ -20,7 +20,7 @@ package io.bootique.job.consul.lock;
 
 import io.bootique.job.Job;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.JobResult;
+import io.bootique.job.JobResult;
 
 import java.util.Map;
 

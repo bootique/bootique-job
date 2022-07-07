@@ -20,10 +20,8 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BootiqueException;
-import io.bootique.job.Job;
-import io.bootique.job.JobRegistry;
-import io.bootique.job.runnable.JobDecorators;
-import io.bootique.job.runnable.JobRunBuilder;
+import io.bootique.job.*;
+import io.bootique.job.runtime.JobDecorators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
