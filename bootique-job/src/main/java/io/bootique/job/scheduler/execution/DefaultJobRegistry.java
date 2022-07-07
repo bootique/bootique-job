@@ -128,7 +128,7 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     protected JobGroup createJobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
-        return new JobGroup(groupMetadata, scheduler.get(), steps);
+        return new JobGroup(groupMetadata, steps);
     }
 
     private JobMetadata groupMetadata(String jobName, Collection<Job> jobs) {
