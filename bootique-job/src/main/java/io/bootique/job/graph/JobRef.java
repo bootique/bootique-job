@@ -17,16 +17,16 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.graph;
 
 import java.util.Map;
 
-class JobExecution {
+public class JobRef {
 
     private String jobName;
     private Map<String, Object> params;
 
-    public JobExecution(String jobName, Map<String, Object> params) {
+    public JobRef(String jobName, Map<String, Object> params) {
         this.jobName = jobName;
         this.params = params;
     }

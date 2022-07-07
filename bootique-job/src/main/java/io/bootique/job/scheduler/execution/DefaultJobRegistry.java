@@ -22,8 +22,7 @@ package io.bootique.job.scheduler.execution;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.graph.JobGraphNode;
-import io.bootique.job.graph.SingleJobNode;
+import io.bootique.job.graph.*;
 import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.group.JobGroupStep;
@@ -107,14 +106,14 @@ public class DefaultJobRegistry implements JobRegistry {
 
         checkJobExists(jobName);
 
-        DIGraph<JobExecution> graph = new JobGraphBuilder(allNodes, standaloneJobs).createGraph(jobName);
+        Digraph<JobRef> graph = new JobGraphBuilder(allNodes, standaloneJobs).createGraph(jobName);
         List<Job> standaloneJobsInGraph = standaloneJobsInGraph(graph);
 
         switch (standaloneJobsInGraph.size()) {
             case 1:
-                JobExecution exec = graph.topSort().get(0).iterator().next();
+                JobRef ref = graph.topSort().get(0).iterator().next();
                 Job job = standaloneJobsInGraph.get(0);
-                return decorators.decorate(job, jobName, exec.getParams());
+                return decorators.decorate(job, jobName, ref.getParams());
             case 0:
                 // fall through to the JobGroup
                 LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
@@ -124,9 +123,9 @@ public class DefaultJobRegistry implements JobRegistry {
         }
     }
 
-    protected JobGroup createJobGroup(String jobName, DIGraph<JobExecution> graph) {
+    protected JobGroup createJobGroup(String jobName, Digraph<JobRef> graph) {
         JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs.values());
-        List<JobGroupStep> steps = jobGroupSteps(graph.reverseTopSort(), groupMetadata);
+        List<JobGroupStep> steps = jobGroupSteps(graph.reverseTopSort());
         return createJobGroup(groupMetadata, steps);
     }
 
@@ -142,13 +141,13 @@ public class DefaultJobRegistry implements JobRegistry {
         return builder.build();
     }
 
-    protected List<JobGroupStep> jobGroupSteps(List<Set<JobExecution>> executions, JobMetadata groupMetadata) {
+    protected List<JobGroupStep> jobGroupSteps(List<Set<JobRef>> sortedRefs) {
 
-        List<JobGroupStep> steps = new ArrayList<>(executions.size());
+        List<JobGroupStep> steps = new ArrayList<>(sortedRefs.size());
 
-        for (Set<JobExecution> s : executions) {
+        for (Set<JobRef> s : sortedRefs) {
             List<Job> stepJobs = new ArrayList<>();
-            for (JobExecution e : s) {
+            for (JobRef e : s) {
 
                 Job undecorated = standaloneJobs.get(e.getJobName());
                 Job decorated = decorateGroupMemberJob(undecorated, e.getParams());
@@ -203,7 +202,7 @@ public class DefaultJobRegistry implements JobRegistry {
         return new JobParamDefaultsDecorator().decorate(undecorated, undecorated.getMetadata().getName(), prebindParams);
     }
 
-    private List<Job> standaloneJobsInGraph(DIGraph<JobExecution> graph) {
+    private List<Job> standaloneJobsInGraph(Digraph<JobRef> graph) {
         return graph.allVertices().stream()
                 .map(e -> standaloneJobs.get(e.getJobName()))
                 .filter(j -> j != null)

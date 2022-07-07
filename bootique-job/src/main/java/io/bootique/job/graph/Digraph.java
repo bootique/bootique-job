@@ -17,21 +17,21 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler.execution;
+package io.bootique.job.graph;
 
 import java.util.*;
 
 /**
- * The implementation here is basically an adjacency list, but a {@link Map} is
- * used to map each vertex to its list of adjacent vertices.
+ * Directed graph data structure to represent dependent jobs.
  *
- * @param <V> A type of a vertex.
+ * @param <V> graph vertex type
+ * @since 3.0
  */
-class DIGraph<V> {
+public class Digraph<V> {
 
     private final Map<V, List<V>> neighbors;
 
-    public DIGraph() {
+    public Digraph() {
         // LinkedHashMap is used for supporting insertion order.
         this.neighbors = new LinkedHashMap<>();
     }
