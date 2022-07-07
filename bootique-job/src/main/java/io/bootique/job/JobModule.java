@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.Map;
+import java.util.Set;
 
 public class JobModule extends ConfigModule {
 
@@ -118,17 +118,15 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    LockHandler provideDefaultLockHandler(Map<String, LockHandler> lockHandlers) {
+    LockHandler provideDefaultLockHandler(Set<LockHandler> lockHandlers) {
         switch (lockHandlers.size()) {
             case 0:
                 return new LocalLockHandler();
             case 1:
-                LOGGER.info("Using '{}' lock handler", lockHandlers.keySet().iterator().next());
-                return lockHandlers.values().iterator().next();
+                LOGGER.info("Using '{}' lock handler", lockHandlers.iterator().next());
+                return lockHandlers.iterator().next();
             default:
-                throw new RuntimeException(
-                        "There's more than one LockHandler defined. Can't determine the default: "
-                                + lockHandlers.keySet());
+                throw new RuntimeException("There's more than one LockHandler defined. Can't determine the default: " + lockHandlers);
         }
     }
 

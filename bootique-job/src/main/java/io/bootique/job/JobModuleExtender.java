@@ -23,7 +23,6 @@ import io.bootique.ModuleExtender;
 import io.bootique.di.*;
 import io.bootique.job.lock.LockHandler;
 
-import javax.inject.Provider;
 import java.util.function.Consumer;
 
 public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
@@ -31,7 +30,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     private SetBuilder<Job> jobs;
     private SetBuilder<JobListener> listeners;
     private SetBuilder<MappedJobListener> mappedListeners;
-    private MapBuilder<String, LockHandler> lockHandlers;
+    private SetBuilder<LockHandler> lockHandlers;
 
     public JobModuleExtender(Binder binder) {
         super(binder);
@@ -77,52 +76,16 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0.M1
      */
-    public JobModuleExtender addLockHandler(String name, LockHandler handler) {
-        contributeLockHandlers().putInstance(name, handler);
+    public JobModuleExtender addLockHandler(LockHandler handler) {
+        contributeLockHandlers().addInstance(handler);
         return this;
     }
 
     /**
      * @since 3.0.M1
      */
-    public JobModuleExtender addLockHandler(String name, Class<? extends LockHandler> handlerType) {
-        contributeLockHandlers().put(name, handlerType);
-        return this;
-    }
-
-    /**
-     * @param lockHandler class that implements LockHandler
-     * @return this
-     */
-    public JobModuleExtender setLockHandler(Class<? extends LockHandler> lockHandler) {
-        binder.bind(LockHandler.class).to(lockHandler);
-        return this;
-    }
-
-    /**
-     * @param lockHandler key of the LockHandler implementation
-     * @return this
-     */
-    public JobModuleExtender setLockHandler(Key<? extends LockHandler> lockHandler) {
-        binder.bind(LockHandler.class).to(lockHandler);
-        return this;
-    }
-
-    /**
-     * @param lockHandlerProvider LockHandler provider
-     * @return this
-     */
-    public JobModuleExtender setLockHandlerProvider(Class<Provider<? extends LockHandler>> lockHandlerProvider) {
-        binder.bind(LockHandler.class).toProvider(lockHandlerProvider);
-        return this;
-    }
-
-    /**
-     * @param lockHandlerProvider LockHandler provider
-     * @return this
-     */
-    public JobModuleExtender setLockHandlerProvider(Provider<? extends LockHandler> lockHandlerProvider) {
-        binder.bind(LockHandler.class).toProviderInstance(lockHandlerProvider);
+    public JobModuleExtender addLockHandler(Class<? extends LockHandler> handlerType) {
+        contributeLockHandlers().add(handlerType);
         return this;
     }
 
@@ -186,9 +149,9 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
         return mappedListeners;
     }
 
-    protected MapBuilder<String, LockHandler> contributeLockHandlers() {
+    protected SetBuilder<LockHandler> contributeLockHandlers() {
         if (lockHandlers == null) {
-            lockHandlers = newMap(String.class, LockHandler.class);
+            lockHandlers = newSet(LockHandler.class);
         }
         return lockHandlers;
     }
