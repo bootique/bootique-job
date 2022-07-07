@@ -16,28 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package io.bootique.job.runnable;
 
 import io.bootique.job.Job;
-import io.bootique.job.lock.LockHandler;
+import io.bootique.job.JobMetadata;
 
 import java.util.Map;
 
-public class LockAwareRunnableJobFactory implements RunnableJobFactory {
+/**
+ * @since 3.0
+ */
+@FunctionalInterface
+public interface JobDecorator {
 
-    private RunnableJobFactory delegate;
-    private LockHandler lockHandler;
-
-    public LockAwareRunnableJobFactory(RunnableJobFactory delegate, LockHandler lockHandler) {
-        this.delegate = delegate;
-        this.lockHandler = lockHandler;
+    default Job decorate(Job delegate, String altName, Map<String, Object> prebindParams) {
+        return isApplicable(delegate.getMetadata(), altName, prebindParams)
+                ? new DecoratedJob(delegate, delegate.getMetadata(), this)
+                : delegate;
     }
 
-    @Override
-    public RunnableJob runnable(Job job, Map<String, Object> parameters) {
-        RunnableJob rj = delegate.runnable(job, parameters);
-        return job.getMetadata().isSerial() ? lockHandler.lockingJob(rj, job.getMetadata()) : rj;
+    default boolean isApplicable(JobMetadata metadata, String altName, Map<String, Object> prebindParams) {
+        return true;
     }
 
+    JobResult run(Job delegate, Map<String, Object> params);
 }

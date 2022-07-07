@@ -20,7 +20,6 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.job.Job;
-import io.bootique.job.runnable.RunnableJobFactory;
 import io.bootique.job.value.Cron;
 
 import java.util.Collections;
@@ -32,12 +31,10 @@ import java.util.Map;
 public abstract class BaseScheduledJob implements ScheduledJob {
 
     private final Job job;
-    private final RunnableJobFactory runnableJobFactory;
     private volatile ScheduledJobState state;
 
-    public BaseScheduledJob(Job job, RunnableJobFactory runnableJobFactory) {
+    public BaseScheduledJob(Job job) {
         this.job = job;
-        this.runnableJobFactory = runnableJobFactory;
         this.state = ScheduledJobState.unscheduled(false);
     }
 
@@ -82,7 +79,7 @@ public abstract class BaseScheduledJob implements ScheduledJob {
         if (!isScheduled()) {
             synchronized (this) {
                 if (!isScheduled()) {
-                    this.state = doSchedule(job, trigger, runnableJobFactory);
+                    this.state = doSchedule(job, trigger);
                     return true;
                 }
             }
@@ -91,7 +88,7 @@ public abstract class BaseScheduledJob implements ScheduledJob {
         return false;
     }
 
-    protected abstract ScheduledJobState doSchedule(Job job, Trigger trigger, RunnableJobFactory runnableJobFactory);
+    protected abstract ScheduledJobState doSchedule(Job job, Trigger trigger);
 
     @Override
     public boolean isScheduled() {

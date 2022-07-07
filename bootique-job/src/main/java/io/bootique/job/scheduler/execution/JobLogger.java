@@ -20,7 +20,7 @@
 package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.JobDecorator;
 import io.bootique.job.runnable.JobResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,44 +30,34 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-// calling the class JobLogger instead of JobLogDecorator for prettier log output
-class JobLogger implements Job {
+public class JobLogger implements JobDecorator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobLogger.class);
-
-    private final Job delegate;
-    private final String name;
-
-    JobLogger(Job delegate) {
-        this.delegate = delegate;
-        this.name = delegate.getMetadata().getName();
-    }
+    protected static final Logger LOGGER = LoggerFactory.getLogger(JobLogger.class);
 
     @Override
-    public JobMetadata getMetadata() {
-        return delegate.getMetadata();
+    public JobResult run(Job delegate, Map<String, Object> params) {
+
+        String name = delegate.getMetadata().getName();
+        onJobStarted(name, params);
+
+        try {
+            JobResult result = delegate.run(params);
+            return onJobFinished(name, result);
+        } catch (Throwable th) {
+            return onJobFinished(name, JobResult.failure(delegate.getMetadata(), th));
+        }
     }
 
-    @Override
-    public JobResult run(Map<String, Object> params) {
-        onJobStarted(params);
-
-        JobResult result = delegate.run(params);
-
-        onJobFinished(result);
-        return result;
-    }
-
-    private void onJobStarted(Map<String, Object> params) {
+    private void onJobStarted(String name, Map<String, Object> params) {
         LOGGER.info(String.format("job '%s' started with params %s", name, params));
     }
 
-    private void onJobFinished(JobResult result) {
+    private JobResult onJobFinished(String name, JobResult result) {
 
         switch (result.getOutcome()) {
             case SUCCESS:
                 LOGGER.info("job '{}' finished", name);
-                break;
+                return result;
             default:
                 String message = result.getMessage();
                 if (message == null && result.getThrowable() != null) {
@@ -83,6 +73,7 @@ class JobLogger implements Job {
                 }
 
                 LOGGER.warn("job '{}' finished: {} - {} ", name, result.getOutcome(), message);
+                return result;
         }
     }
 }

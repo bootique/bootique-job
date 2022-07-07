@@ -30,12 +30,12 @@ import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.ErrorHandlingRunnableJobFactory;
-import io.bootique.job.runnable.LockAwareRunnableJobFactory;
-import io.bootique.job.runnable.RunnableJobFactory;
-import io.bootique.job.runnable.SimpleRunnableJobFactory;
+import io.bootique.job.runnable.ErrorHandlingJobDecorator;
+import io.bootique.job.runnable.JobDecorator;
+import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.SchedulerFactory;
+import io.bootique.job.scheduler.execution.*;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.Set;
+import java.util.*;
 
 public class JobModule extends ConfigModule {
 
@@ -108,12 +108,12 @@ public class JobModule extends ConfigModule {
     @Provides
     @Singleton
     Scheduler createScheduler(
-            RunnableJobFactory runnableJobFactory,
             JobRegistry jobRegistry,
+            JobDecorators decorators,
             ConfigurationFactory configFactory,
             ShutdownManager shutdownManager) {
 
-        return config(SchedulerFactory.class, configFactory).createScheduler(runnableJobFactory, jobRegistry, shutdownManager);
+        return config(SchedulerFactory.class, configFactory).createScheduler(jobRegistry, decorators, shutdownManager);
     }
 
     @Provides
@@ -132,9 +132,41 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    RunnableJobFactory provideRunnableJobFactory(LockHandler lockHandler) {
-        RunnableJobFactory rf1 = new SimpleRunnableJobFactory();
-        RunnableJobFactory rf2 = new LockAwareRunnableJobFactory(rf1, lockHandler);
-        return new ErrorHandlingRunnableJobFactory(rf2);
+    JobDecorators provideDecorators(
+            JobLogger jobLogger,
+            LockHandler lockHandler,
+            JobListenerDecorator listenerDecorator) {
+
+        // TODO: Listeners should be changed to Decorators (can be done in backwards-compatible manner)
+        // TODO: JobExceptionsHandlerDecorator and ErrorHandlingJobDecorator must be unified
+        // lower indexes are inner decorators, and higher are outer
+        List<JobDecorator> decorators = List.of(
+                new JobNameDecorator(),
+                listenerDecorator,
+                new JobParamDefaultsDecorator(),
+                new JobExceptionsHandlerDecorator(),
+                jobLogger,
+                lockHandler);
+        return new JobDecorators(decorators, new ErrorHandlingJobDecorator());
+    }
+
+    @Provides
+    @Singleton
+    JobLogger provideJobLogger() {
+        return new JobLogger();
+    }
+
+    @Provides
+    @Singleton
+    JobListenerDecorator provideListenerDecorator(Set<JobListener> listeners, Set<MappedJobListener> mappedListeners) {
+        // not checking for dupes between MappedJobListener and JobListener collections. Is that a problem?
+        List<MappedJobListener> localListeners = new ArrayList<>(mappedListeners.size() + listeners.size());
+        localListeners.addAll(mappedListeners);
+
+        //  Integer.MAX_VALUE means placing bare unordered listeners after (== inside) mapped listeners
+        listeners.forEach(listener -> localListeners.add(new MappedJobListener<>(listener, Integer.MAX_VALUE)));
+        localListeners.sort(Comparator.comparing(MappedJobListener::getOrder));
+
+        return new JobListenerDecorator(localListeners);
     }
 }

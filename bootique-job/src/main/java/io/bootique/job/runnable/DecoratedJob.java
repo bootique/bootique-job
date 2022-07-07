@@ -16,21 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package io.bootique.job.runnable;
 
 import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
 
 import java.util.Map;
 
-public interface RunnableJobFactory {
+/**
+ * @since 3.0
+ */
+public class DecoratedJob implements Job {
 
-    /**
-     * Creates a {@link RunnableJob} object that combines job instance with a set of parameters.
-     *
-     * @param job        A job instance to run when the returned {@link RunnableJob} is executed.
-     * @param parameters A set of parameters to apply to the job when the returned {@link RunnableJob} is executed.
-     * @return a wrapper around a job and a set of parameters.
-     */
-    RunnableJob runnable(Job job, Map<String, Object> parameters);
+    private final Job job;
+    private final JobMetadata metadata;
+    private final JobDecorator decorator;
+
+    public DecoratedJob(Job job, JobMetadata metadata, JobDecorator decorator) {
+        this.job = job;
+        this.metadata = metadata;
+        this.decorator = decorator;
+    }
+
+    @Override
+    public JobMetadata getMetadata() {
+        return metadata;
+    }
+
+    @Override
+    public JobResult run(Map<String, Object> params) {
+        return decorator.run(job, params);
+    }
 }

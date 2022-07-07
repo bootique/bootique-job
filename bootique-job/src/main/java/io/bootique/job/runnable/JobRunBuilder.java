@@ -22,10 +22,10 @@ import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import org.springframework.scheduling.TaskScheduler;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Future;
 
 /**
@@ -37,27 +37,31 @@ public class JobRunBuilder {
 
     private final JobRegistry registry;
     private final TaskScheduler taskScheduler;
-    private final RunnableJobFactory runnableJobFactory;
+    private final JobDecorators decorators;
 
     private Job job;
+    private String jobName;
     private Map<String, Object> params;
+    private boolean noDecorators;
 
     public JobRunBuilder(
             JobRegistry registry,
             TaskScheduler taskScheduler,
-            RunnableJobFactory runnableJobFactory) {
+            JobDecorators decorators) {
         this.registry = registry;
         this.taskScheduler = taskScheduler;
-        this.runnableJobFactory = runnableJobFactory;
+        this.decorators = decorators;
     }
 
     public JobRunBuilder job(Job job) {
         this.job = job;
+        this.jobName = null;
         return this;
     }
 
     public JobRunBuilder jobName(String jobName) {
-        this.job = registry.getJob(jobName);
+        this.job = null;
+        this.jobName = jobName;
         return this;
     }
 
@@ -66,8 +70,13 @@ public class JobRunBuilder {
         return this;
     }
 
+    public JobRunBuilder noDecorators() {
+        this.noDecorators = true;
+        return this;
+    }
+
     public JobResult runBlocking() {
-        return runnableJobFactory.runnable(resolveJob(), resolveParams()).run();
+        return resolveJob().run(resolveParams());
     }
 
     public JobFuture runNonBlocking() {
@@ -77,7 +86,7 @@ public class JobRunBuilder {
 
         JobResult[] result = new JobResult[1];
         Future<?> future = taskScheduler.schedule(
-                () -> result[0] = runnableJobFactory.runnable(job, params).run(),
+                () -> result[0] = job.run(params),
                 new Date());
 
         JobFuture f1 = new SimpleJobFuture(
@@ -89,7 +98,18 @@ public class JobRunBuilder {
     }
 
     protected Job resolveJob() {
-        return Objects.requireNonNull(job, "Job is not set");
+        if (jobName != null) {
+            return registry.getJob(jobName);
+        }
+
+        if (job != null) {
+            return noDecorators
+                    // even if no decorators are requested, let's add a mandatory exception handler decorator
+                    ? decorators.decorateWithExceptionHandler(job, null, Collections.emptyMap())
+                    : decorators.decorate(job, null, Collections.emptyMap());
+        }
+
+        throw new IllegalStateException("Neither 'job' nor 'jobName' are set");
     }
 
     protected Map<String, Object> resolveParams() {

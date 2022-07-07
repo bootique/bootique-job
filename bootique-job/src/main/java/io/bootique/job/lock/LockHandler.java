@@ -20,9 +20,14 @@
 package io.bootique.job.lock;
 
 import io.bootique.job.JobMetadata;
-import io.bootique.job.runnable.RunnableJob;
+import io.bootique.job.runnable.JobDecorator;
 
-public interface LockHandler {
+import java.util.Map;
 
-	RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata);
+public interface LockHandler extends JobDecorator {
+
+    @Override
+    default boolean isApplicable(JobMetadata metadata, String altName, Map<String, Object> prebindParams) {
+        return metadata.isSerial();
+    }
 }

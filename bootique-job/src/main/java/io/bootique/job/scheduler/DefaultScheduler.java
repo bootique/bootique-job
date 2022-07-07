@@ -22,9 +22,8 @@ package io.bootique.job.scheduler;
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.runnable.JobFuture;
+import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.runnable.JobRunBuilder;
-import io.bootique.job.runnable.RunnableJobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -38,8 +37,8 @@ public class DefaultScheduler implements Scheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScheduler.class);
 
     private final TaskScheduler taskScheduler;
-    private final RunnableJobFactory runnableJobFactory;
     private final JobRegistry jobRegistry;
+    private final JobDecorators decorators;
     private final Collection<Trigger> triggers;
     private final Map<String, Collection<Trigger>> triggersByJob;
     private final Map<String, Collection<ScheduledJob>> scheduledJobsByName;
@@ -58,12 +57,12 @@ public class DefaultScheduler implements Scheduler {
     public DefaultScheduler(
             Collection<Trigger> triggers,
             TaskScheduler taskScheduler,
-            RunnableJobFactory runnableJobFactory,
-            JobRegistry jobRegistry) {
+            JobRegistry jobRegistry,
+            JobDecorators decorators) {
 
         this.taskScheduler = taskScheduler;
-        this.runnableJobFactory = runnableJobFactory;
         this.jobRegistry = jobRegistry;
+        this.decorators = decorators;
         this.triggers = triggers;
         this.triggersByJob = mapTriggers(triggers);
         this.scheduledJobsByName = new HashMap<>();
@@ -152,14 +151,14 @@ public class DefaultScheduler implements Scheduler {
 
     @Override
     public JobRunBuilder runBuilder() {
-        return new JobRunBuilder(jobRegistry, taskScheduler, runnableJobFactory);
+        return new JobRunBuilder(jobRegistry, taskScheduler, decorators);
     }
 
     protected ScheduledJob schedule(Trigger trigger) {
         String jobName = trigger.getJobName();
         Job job = jobRegistry.getJob(jobName);
 
-        ScheduledJob scheduledJob = new SpringScheduledJob(job, runnableJobFactory, taskScheduler);
+        ScheduledJob scheduledJob = new SpringScheduledJob(job, taskScheduler);
         scheduledJob.schedule(trigger);
         return scheduledJob;
     }

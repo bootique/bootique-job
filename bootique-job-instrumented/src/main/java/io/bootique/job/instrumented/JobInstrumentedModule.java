@@ -24,6 +24,7 @@ import io.bootique.ConfigModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.JobRegistry;
+import io.bootique.job.scheduler.execution.JobLogger;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 
@@ -54,5 +55,11 @@ public class JobInstrumentedModule extends ConfigModule {
     @Singleton
     JobMDCManager provideJobMDCManager(TransactionIdGenerator generator, TransactionIdMDC mdc) {
         return new JobMDCManager(generator, mdc);
+    }
+
+    @Provides
+    @Singleton
+    JobLogger provideJobLogger(JobMDCManager mdcManager, JobMetricsManager metricsManager) {
+        return new InstrumentedJobLogger(mdcManager, metricsManager);
     }
 }

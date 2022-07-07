@@ -21,6 +21,7 @@ package io.bootique.job;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.JobGraphNodeFactory;
+import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
 import io.bootique.type.TypeRef;
@@ -35,33 +36,31 @@ import java.util.*;
 public class JobRegistryProvider implements Provider<JobRegistry> {
 
     protected final Set<Job> standaloneJobs;
-    protected final Set<JobListener> listeners;
-    protected final Set<MappedJobListener> mappedListeners;
+    protected final JobDecorators decorators;
     protected final Provider<Scheduler> scheduler;
     protected final ConfigurationFactory configFactory;
 
     @Inject
     public JobRegistryProvider(
             Set<Job> standaloneJobs,
-            Set<JobListener> listeners,
-            Set<MappedJobListener> mappedListeners,
+            JobDecorators decorators,
             Provider<Scheduler> scheduler,
             ConfigurationFactory configFactory) {
 
         this.standaloneJobs = standaloneJobs;
-        this.listeners = listeners;
-        this.mappedListeners = mappedListeners;
+        this.decorators = decorators;
         this.scheduler = scheduler;
         this.configFactory = configFactory;
     }
 
     @Override
     public JobRegistry get() {
+
         return new DefaultJobRegistry(
                 standaloneJobs,
                 graphNodes(),
                 scheduler,
-                combineListeners());
+                decorators);
     }
 
     protected Map<String, JobGraphNode> graphNodes() {
@@ -73,18 +72,5 @@ public class JobRegistryProvider implements Provider<JobRegistry> {
         configFactory.config(ref, JobModule.JOBS_CONFIG_PREFIX).forEach((k, v) -> nodes.put(k, v.create()));
 
         return nodes;
-    }
-
-    protected List<MappedJobListener> combineListeners() {
-
-        // not checking for dupes between MappedJobListener and JobListener collections. Is that a problem?
-        List<MappedJobListener> localListeners = new ArrayList<>(mappedListeners.size() + listeners.size());
-        localListeners.addAll(mappedListeners);
-
-        //  Integer.MAX_VALUE means placing bare unordered listeners after (== inside) mapped listeners
-        listeners.forEach(listener -> localListeners.add(new MappedJobListener<>(listener, Integer.MAX_VALUE)));
-        localListeners.sort(Comparator.comparing(MappedJobListener::getOrder));
-
-        return localListeners;
     }
 }

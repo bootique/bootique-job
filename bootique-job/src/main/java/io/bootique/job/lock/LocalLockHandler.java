@@ -19,12 +19,13 @@
 
 package io.bootique.job.lock;
 
+import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runnable.RunnableJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -44,25 +45,24 @@ public class LocalLockHandler implements LockHandler {
     }
 
     @Override
-    public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
+    public JobResult run(Job delegate, Map<String, Object> params) {
 
-        return () -> {
-            String lockName = toLockName(metadata);
-            Lock lock = getLock(lockName);
+        JobMetadata metadata = delegate.getMetadata();
+        String lockName = toLockName(metadata);
+        Lock lock = getLock(lockName);
 
-            if (!lock.tryLock()) {
-                LOGGER.info("Skipping execution of '{}', another job instance owns the lock.", metadata.getName());
-                return JobResult.skipped(metadata, "Skipping execution, another job instance owns the lock");
-            }
+        if (!lock.tryLock()) {
+            LOGGER.info("Skipping execution of '{}', another job instance owns the lock.", metadata.getName());
+            return JobResult.skipped(metadata, "Skipping execution, another job instance owns the lock");
+        }
 
-            LOGGER.info("Locked '{}'", metadata.getName());
+        LOGGER.info("Locked '{}'", metadata.getName());
 
-            try {
-                return executable.run();
-            } finally {
-                lock.unlock();
-            }
-        };
+        try {
+            return delegate.run(params);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private Lock getLock(String lockName) {

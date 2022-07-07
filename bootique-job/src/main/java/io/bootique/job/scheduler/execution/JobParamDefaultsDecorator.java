@@ -18,8 +18,9 @@
  */
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.BaseJob;
 import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.JobDecorator;
 import io.bootique.job.runnable.JobResult;
 
 import java.util.HashMap;
@@ -28,25 +29,41 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-class JobParamDefaultsDecorator extends BaseJob {
+public class JobParamDefaultsDecorator implements JobDecorator {
 
-    private final Job delegate;
-    private final Map<String, Object> defaultParams;
-
-    public JobParamDefaultsDecorator(Job delegate, Map<String, Object> defaultParams) {
-        super(delegate.getMetadata());
-        this.delegate = delegate;
-        this.defaultParams = defaultParams;
+    @Override
+    public boolean isApplicable(JobMetadata metadata, String altName, Map<String, Object> prebindParams) {
+        return !prebindParams.isEmpty();
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
-        return delegate.run(mergeParams(params));
+    public Job decorate(Job delegate, String altName, Map<String, Object> prebindParams) {
+        return isApplicable(delegate.getMetadata(), altName, prebindParams)
+                ? new KnownParamsDecorator(prebindParams).decorate(delegate, altName, prebindParams)
+                : delegate;
     }
 
-    protected Map<String, Object> mergeParams(Map<String, Object> overridingParams) {
-        Map<String, Object> merged = new HashMap<>(defaultParams);
-        merged.putAll(overridingParams);
-        return merged;
+    @Override
+    public JobResult run(Job delegate, Map<String, Object> params) {
+        throw new UnsupportedOperationException("This decorator is not executable. It delegates to another decorator instead");
+    }
+
+    static class KnownParamsDecorator implements JobDecorator {
+        private final Map<String, Object> prebindParams;
+
+        KnownParamsDecorator(Map<String, Object> prebindParams) {
+            this.prebindParams = prebindParams;
+        }
+
+        @Override
+        public JobResult run(Job delegate, Map<String, Object> params) {
+            return delegate.run(mergeParams(params));
+        }
+
+        protected Map<String, Object> mergeParams(Map<String, Object> overridingParams) {
+            Map<String, Object> merged = new HashMap<>(prebindParams);
+            merged.putAll(overridingParams);
+            return merged;
+        }
     }
 }

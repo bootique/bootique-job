@@ -18,15 +18,16 @@
  */
 package io.bootique.job.consul.lock;
 
-import io.bootique.job.JobMetadata;
+import io.bootique.job.Job;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.runnable.RunnableJob;
+import io.bootique.job.runnable.JobResult;
 
+import java.util.Map;
 
 public class CompositeConsulLockHandler implements LockHandler {
 
-    private LockHandler localLockHandler;
-    private LockHandler consulLockHandler;
+    private final LockHandler localLockHandler;
+    private final LockHandler consulLockHandler;
 
     public CompositeConsulLockHandler(LockHandler localLockHandler, LockHandler consulLockHandler) {
         this.localLockHandler = localLockHandler;
@@ -34,7 +35,7 @@ public class CompositeConsulLockHandler implements LockHandler {
     }
 
     @Override
-    public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
-        return localLockHandler.lockingJob(consulLockHandler.lockingJob(executable, metadata), metadata);
+    public JobResult run(Job delegate, Map<String, Object> params) {
+        return localLockHandler.run(consulLockHandler.decorate(delegate, null, params), params);
     }
 }

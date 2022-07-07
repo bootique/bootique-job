@@ -19,11 +19,8 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.job.Job;
-import io.bootique.job.JobListener;
-import io.bootique.job.JobRegistry;
-import io.bootique.job.MappedJobListener;
-import io.bootique.job.JobRegistryProvider;
+import io.bootique.job.*;
+import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.scheduler.Scheduler;
 
 import javax.inject.Inject;
@@ -36,20 +33,16 @@ import java.util.Set;
 public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
 
     private final JobMDCManager mdcManager;
-    private final JobMetricsManager metricsManager;
 
     @Inject
     public InstrumentedJobRegistryProvider(
             Set<Job> standaloneJobs,
-            Set<JobListener> listeners,
-            Set<MappedJobListener> mappedListeners,
+            JobDecorators decorators,
             Provider<Scheduler> scheduler,
             JobMDCManager mdcManager,
-            JobMetricsManager metricsManager,
             ConfigurationFactory configFactory) {
-        super(standaloneJobs, listeners, mappedListeners, scheduler, configFactory);
+        super(standaloneJobs, decorators, scheduler, configFactory);
         this.mdcManager = mdcManager;
-        this.metricsManager = metricsManager;
     }
 
     @Override
@@ -58,8 +51,7 @@ public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
                 standaloneJobs,
                 graphNodes(),
                 scheduler,
-                combineListeners(),
-                mdcManager,
-                metricsManager);
+                decorators,
+                mdcManager);
     }
 }

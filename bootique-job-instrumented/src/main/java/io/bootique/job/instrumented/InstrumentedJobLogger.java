@@ -20,74 +20,57 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
 import io.bootique.job.runnable.JobResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.bootique.job.scheduler.execution.JobLogger;
 
 import java.util.Map;
 
 /**
  * @since 3.0
  */
-// calling the class JobLogger instead of InstrumentedJobLogDecorator for prettier log output
-class JobLogger implements Job {
+class InstrumentedJobLogger extends JobLogger {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobLogger.class);
-
-    private final Job delegate;
-    private final String name;
     private final JobMDCManager mdcManager;
     private final JobMetricsManager metricsManager;
 
-    JobLogger(Job delegate, JobMDCManager mdcManager, JobMetricsManager metricsManager) {
-        this.delegate = delegate;
-        this.name = delegate.getMetadata().getName();
+    InstrumentedJobLogger(JobMDCManager mdcManager, JobMetricsManager metricsManager) {
         this.mdcManager = mdcManager;
         this.metricsManager = metricsManager;
     }
 
     @Override
-    public JobMetadata getMetadata() {
-        return delegate.getMetadata();
-    }
-
-    @Override
-    public JobResult run(Map<String, Object> params) {
-
-        JobMeter meter = onJobStarted(params);
+    public JobResult run(Job delegate, Map<String, Object> params) {
+        String name = delegate.getMetadata().getName();
+        JobMeter meter = onMeteredJobStarted(name, params);
 
         try {
             JobResult result = delegate.run(params);
-            return onJobFinished(result, meter);
+            return onMeteredJobFinished(name, result, meter);
         } catch (Throwable th) {
-            // not expecting an exception because of the throwable job wrappers,
-            // but still need to be prepared for any outcome...
-            return onJobFinished(JobResult.failure(getMetadata(), th), meter);
+            return onMeteredJobFinished(name, JobResult.failure(delegate.getMetadata(), th), meter);
         }
     }
 
-    private JobMeter onJobStarted(Map<String, Object> params) {
+    protected JobMeter onMeteredJobStarted(String name, Map<String, Object> params) {
         mdcManager.onJobStarted();
         JobMeter meter = metricsManager.onJobStarted(name);
         LOGGER.info("job '{}' started with params {}", name, params);
         return meter;
     }
 
-    private JobResult onJobFinished(JobResult result, JobMeter meter) {
+    private JobResult onMeteredJobFinished(String name, JobResult result, JobMeter meter) {
         long timeMs = meter.stop(result);
-        logJobFinished(result, timeMs);
+        logJobFinished(name, result, timeMs);
         mdcManager.onJobFinished();
         return result;
     }
 
-    private void logJobFinished(JobResult result, long timeMs) {
+    private void logJobFinished(String name, JobResult result, long timeMs) {
 
         switch (result.getOutcome()) {
             case SUCCESS:
                 LOGGER.info("job '{}' finished in {} ms", name, timeMs);
                 return;
-
 
             default:
                 String message = result.getMessage();
@@ -106,5 +89,4 @@ class JobLogger implements Job {
                 LOGGER.warn("job '{}' finished in {} ms: {} - {} ", name, timeMs, result.getOutcome(), message);
         }
     }
-
 }

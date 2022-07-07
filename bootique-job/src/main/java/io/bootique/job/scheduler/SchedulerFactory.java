@@ -22,7 +22,7 @@ package io.bootique.job.scheduler;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.runnable.RunnableJobFactory;
+import io.bootique.job.runnable.JobDecorators;
 import io.bootique.shutdown.ShutdownManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -47,13 +47,13 @@ public class SchedulerFactory {
     }
 
     public Scheduler createScheduler(
-            RunnableJobFactory runnableJobFactory,
             JobRegistry jobRegistry,
+            JobDecorators decorators,
             ShutdownManager shutdownManager) {
 
         TaskScheduler taskScheduler = createTaskScheduler(shutdownManager);
 
-        return new DefaultScheduler(createTriggers(), taskScheduler, runnableJobFactory, jobRegistry);
+        return new DefaultScheduler(createTriggers(), taskScheduler, jobRegistry, decorators);
     }
 
     protected Collection<Trigger> createTriggers() {

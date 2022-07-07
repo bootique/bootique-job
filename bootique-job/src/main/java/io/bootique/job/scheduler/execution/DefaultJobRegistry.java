@@ -19,9 +19,12 @@
 
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.*;
+import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.JobRegistry;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.SingleJobNode;
+import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.group.JobGroupStep;
 import io.bootique.job.scheduler.execution.group.ParallelJobBatchStep;
@@ -40,10 +43,10 @@ public class DefaultJobRegistry implements JobRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobRegistry.class);
 
     protected final Provider<Scheduler> scheduler;
-    protected final Collection<MappedJobListener> listeners;
     protected final Map<String, Job> standaloneJobs;
     protected final Map<String, JobGraphNode> allNodes;
     protected final Set<String> allJobsAndGroupNames;
+    protected final JobDecorators decorators;
 
     // Lazily populated map of decorated runnable jobs (either standalone or groups)
     private final ConcurrentMap<String, Job> decoratedJobAndGroups;
@@ -52,14 +55,14 @@ public class DefaultJobRegistry implements JobRegistry {
             Collection<Job> standaloneJobs,
             Map<String, JobGraphNode> nodes,
             Provider<Scheduler> scheduler,
-            Collection<MappedJobListener> listeners) {
+            JobDecorators decorators) {
 
         this.standaloneJobs = jobsByName(standaloneJobs);
         this.allJobsAndGroupNames = allJobsAndGroupNames(this.standaloneJobs, nodes);
         this.allNodes = allNodes(this.standaloneJobs.keySet(), nodes);
         this.decoratedJobAndGroups = new ConcurrentHashMap<>((int) (nodes.size() / 0.75d) + 1);
         this.scheduler = scheduler;
-        this.listeners = listeners;
+        this.decorators = decorators;
     }
 
     private Set<String> allJobsAndGroupNames(
@@ -111,13 +114,13 @@ public class DefaultJobRegistry implements JobRegistry {
             case 1:
                 JobExecution exec = graph.topSort().get(0).iterator().next();
                 Job job = standaloneJobsInGraph.get(0);
-                return decorateJob(job, jobName, exec.getParams());
+                return decorators.decorate(job, jobName, exec.getParams());
             case 0:
                 // fall through to the JobGroup
                 LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
             default:
                 Job group = createJobGroup(jobName, graph);
-                return decorateJob(group, jobName, Collections.emptyMap());
+                return decorators.decorate(group, jobName, Collections.emptyMap());
         }
     }
 
@@ -194,53 +197,10 @@ public class DefaultJobRegistry implements JobRegistry {
         return map;
     }
 
-    protected Job decorateJob(Job undecorated, String altName, Map<String, Object> prebindParams) {
-        Job withName = decorateWithName(undecorated, altName);
-        Job withListeners = decorateWithListeners(withName, listeners);
-
-        // parameter decorator must go AFTER the listeners decorator to enable listeners to receive
-        // curried parameter values
-        Job withParamBindings = decorateWithParamBindings(withListeners, prebindParams);
-
-        // finally, catch exceptions and log the outcome. Note that while listeners decorator catches Job exceptions,
-        // this handler will only catch listener exceptions
-        Job withExceptionsCaught = decorateWithExceptionsHandler(withParamBindings);
-        return decorateWithLogger(withExceptionsCaught);
-    }
-
+    // TODO: move group decoration logic to JobDecorators. E.g. applicability criteria can be "!metadata.isGroup()"
+    @Deprecated
     protected Job decorateGroupMemberJob(Job undecorated, Map<String, Object> prebindParams) {
-        return decorateWithParamBindings(undecorated, prebindParams);
-    }
-
-    /**
-     * Optionally decorates a job with a different name. Decoration may be needed if we need to execute a job group
-     * with a single job.
-     */
-    protected Job decorateWithName(Job job, String name) {
-        JobMetadata metadata = job.getMetadata();
-        if (metadata.getName().equals(name)) {
-            return job;
-        }
-
-        JobMetadata.Builder builder = JobMetadata.builder(name);
-        metadata.getParameters().forEach(builder::param);
-        return new JobMetadataDecorator(job, builder.build());
-    }
-
-    protected Job decorateWithListeners(Job job, Collection<MappedJobListener> listeners) {
-        return listeners.isEmpty() ? job : new JobListenerDecorator(job, listeners);
-    }
-
-    protected Job decorateWithParamBindings(Job job, Map<String, Object> params) {
-        return params.isEmpty() ? job : new JobParamDefaultsDecorator(job, params);
-    }
-
-    protected Job decorateWithExceptionsHandler(Job job) {
-        return new JobExceptionsHandlerDecorator(job);
-    }
-
-    protected Job decorateWithLogger(Job job) {
-        return new JobLogger(job);
+        return new JobParamDefaultsDecorator().decorate(undecorated, undecorated.getMetadata().getName(), prebindParams);
     }
 
     private List<Job> standaloneJobsInGraph(DIGraph<JobExecution> graph) {

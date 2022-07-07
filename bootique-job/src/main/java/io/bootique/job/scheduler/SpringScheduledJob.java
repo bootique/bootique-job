@@ -20,8 +20,6 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.job.Job;
-import io.bootique.job.runnable.RunnableJob;
-import io.bootique.job.runnable.RunnableJobFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -39,9 +37,9 @@ public class SpringScheduledJob extends BaseScheduledJob {
     private final TaskScheduler taskScheduler;
     private final TriggerVisitor<org.springframework.scheduling.Trigger> springTriggerCompiler;
 
-    public SpringScheduledJob(Job job, RunnableJobFactory runnableJobFactory, TaskScheduler taskScheduler) {
+    public SpringScheduledJob(Job job, TaskScheduler taskScheduler) {
 
-        super(job, runnableJobFactory);
+        super(job);
 
         this.taskScheduler = taskScheduler;
         this.springTriggerCompiler = new TriggerVisitor<>() {
@@ -69,10 +67,9 @@ public class SpringScheduledJob extends BaseScheduledJob {
     }
 
     @Override
-    protected ScheduledJobState doSchedule(Job job, Trigger trigger, RunnableJobFactory runnableJobFactory) {
+    protected ScheduledJobState doSchedule(Job job, Trigger trigger) {
         LOGGER.info(String.format("Will schedule '%s'.. (%s)", getJobName(), trigger));
-        RunnableJob rj = runnableJobFactory.runnable(job, trigger.getParams());
-        ScheduledFuture<?> future = taskScheduler.schedule(() -> rj.run(), trigger.accept(springTriggerCompiler));
+        ScheduledFuture<?> future = taskScheduler.schedule(() -> job.run(trigger.getParams()), trigger.accept(springTriggerCompiler));
         return ScheduledJobState.scheduled(trigger, future);
     }
 }

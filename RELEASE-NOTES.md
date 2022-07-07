@@ -17,6 +17,7 @@
 * #105 @SerialJob should be part of the Job metadata
 * #106 Reorg JobFuture hierarchy
 * #108 Upgrade Consul client to 1.5.3
+* #109 Unify job decoration approach
 
 ## 2.0.M1
 

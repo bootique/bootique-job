@@ -16,32 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler.execution.group;
+package io.bootique.job.runnable;
 
 import io.bootique.job.Job;
-import io.bootique.job.runnable.JobResult;
-import io.bootique.job.scheduler.Scheduler;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 /**
  * @since 3.0
  */
-public class SingleJobStep extends JobGroupStep {
+public class JobDecorators {
 
-    private final Job job;
+    private final List<JobDecorator> decorators;
+    private final JobDecorator exceptionHandler;
 
-    public SingleJobStep(Scheduler scheduler, Job job) {
-        super(scheduler);
-        this.job = Objects.requireNonNull(job);
+    public JobDecorators(List<JobDecorator> decorators, JobDecorator exceptionHandler) {
+        this.decorators = Objects.requireNonNull(decorators);
+        this.exceptionHandler = Objects.requireNonNull(exceptionHandler);
     }
 
-    @Override
-    public JobGroupStepResult run(Map<String, Object> params) {
-        JobResult result = scheduler.runBuilder().job(job).params(params).noDecorators().runBlocking();
-        logResult(result);
+    public Job decorate(Job job, String altName, Map<String, Object> prebindParams) {
+        for (JobDecorator decorator : decorators) {
+            job = decorator.decorate(job, altName, prebindParams);
+        }
 
-        return result.isSuccess() ? JobGroupStepResult.succeeded(result) : JobGroupStepResult.failed(result);
+        return decorateWithExceptionHandler(job, altName, prebindParams);
+    }
+
+    public Job decorateWithExceptionHandler(Job job, String altName, Map<String, Object> prebindParams) {
+        return exceptionHandler.decorate(job, altName, prebindParams);
     }
 }

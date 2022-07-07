@@ -21,6 +21,7 @@ package io.bootique.job.scheduler.execution;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.JobDecorator;
 import io.bootique.job.runnable.JobResult;
 
 import java.util.Map;
@@ -28,22 +29,11 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-class JobExceptionsHandlerDecorator implements Job {
-
-    private final Job delegate;
-
-    JobExceptionsHandlerDecorator(Job delegate) {
-        this.delegate = delegate;
-    }
+public class JobExceptionsHandlerDecorator implements JobDecorator {
 
     @Override
-    public JobMetadata getMetadata() {
-        return delegate.getMetadata();
-    }
-
-    @Override
-    public JobResult run(Map<String, Object> params) {
-        return runWithExceptionHandling(getMetadata(), delegate, params);
+    public JobResult run(Job delegate, Map<String, Object> params) {
+        return runWithExceptionHandling(delegate.getMetadata(), delegate, params);
     }
 
     // reusable method that can be used by this and other decorators for consistent error handling

@@ -19,13 +19,14 @@
 package io.bootique.job.consul.lock;
 
 import com.orbitz.consul.KeyValueClient;
+import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runnable.RunnableJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 
@@ -44,27 +45,28 @@ public class ConsulLockHandler implements LockHandler {
     }
 
     @Override
-    public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
-        return () -> {
-            String lockName = getLockName(metadata);
+    public JobResult run(Job delegate, Map<String, Object> params) {
 
-            String sessionId = consulSessionSupplier.get();
+        JobMetadata metadata = delegate.getMetadata();
 
-            LOGGER.info("Attempting to lock '{}'", lockName);
-            boolean acquired = kvClient.acquireLock(lockName, sessionId);
-            if (!acquired) {
-                LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-                return JobResult.skipped(metadata, "Another job instance owns the lock. Skipping execution");
+        String lockName = getLockName(metadata);
+
+        String sessionId = consulSessionSupplier.get();
+
+        LOGGER.info("Attempting to lock '{}'", lockName);
+        boolean acquired = kvClient.acquireLock(lockName, sessionId);
+        if (!acquired) {
+            LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
+            return JobResult.skipped(metadata, "Another job instance owns the lock. Skipping execution");
+        }
+
+        try {
+            return delegate.run(params);
+        } finally {
+            if (!kvClient.releaseLock(lockName, consulSessionSupplier.get())) {
+                LOGGER.error("Failed to release lock, manual intervention might be needed: " + lockName);
             }
-
-            try {
-                return executable.run();
-            } finally {
-                if (!kvClient.releaseLock(lockName, consulSessionSupplier.get())) {
-                    LOGGER.error("Failed to release lock, manual intervention might be needed: " + lockName);
-                }
-            }
-        };
+        }
     }
 
     private String getLockName(JobMetadata metadata) {

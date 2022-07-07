@@ -52,7 +52,7 @@ public class ParallelJobBatchStep extends JobGroupStep {
                 .collect(Collectors.toList());
 
         // run the first job on the group thread (blocking)
-        JobResult blockingResult = scheduler.runBuilder().job(jobs.get(0)).params(params).runBlocking();
+        JobResult blockingResult = scheduler.runBuilder().job(jobs.get(0)).params(params).noDecorators().runBlocking();
         logResult(blockingResult);
 
         if (!blockingResult.isSuccess()) {
@@ -75,6 +75,6 @@ public class ParallelJobBatchStep extends JobGroupStep {
     }
 
     protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {
-        return scheduler.runBuilder().job(job).params(params).runNonBlocking();
+        return scheduler.runBuilder().job(job).params(params).noDecorators().runNonBlocking();
     }
 }

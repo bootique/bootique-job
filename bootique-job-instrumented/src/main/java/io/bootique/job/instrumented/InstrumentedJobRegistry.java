@@ -19,8 +19,8 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.MappedJobListener;
 import io.bootique.job.graph.JobGraphNode;
+import io.bootique.job.runnable.JobDecorators;
 import io.bootique.job.scheduler.Scheduler;
 import io.bootique.job.scheduler.execution.DefaultJobRegistry;
 import io.bootique.job.scheduler.execution.group.ParallelJobBatchStep;
@@ -36,25 +36,16 @@ import java.util.Map;
 public class InstrumentedJobRegistry extends DefaultJobRegistry {
 
     private final JobMDCManager mdcManager;
-    private final JobMetricsManager metricsManager;
 
     public InstrumentedJobRegistry(
             Collection<Job> standaloneJobs,
             Map<String, JobGraphNode> jobDefinitions,
             Provider<Scheduler> scheduler,
-            Collection<MappedJobListener> listeners,
-            JobMDCManager mdcManager,
-            JobMetricsManager metricsManager) {
-        super(standaloneJobs, jobDefinitions, scheduler, listeners);
+            JobDecorators decorators,
+            JobMDCManager mdcManager) {
+        super(standaloneJobs, jobDefinitions, scheduler, decorators);
 
         this.mdcManager = mdcManager;
-        this.metricsManager = metricsManager;
-    }
-
-    @Override
-    protected Job decorateWithLogger(Job job) {
-        // replace super logger with instrumented logger that records job timing and provides the MDC context
-        return new JobLogger(job, mdcManager, metricsManager);
     }
 
     @Override

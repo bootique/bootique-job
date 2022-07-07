@@ -22,34 +22,36 @@ package io.bootique.job.scheduler.execution;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.MappedJobListener;
+import io.bootique.job.runnable.JobDecorator;
 import io.bootique.job.runnable.JobResult;
 
 import java.util.*;
 import java.util.function.Consumer;
 
-class JobListenerDecorator implements Job {
+/**
+ * @since 3.0
+ */
+public class JobListenerDecorator implements JobDecorator {
 
-    private final Job delegate;
     private final Collection<MappedJobListener> listeners;
 
-    JobListenerDecorator(Job delegate, Collection<MappedJobListener> listeners) {
-        this.delegate = delegate;
+    public JobListenerDecorator(Collection<MappedJobListener> listeners) {
         this.listeners = listeners;
     }
 
     @Override
-    public JobMetadata getMetadata() {
-        return delegate.getMetadata();
+    public boolean isApplicable(JobMetadata metadata, String altName, Map<String, Object> prebindParams) {
+        return !listeners.isEmpty();
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobResult run(Job delegate, Map<String, Object> params) {
 
-        String jobName = getMetadata().getName();
+        String jobName = delegate.getMetadata().getName();
         JobListenerInvoker listenerInvoker = new JobListenerInvoker(jobName);
         listenerInvoker.onStart(listeners, params);
 
-        JobResult result = JobExceptionsHandlerDecorator.runWithExceptionHandling(getMetadata(), delegate, params);
+        JobResult result = JobExceptionsHandlerDecorator.runWithExceptionHandling(delegate.getMetadata(), delegate, params);
 
         // invoke outside try/catch... Listener exceptions will be processed downstream
         listenerInvoker.onFinish(result);

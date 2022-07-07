@@ -19,15 +19,16 @@
 
 package io.bootique.job.zookeeper.lock;
 
+import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runnable.JobResult;
-import io.bootique.job.runnable.RunnableJob;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
+import java.util.Map;
 
 public class ZkClusterLockHandler implements LockHandler {
 
@@ -45,25 +46,24 @@ public class ZkClusterLockHandler implements LockHandler {
     }
 
     @Override
-    public RunnableJob lockingJob(RunnableJob executable, JobMetadata metadata) {
+    public JobResult run(Job delegate, Map<String, Object> params) {
 
-        return () -> {
-            String lockName = getLockName(metadata);
+        JobMetadata metadata = delegate.getMetadata();
+        String lockName = getLockName(metadata);
 
-            LOGGER.info("Attempting to lock '{}'", lockName);
+        LOGGER.info("Attempting to lock '{}'", lockName);
 
-            ZkMutex lock = ZkMutex.acquire(curator.get(), lockName);
-            if (lock == null) {
-                LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-                return JobResult.skipped(metadata, "Another job instance owns the lock. Skipping execution");
-            }
+        ZkMutex lock = ZkMutex.acquire(curator.get(), lockName);
+        if (lock == null) {
+            LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
+            return JobResult.skipped(metadata, "Another job instance owns the lock. Skipping execution");
+        }
 
-            try {
-                return executable.run();
-            } finally {
-                lock.release();
-            }
-        };
+        try {
+            return delegate.run(params);
+        } finally {
+            lock.release();
+        }
     }
 
     private String getLockName(JobMetadata metadata) {

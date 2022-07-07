@@ -18,9 +18,10 @@
  */
 package io.bootique.job.scheduler.execution;
 
-import io.bootique.job.BaseJob;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
+import io.bootique.job.runnable.DecoratedJob;
+import io.bootique.job.runnable.JobDecorator;
 import io.bootique.job.runnable.JobResult;
 
 import java.util.Map;
@@ -28,17 +29,28 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-class JobMetadataDecorator extends BaseJob {
+public class JobNameDecorator implements JobDecorator {
 
-    private final Job delegate;
-
-    public JobMetadataDecorator(Job delegate, JobMetadata metadata) {
-        super(metadata);
-        this.delegate = delegate;
+    @Override
+    public boolean isApplicable(JobMetadata metadata, String altName, Map<String, Object> prebindParams) {
+        return altName != null && !altName.equals(metadata.getName());
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public Job decorate(Job delegate, String altName, Map<String, Object> prebindParams) {
+        return isApplicable(delegate.getMetadata(), altName, prebindParams)
+                ? new DecoratedJob(delegate, changeName(delegate.getMetadata(), altName), this)
+                : delegate;
+    }
+
+    protected JobMetadata changeName(JobMetadata metadata, String altName) {
+        JobMetadata.Builder builder = JobMetadata.builder(altName);
+        metadata.getParameters().forEach(builder::param);
+        return builder.build();
+    }
+
+    @Override
+    public JobResult run(Job delegate, Map<String, Object> params) {
         return delegate.run(params);
     }
 }
