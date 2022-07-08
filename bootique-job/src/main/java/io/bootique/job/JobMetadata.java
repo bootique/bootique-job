@@ -30,11 +30,13 @@ public class JobMetadata {
 
     private final String name;
     private final Collection<JobParameterMetadata<?>> parameters;
+    private final boolean group;
     private final boolean serial;
 
-    JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters, boolean serial) {
+    JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters, boolean group, boolean serial) {
         this.name = name;
         this.parameters = parameters;
+        this.group = group;
         this.serial = serial;
     }
 
@@ -99,6 +101,13 @@ public class JobMetadata {
         return serial;
     }
 
+    /**
+     * @since 3.0
+     */
+    public boolean isGroup() {
+        return group;
+    }
+
     public static class Builder {
 
         static Integer parseInt(String value) {
@@ -120,6 +129,7 @@ public class JobMetadata {
         private final String name;
         private final Collection<JobParameterMetadata<?>> parameters;
         private boolean serial;
+        private boolean group;
 
         private Builder(String name) {
             this.name = name;
@@ -129,10 +139,19 @@ public class JobMetadata {
         /**
          * @since 3.0
          */
+        public Builder group(boolean group) {
+            this.group = group;
+            return this;
+        }
+
+        /**
+         * @since 3.0
+         */
         public Builder serial(boolean serial) {
             this.serial = serial;
             return this;
         }
+
 
         public Builder param(JobParameterMetadata<?> param) {
             this.parameters.add(param);
@@ -175,7 +194,7 @@ public class JobMetadata {
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public Builder dateTimeParam(String name) {
             return dateTimeParam(name, (LocalDateTime) null);
@@ -189,28 +208,28 @@ public class JobMetadata {
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public Builder dateTimeParam(String name, LocalDateTime defaultValue) {
             return param(name, "datetime", Builder::parseDateTime, defaultValue);
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public Builder intParam(String name) {
             return intParam(name, (Integer) null);
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public Builder intParam(String name, String defaultValue) {
             return intParam(name, parseInt(defaultValue));
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public Builder intParam(String name, Integer defaultValue) {
             return param(name, "int", Builder::parseInt, defaultValue);
@@ -234,7 +253,7 @@ public class JobMetadata {
                 throw new IllegalStateException("Job name is not configured");
             }
 
-            return new JobMetadata(name, parameters, serial);
+            return new JobMetadata(name, parameters, group, serial);
         }
     }
 }

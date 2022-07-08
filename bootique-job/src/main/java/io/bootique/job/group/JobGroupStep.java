@@ -46,16 +46,16 @@ public abstract class JobGroupStep {
 
     protected void logResult(JobResult result) {
         if (result.isSuccess()) {
-            LOGGER.info("group member '{}' finished", result.getMetadata().getName());
+            LOGGER.debug("group member '{}' finished", result.getMetadata().getName());
         } else {
 
-            LOGGER.info("group member '{}' finished: {} - {}",
+            LOGGER.debug("group member '{}' finished: {} - {}",
                     result.getMetadata().getName(),
                     result.getOutcome(),
                     result.getMessage());
 
             if (result.getThrowable() != null) {
-                LOGGER.error("group member error", result.getThrowable());
+                LOGGER.debug("group member error", result.getThrowable());
             }
         }
     }

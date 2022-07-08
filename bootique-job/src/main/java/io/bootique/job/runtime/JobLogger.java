@@ -21,6 +21,7 @@ package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobDecorator;
+import io.bootique.job.JobMetadata;
 import io.bootique.job.JobResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,26 +38,29 @@ public class JobLogger implements JobDecorator {
     @Override
     public JobResult run(Job delegate, Map<String, Object> params) {
 
-        String name = delegate.getMetadata().getName();
-        onJobStarted(name, params);
+        JobMetadata metadata = delegate.getMetadata();
+        onJobStarted(metadata, params);
 
         try {
             JobResult result = delegate.run(params);
-            return onJobFinished(name, result);
+            return onJobFinished(result);
         } catch (Throwable th) {
-            return onJobFinished(name, JobResult.failure(delegate.getMetadata(), th));
+            return onJobFinished(JobResult.failure(metadata, th));
         }
     }
 
-    private void onJobStarted(String name, Map<String, Object> params) {
-        LOGGER.info(String.format("job '%s' started with params %s", name, params));
+    private void onJobStarted(JobMetadata metadata, Map<String, Object> params) {
+        String label = metadata.isGroup() ? "group" : "job";
+        LOGGER.info("{} '{}' started with params {}", label, metadata.getName(), params);
     }
 
-    private JobResult onJobFinished(String name, JobResult result) {
+    private JobResult onJobFinished(JobResult result) {
+        String label = result.getMetadata().isGroup() ? "group" : "job";
+        String name = result.getMetadata().getName();
 
         switch (result.getOutcome()) {
             case SUCCESS:
-                LOGGER.info("job '{}' finished", name);
+                LOGGER.info("{} '{}' finished", label, name);
                 return result;
             default:
                 String message = result.getMessage();
@@ -72,7 +76,7 @@ public class JobLogger implements JobDecorator {
                     LOGGER.info("job exception", result.getThrowable());
                 }
 
-                LOGGER.warn("job '{}' finished: {} - {} ", name, result.getOutcome(), message);
+                LOGGER.warn("{} '{}' finished: {} - {} ", label, name, result.getOutcome(), message);
                 return result;
         }
     }

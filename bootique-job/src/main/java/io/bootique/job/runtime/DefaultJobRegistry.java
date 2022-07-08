@@ -133,11 +133,16 @@ public class DefaultJobRegistry implements JobRegistry {
         return new JobGroup(groupMetadata, steps);
     }
 
-    private JobMetadata groupMetadata(String jobName, Collection<Job> jobs) {
-        JobMetadata.Builder builder = JobMetadata.builder(jobName);
+    private JobMetadata groupMetadata(String groupName, Collection<Job> jobs) {
+        JobMetadata.Builder builder = JobMetadata
+                .builder(groupName)
+                .group(true);
+
+        // TODO: is it correct for the group parameters to be the union of child job params? What if there are conflicting names?
         for (Job job : jobs) {
             job.getMetadata().getParameters().forEach(builder::param);
         }
+
         return builder.build();
     }
 

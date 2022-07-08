@@ -20,6 +20,7 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
 import io.bootique.job.JobResult;
 import io.bootique.job.runtime.JobLogger;
 
@@ -40,36 +41,42 @@ class InstrumentedJobLogger extends JobLogger {
 
     @Override
     public JobResult run(Job delegate, Map<String, Object> params) {
-        String name = delegate.getMetadata().getName();
-        JobMeter meter = onMeteredJobStarted(name, params);
+        JobMetadata metadata = delegate.getMetadata();
+        JobMeter meter = onMeteredJobStarted(metadata, params);
 
         try {
             JobResult result = delegate.run(params);
-            return onMeteredJobFinished(name, result, meter);
+            return onMeteredJobFinished(result, meter);
         } catch (Throwable th) {
-            return onMeteredJobFinished(name, JobResult.failure(delegate.getMetadata(), th), meter);
+            return onMeteredJobFinished(JobResult.failure(metadata, th), meter);
         }
     }
 
-    protected JobMeter onMeteredJobStarted(String name, Map<String, Object> params) {
+    protected JobMeter onMeteredJobStarted(JobMetadata metadata, Map<String, Object> params) {
+        String label = metadata.isGroup() ? "group" : "job";
+        String name = metadata.getName();
+
         mdcManager.onJobStarted();
         JobMeter meter = metricsManager.onJobStarted(name);
-        LOGGER.info("job '{}' started with params {}", name, params);
+        LOGGER.info("{} '{}' started with params {}", label, name, params);
         return meter;
     }
 
-    private JobResult onMeteredJobFinished(String name, JobResult result, JobMeter meter) {
+    private JobResult onMeteredJobFinished(JobResult result, JobMeter meter) {
         long timeMs = meter.stop(result);
-        logJobFinished(name, result, timeMs);
+        logJobFinished(result, timeMs);
         mdcManager.onJobFinished();
         return result;
     }
 
-    private void logJobFinished(String name, JobResult result, long timeMs) {
+    private void logJobFinished(JobResult result, long timeMs) {
+
+        String label = result.getMetadata().isGroup() ? "group" : "job";
+        String name = result.getMetadata().getName();
 
         switch (result.getOutcome()) {
             case SUCCESS:
-                LOGGER.info("job '{}' finished in {} ms", name, timeMs);
+                LOGGER.info("{} '{}' finished in {} ms", label, name, timeMs);
                 return;
 
             default:
@@ -86,7 +93,7 @@ class InstrumentedJobLogger extends JobLogger {
                     LOGGER.info("job exception", result.getThrowable());
                 }
 
-                LOGGER.warn("job '{}' finished in {} ms: {} - {} ", name, timeMs, result.getOutcome(), message);
+                LOGGER.warn("{} '{}' finished in {} ms: {} - {} ", label, name, timeMs, result.getOutcome(), message);
         }
     }
 }
