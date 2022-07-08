@@ -21,50 +21,31 @@ package io.bootique.job;
 
 import io.bootique.BQRuntime;
 import io.bootique.job.fixture.BaseTestJob;
+import io.bootique.job.runtime.JobDecorators;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Deprecated
 @BQTest
-public class Listener_FailuresIT {
+public class JobDecorator_FailuresIT {
 
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testJobException() {
-        ExceptionJob job = new ExceptionJob();
-        Listener_JobResultCapture listener = new Listener_JobResultCapture();
-
-        BQRuntime runtime = testFactory
-                .app()
-                .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
-                .createRuntime();
-
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("exception").runNonBlocking().get();
-        assertSame(result, listener.result);
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertTrue(result.getThrowable() instanceof RuntimeException);
-        assertEquals(ExceptionJob.EXCEPTION_MESSAGE, result.getThrowable().getMessage());
-    }
-
-    @Test
     public void testJobFailure() {
         FailureJob job = new FailureJob();
-        Listener_JobResultCapture listener = new Listener_JobResultCapture();
+        JobResultCapture listener = new JobResultCapture();
 
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
+                .module(b -> JobModule.extend(b).addJob(job).addDecorator(listener, JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER + 1))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
@@ -81,14 +62,14 @@ public class Listener_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(Listener_StartException.class))
+                .module(b -> JobModule.extend(b).addJob(job).addDecorator(new StartException(), JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER + 1))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertNotExecuted();
 
         assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This listener always throws on start", result.getThrowable().getMessage());
+        assertEquals("This decorator always throws on start", result.getThrowable().getMessage());
     }
 
     @Test
@@ -98,43 +79,45 @@ public class Listener_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(Listener_EndException.class))
+                .module(b -> JobModule.extend(b).addJob(job).addDecorator(new EndException(), JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER + 1))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertExecuted();
 
         assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This listener always throws on finish", result.getThrowable().getMessage());
+        assertEquals("This decorator always throws on finish", result.getThrowable().getMessage());
     }
 
-    public static class Listener_StartException implements JobListener {
+    public static class StartException implements JobDecorator {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            throw new RuntimeException("This listener always throws on start");
+        public JobResult run(Job delegate, Map<String, Object> params) {
+            throw new RuntimeException("This decorator always throws on start");
         }
     }
 
-    public static class Listener_EndException implements JobListener {
+    public static class EndException implements JobDecorator {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            onFinishedCallbackRegistry.accept(r -> {
-                throw new RuntimeException("This listener always throws on finish");
-            });
+        public JobResult run(Job delegate, Map<String, Object> params) {
+            try {
+                return delegate.run(params);
+            } finally {
+                throw new RuntimeException("This decorator always throws on finish");
+            }
         }
     }
 
-    public static class Listener_JobResultCapture implements JobListener {
+    public static class JobResultCapture implements JobDecorator {
 
         private JobResult result;
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            onFinishedCallbackRegistry.accept(r -> {
-                this.result = r;
-            });
+        public JobResult run(Job delegate, Map<String, Object> params) {
+
+            this.result = delegate.run(params);
+            return this.result;
         }
     }
 
@@ -155,20 +138,6 @@ public class Listener_FailuresIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             return JobResult.failure(getMetadata(), FAILURE_MESSAGE);
-        }
-    }
-
-    static class ExceptionJob extends BaseJob {
-
-        public static final String EXCEPTION_MESSAGE = "Emulated Exception";
-
-        public ExceptionJob() {
-            super(JobMetadata.build(ExceptionJob.class));
-        }
-
-        @Override
-        public JobResult run(Map<String, Object> params) {
-            throw new RuntimeException(EXCEPTION_MESSAGE);
         }
     }
 }

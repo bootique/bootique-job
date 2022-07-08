@@ -19,11 +19,8 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.command.CommandOutcome;
-import io.bootique.job.Job;
-import io.bootique.job.JobListener;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
-import io.bootique.job.JobModule;
+import io.bootique.job.*;
+import io.bootique.job.runtime.JobDecorators;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -32,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -82,7 +78,7 @@ public class SchedulerParamsIT {
         }
     }
 
-    public static class ParamsTester implements JobListener {
+    public static class ParamsTester implements JobDecorator {
 
         private BQTestFactory testFactory;
         private Map<String, Object> expectedParams;
@@ -101,14 +97,17 @@ public class SchedulerParamsIT {
         }
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            this.params = new HashMap<>(parameters);
-            onFinishedCallbackRegistry.accept(jr -> this.result = jr);
+        public JobResult run(Job delegate, Map<String, Object> params) {
+            this.params = new HashMap<>(params);
+            this.result = delegate.run(params);
+            return this.result;
         }
 
         public ParamsTester run(String config) {
             CommandOutcome outcome = testFactory.app("--schedule", "-c", config)
-                    .module(b -> JobModule.extend(b).addJob(J1.class).addListener(this))
+                    .module(b -> JobModule.extend(b)
+                            .addJob(J1.class)
+                            .addDecorator(this, JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER + 1))
                     .run();
 
             assertTrue(outcome.isSuccess());

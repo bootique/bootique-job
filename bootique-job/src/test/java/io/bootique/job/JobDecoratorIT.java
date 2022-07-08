@@ -28,13 +28,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Deprecated
 @BQTest
-public class ListenerIT {
+public class JobDecoratorIT {
 
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
@@ -45,32 +43,30 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddListener_AlterParams() {
+    public void testAddDecorator_AlterParams() {
         String val = "12345_abcde";
         Job_ParamsChange job = new Job_ParamsChange();
         Listener_ParamsChange listener = new Listener_ParamsChange(val);
 
         testFactory.app("--exec", "--job=job_paramschange")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b)
-                        .addJob(job)
-                        .addListener(listener))
+                .module(b -> JobModule.extend(b).addJob(job).addDecorator(listener))
                 .run();
 
         assertEquals(val, job.getActualParam());
     }
 
     @Test
-    public void testAddMappedListener_Ordering1() {
+    public void testAddMappedDecorator_Ordering1() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
                 .module(new JobModule())
                 .module(binder -> JobModule.extend(binder)
                         .addJob(job)
-                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                        .addMappedListener(new MappedJobListener<>(new Listener2(), 2))
-                        .addMappedListener(new MappedJobListener<>(new Listener3(), 3)))
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener1(), 1))
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener2(), 2))
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener3(), 3)))
                 .run();
 
         job.assertExecuted();
@@ -78,16 +74,16 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_Ordering2() {
+    public void testAddMappedDecorator_Ordering2() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
                 .module(new JobModule())
                 .module(binder -> JobModule.extend(binder)
                         .addJob(job)
-                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                        .addMappedListener(new MappedJobListener<>(new Listener3(), 3))
-                        .addMappedListener(new MappedJobListener<>(new Listener2(), 2)))
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener1(), 1))
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener3(), 3))
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener2(), 2)))
                 .run();
 
         job.assertExecuted();
@@ -95,15 +91,15 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_AddListener_Ordering() {
+    public void testAddMappedDecorator_AddListener_Ordering() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
                 .module(new JobModule())
                 .module(binder -> JobModule.extend(binder).addJob(job)
-                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                        .addListener(new Listener2())
-                        .addMappedListener(new MappedJobListener<>(new Listener3(), 2)))
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener1(), 1))
+                        .addDecorator(new Listener2())
+                        .addMappedDecorator(new MappedJobDecorator<>(new Listener3(), 2)))
                 .run();
 
         job.assertExecuted();
@@ -111,7 +107,7 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_JobGroup_Ordering() {
+    public void testAddDecorator_JobGroup_Ordering() {
         XJob x = new XJob();
         YJob y = new YJob();
 
@@ -123,9 +119,9 @@ public class ListenerIT {
                 .module(b -> JobModule.extend(b)
                         .addJob(x)
                         .addJob(y)
-                        .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
-                        .addMappedListener(new MappedJobListener<>(new Listener2(), 2))
-                        .addMappedListener(new MappedJobListener<>(new Listener3(), 3)))
+                        .addDecorator(new Listener1(), 1)
+                        .addDecorator(new Listener2(), 2)
+                        .addDecorator(new Listener3(), 3))
                 .run();
 
         x.assertExecuted();
@@ -151,7 +147,7 @@ public class ListenerIT {
                         .addJob(x)
                         .addJob(y)
                         .addJob(z)
-                        .addListener(new Listener1()))
+                        .addDecorator(new Listener1()))
                 .run();
 
         x.assertExecuted();
@@ -179,30 +175,42 @@ public class ListenerIT {
         }
     }
 
-    public static class Listener1 implements JobListener {
-        @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            onFinishedCallbackRegistry.accept(result -> SharedState.append("_L1_finished"));
+    public static class Listener1 implements JobDecorator {
 
+        @Override
+        public JobResult run(Job delegate, Map<String, Object> params) {
             SharedState.append("_L1_started");
+            try {
+                return delegate.run(params);
+            } finally {
+                SharedState.append("_L1_finished");
+            }
         }
     }
 
-    public static class Listener2 implements JobListener {
+    public static class Listener2 implements JobDecorator {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            onFinishedCallbackRegistry.accept(result -> SharedState.append("_L2_finished"));
+        public JobResult run(Job delegate, Map<String, Object> params) {
             SharedState.append("_L2_started");
+            try {
+                return delegate.run(params);
+            } finally {
+                SharedState.append("_L2_finished");
+            }
         }
     }
 
-    public static class Listener3 implements JobListener {
+    public static class Listener3 implements JobDecorator {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            onFinishedCallbackRegistry.accept(result -> SharedState.append("_L3_finished"));
+        public JobResult run(Job delegate, Map<String, Object> params) {
             SharedState.append("_L3_started");
+            try {
+                return delegate.run(params);
+            } finally {
+                SharedState.append("_L3_finished");
+            }
         }
     }
 
@@ -226,7 +234,7 @@ public class ListenerIT {
         }
     }
 
-    static class Listener_ParamsChange implements JobListener {
+    static class Listener_ParamsChange implements JobDecorator {
         private final String setParam;
 
         public Listener_ParamsChange(String setParam) {
@@ -234,8 +242,9 @@ public class ListenerIT {
         }
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
-            parameters.put("LP", setParam);
+        public JobResult run(Job delegate, Map<String, Object> params) {
+            params.put("LP", setParam);
+            return delegate.run(params);
         }
     }
 

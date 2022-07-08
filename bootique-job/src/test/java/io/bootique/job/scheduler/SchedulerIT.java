@@ -24,6 +24,7 @@ import io.bootique.Bootique;
 import io.bootique.BootiqueException;
 import io.bootique.job.*;
 import io.bootique.job.fixture.ScheduledJob1;
+import io.bootique.job.runtime.JobDecorators;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +36,6 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -47,7 +47,7 @@ public class SchedulerIT {
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
             .module(JobModule.class)
-            .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addListener(listener))
+            .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addDecorator(listener, JobDecorators.JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER + 1))
             .createRuntime();
 
 
@@ -140,7 +140,7 @@ public class SchedulerIT {
         assertTrue(upper >= actual, () -> "Higher than expected rate: " + actual);
     }
 
-    static class ExecutionRateListener implements JobListener {
+    static class ExecutionRateListener implements JobDecorator {
 
         private final Deque<Execution> executions;
 
@@ -151,16 +151,18 @@ public class SchedulerIT {
         }
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public JobResult run(Job delegate, Map<String, Object> params) {
             ExecutionRateListener.Execution previousExecution = executions.peekLast();
             long startedAt = System.currentTimeMillis();
 
-            onFinishedCallbackRegistry.accept(result -> {
+            try {
+                return delegate.run(params);
+            } finally {
                 executions.add(new Execution(System.currentTimeMillis()));
                 if (previousExecution != null) {
                     recalculateAverageRate(startedAt - previousExecution.getFinishedAt());
                 }
-            });
+            }
         }
 
         private synchronized void recalculateAverageRate(long sample) {
