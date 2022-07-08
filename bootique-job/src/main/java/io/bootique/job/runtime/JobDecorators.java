@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Manages job decorator chain.
+ * Manages job decorators chain.
  *
  * @since 3.0
  */
@@ -37,8 +37,14 @@ public class JobDecorators {
     public static final int JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER = LOGGER_DECORATOR_ORDER + 1000;
     public static final int LOCK_HANDLER_DECORATOR_ORDER = JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER + 1000;
     public static final int PARAM_DEFAULTS_DECORATOR_ORDER = LOCK_HANDLER_DECORATOR_ORDER + 1000;
+
+    /**
+     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator}
+     */
     // listeners must be handled after default parameters are applied, so that they can have access to them
+    @Deprecated
     public static final int LISTENERS_DECORATOR_ORDER = PARAM_DEFAULTS_DECORATOR_ORDER + 1000;
+
     public static final int JOB_NAME_DECORATOR_ORDER = LISTENERS_DECORATOR_ORDER + 1000;
 
     private final List<JobDecorator> decoratorsInnerToOuter;

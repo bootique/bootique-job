@@ -25,17 +25,20 @@ import java.util.function.Consumer;
 /**
  * A listener that will be notified of every started job. When a job is started the listener may optionally decide to
  * get notified when this particular job is finished by registering a callback function with provided event source.
+ *
+ * @deprecated since 3.0 consider using {@link JobDecorator} API instead of {@link JobListener}
  */
+@Deprecated
 public interface JobListener {
 
     /**
      * A method invoked when a job is started. The listener may optionally decide to get notified when the job is
      * finished by registering a callback function with provided "onFinishedCallbackRegistry".
      *
-     * @param jobName           the name of a job that generated start event.
-     * @param parameters        parameters passed to the job.
+     * @param jobName                    the name of a job that generated start event.
+     * @param parameters                 parameters passed to the job.
      * @param onFinishedCallbackRegistry an object that will notify registered consumers when the job that generated this start
-     *                          event is finished.
+     *                                   event is finished.
      */
     void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry);
 }

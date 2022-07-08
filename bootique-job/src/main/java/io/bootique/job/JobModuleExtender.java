@@ -51,8 +51,8 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     }
 
     /**
-     * Provides syntactic sugar for extender configuration, allowing e.g. to load multiple jobs from a collection
-     * without assigning extender to a variable.
+     * Syntactic sugar for extender configuration that allows e.g. to load multiple jobs from a collection without
+     * assigning extender to a variable.
      *
      * @since 3.0
      */
@@ -69,11 +69,6 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     public JobModuleExtender addJob(Class<? extends Job> jobType) {
         // TODO: what does singleton scope means when adding to collection?
         contributeJobs().add(jobType);
-        return this;
-    }
-
-    public JobModuleExtender addListener(JobListener listener) {
-        contributeListeners().addInstance(listener);
         return this;
     }
 
@@ -94,44 +89,53 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     }
 
     /**
-     * Adds a listener to the set of Job listeners.
-     *
-     * @param mappedJobListener a wrapped listener
-     * @param <T>
-     * @return this extender instance
+     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
+     * {@link #addMappedDecorator(MappedJobDecorator)}
      */
+    @Deprecated
     public <T extends JobListener> JobModuleExtender addMappedListener(MappedJobListener<T> mappedJobListener) {
         contributeMappedListeners().addInstance(mappedJobListener);
         return this;
     }
 
     /**
-     * Adds a listener of the specified type to the set of Job listeners.
-     *
-     * @param mappedJobListenerKey binding key
-     * @param <T>
-     * @return this extender instance
+     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
+     * {@link #addMappedDecorator(Key)}
      */
+    @Deprecated
     public <T extends JobListener> JobModuleExtender addMappedListener(Key<MappedJobListener<T>> mappedJobListenerKey) {
         contributeMappedListeners().add(mappedJobListenerKey);
         return this;
     }
 
     /**
-     * Adds a listener of the specified type to the set of Job listeners.
-     *
-     * @param mappedJobListenerType listener type
-     * @param <T>
-     * @return this extender instance
+     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
+     * {@link #addMappedDecorator(TypeLiteral)}
      */
+    @Deprecated
     public <T extends JobListener> JobModuleExtender addMappedListener(TypeLiteral<MappedJobListener<T>> mappedJobListenerType) {
         contributeMappedListeners().add(Key.get(mappedJobListenerType));
         return this;
     }
 
+    /**
+     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
+     * {@link #addDecorator(Class)}
+     */
+    @Deprecated
     public JobModuleExtender addListener(Class<? extends JobListener> listenerType) {
         // TODO: what does singleton scope means when adding to collection?
         contributeListeners().add(listenerType);
+        return this;
+    }
+
+    /**
+     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
+     * {@link #addDecorator(JobDecorator)}.
+     */
+    @Deprecated
+    public JobModuleExtender addListener(JobListener listener) {
+        contributeListeners().addInstance(listener);
         return this;
     }
 

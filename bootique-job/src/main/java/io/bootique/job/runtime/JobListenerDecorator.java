@@ -30,7 +30,9 @@ import java.util.function.Consumer;
 
 /**
  * @since 3.0
+ * @deprecated since 3.0, as each {@link io.bootique.job.JobListener} can be easily converted into a {@link JobDecorator}
  */
+@Deprecated
 public class JobListenerDecorator implements JobDecorator {
 
     private final Collection<MappedJobListener> listeners;

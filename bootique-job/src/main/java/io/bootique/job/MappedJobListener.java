@@ -23,8 +23,9 @@ package io.bootique.job;
  * A wrapper around {@link JobListener}  that contains an int ordering.
  * Lower ordering means an outer listener, higher - inner.
  *
- * @param <T>
+ * @deprecated since 3.0, as each {@link io.bootique.job.JobListener} can be easily converted into a {@link JobDecorator}
  */
+@Deprecated
 public class MappedJobListener<T extends JobListener> {
     private T listener;
     private int order;
