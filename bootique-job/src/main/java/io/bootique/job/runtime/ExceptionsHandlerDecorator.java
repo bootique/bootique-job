@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-public class JobExceptionsHandlerDecorator implements JobDecorator {
+public class ExceptionsHandlerDecorator implements JobDecorator {
 
     @Override
     public JobResult run(Job delegate, Map<String, Object> params) {
@@ -40,7 +40,7 @@ public class JobExceptionsHandlerDecorator implements JobDecorator {
     static JobResult runWithExceptionHandling(JobMetadata metadata, Job delegate, Map<String, Object> params) {
         try {
             JobResult result = delegate.run(params);
-            return result != null ? result : JobResult.unknown(metadata);
+            return result != null ? result : JobResult.unknown(metadata, "Job returned null result");
         } catch (Exception e) {
             // not logging the failure here.. JobLogDecorator will do the logging
             return JobResult.failure(metadata, e);

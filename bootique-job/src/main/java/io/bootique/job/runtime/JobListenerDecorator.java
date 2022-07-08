@@ -51,7 +51,7 @@ public class JobListenerDecorator implements JobDecorator {
         JobListenerInvoker listenerInvoker = new JobListenerInvoker(jobName);
         listenerInvoker.onStart(listeners, params);
 
-        JobResult result = JobExceptionsHandlerDecorator.runWithExceptionHandling(delegate.getMetadata(), delegate, params);
+        JobResult result = ExceptionsHandlerDecorator.runWithExceptionHandling(delegate.getMetadata(), delegate, params);
 
         // invoke outside try/catch... Listener exceptions will be processed downstream
         listenerInvoker.onFinish(result);

@@ -30,6 +30,8 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     private SetBuilder<Job> jobs;
     private SetBuilder<JobListener> listeners;
     private SetBuilder<MappedJobListener> mappedListeners;
+    private SetBuilder<JobDecorator> decorators;
+    private SetBuilder<MappedJobDecorator> mappedDecorators;
     private SetBuilder<LockHandler> lockHandlers;
 
     public JobModuleExtender(Binder binder) {
@@ -40,6 +42,8 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     public JobModuleExtender initAllExtensions() {
         contributeListeners();
         contributeMappedListeners();
+        contributeDecorators();
+        contributeMappedDecorators();
         contributeJobs();
         contributeLockHandlers();
 
@@ -131,6 +135,52 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
         return this;
     }
 
+    /**
+     * @since 3.0
+     */
+    public <T extends JobDecorator> JobModuleExtender addMappedDecorator(MappedJobDecorator<T> mappedJobDecorator) {
+        contributeMappedDecorators().addInstance(mappedJobDecorator);
+        return this;
+    }
+
+    /**
+     * @since 3.0
+     */
+    public <T extends JobDecorator> JobModuleExtender addMappedDecorator(Key<MappedJobDecorator<T>> mappedJobDecoratorKey) {
+        contributeMappedDecorators().add(mappedJobDecoratorKey);
+        return this;
+    }
+
+    /**
+     * @since 3.0
+     */
+    public <T extends JobDecorator> JobModuleExtender addMappedDecorator(TypeLiteral<MappedJobDecorator<T>> mappedJobDecoratorType) {
+        return addMappedDecorator(Key.get(mappedJobDecoratorType));
+    }
+
+    /**
+     * @since 3.0
+     */
+    public JobModuleExtender addDecorator(JobDecorator decorator) {
+        contributeDecorators().addInstance(decorator);
+        return this;
+    }
+
+    /**
+     * @since 3.0
+     */
+    public JobModuleExtender addDecorator(Class<? extends JobDecorator> type) {
+        contributeDecorators().add(type);
+        return this;
+    }
+
+    /**
+     * @since 3.0
+     */
+    public JobModuleExtender addDecorator(JobDecorator decorator, int order) {
+        return addMappedDecorator(new MappedJobDecorator<>(decorator, order));
+    }
+
     protected SetBuilder<Job> contributeJobs() {
         return jobs != null ? jobs : (jobs = newSet(Job.class));
     }
@@ -147,6 +197,20 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
             mappedListeners = newSet(MappedJobListener.class);
         }
         return mappedListeners;
+    }
+
+    protected SetBuilder<JobDecorator> contributeDecorators() {
+        if (decorators == null) {
+            decorators = newSet(JobDecorator.class);
+        }
+        return decorators;
+    }
+
+    protected SetBuilder<MappedJobDecorator> contributeMappedDecorators() {
+        if (mappedDecorators == null) {
+            mappedDecorators = newSet(MappedJobDecorator.class);
+        }
+        return mappedDecorators;
     }
 
     protected SetBuilder<LockHandler> contributeLockHandlers() {

@@ -75,6 +75,13 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult unknown(JobMetadata metadata, String message) {
+        return new JobResult(metadata, JobOutcome.UNKNOWN, null, message, null);
+    }
+
+    /**
+     * @since 3.0
+     */
     public static JobResult skipped(JobMetadata metadata) {
         return new JobResult(metadata, JobOutcome.SKIPPED, null, null, null);
     }

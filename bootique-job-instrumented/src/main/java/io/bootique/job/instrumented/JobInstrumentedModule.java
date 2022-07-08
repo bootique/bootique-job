@@ -30,15 +30,7 @@ import io.bootique.metrics.mdc.TransactionIdMDC;
 
 import javax.inject.Singleton;
 
-import static io.bootique.job.JobModule.LOG_LISTENER_ORDER;
-
 public class JobInstrumentedModule extends ConfigModule {
-
-    /**
-     * @deprecated since 3.0 as InstrumentedJobListener is no longer implemented as a listener
-     */
-    @Deprecated
-    public static final int JOB_LISTENER_ORDER = LOG_LISTENER_ORDER + 200;
 
     @Override
     public void configure(Binder binder) {

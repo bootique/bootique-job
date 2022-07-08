@@ -24,6 +24,7 @@ import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
+import io.bootique.di.TypeLiteral;
 import io.bootique.help.ValueObjectDescriptor;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class JobModule extends ConfigModule {
 
@@ -52,21 +54,6 @@ public class JobModule extends ConfigModule {
     static final String SCHEDULER_CONFIG_PREFIX = "scheduler";
 
     public static final String JOB_OPTION = "job";
-
-    /**
-     * @deprecated since 3.0 as JobMDCManager is no longer implemented as a listener.
-     */
-    // TX ID listener is usually the outermost listener in any app. It is a good idea to order your other listeners
-    // relative to this one , using higher ordering values.
-    @Deprecated
-    public static final int BUSINESS_TX_LISTENER_ORDER = Integer.MIN_VALUE + 800;
-
-    /**
-     * @deprecated since 3.0 as JobLogListener is no longer exists
-     */
-    // goes inside LOG_LISTENER_ORDER
-    @Deprecated
-    public static final int LOG_LISTENER_ORDER = BUSINESS_TX_LISTENER_ORDER + 200;
 
     /**
      * Returns an instance of {@link JobModuleExtender} used by downstream modules to load custom extensions to the
@@ -88,7 +75,18 @@ public class JobModule extends ConfigModule {
     @Override
     public void configure(Binder binder) {
 
-        JobModule.extend(binder).initAllExtensions();
+        JobModule.extend(binder).initAllExtensions()
+                .addMappedDecorator(new TypeLiteral<MappedJobDecorator<JobLogger>>() {
+                })
+                .addDecorator(new ExceptionsHandlerDecorator(), JobDecorators.JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER)
+                .addMappedDecorator(new TypeLiteral<MappedJobDecorator<LockHandler>>() {
+                })
+                .addDecorator(new JobParamDefaultsDecorator(), JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER)
+                // TODO: Listeners should be changed to Decorators (can be done in backwards-compatible manner)
+                .addMappedDecorator(new TypeLiteral<MappedJobDecorator<JobListenerDecorator>>() {
+                })
+                .addDecorator(new JobNameDecorator(), JobDecorators.JOB_NAME_DECORATOR_ORDER)
+        ;
 
         // binding via provider, to simplify overriding in the "bootique-job-instrumented" module
         binder.bind(JobRegistry.class).toProvider(JobRegistryProvider.class).inSingletonScope();
@@ -117,7 +115,47 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    LockHandler provideDefaultLockHandler(Set<LockHandler> lockHandlers) {
+    JobDecorators provideDecorators(Set<JobDecorator> decorators, Set<MappedJobDecorator> mappedDecorators) {
+
+        List<MappedJobDecorator> localDecorators = new ArrayList<>(mappedDecorators.size() + decorators.size());
+        localDecorators.addAll(mappedDecorators);
+
+        //  Integer.MAX_VALUE means placing bare unordered decorators after (== inside) mapped decorators
+        decorators.forEach(d -> localDecorators.add(new MappedJobDecorator<>(d, Integer.MAX_VALUE)));
+
+        Comparator<MappedJobDecorator> sortOuterToInner = Comparator.comparing(MappedJobDecorator::getOrder);
+
+        List<JobDecorator> decoratorsInnerToOuter = localDecorators.stream()
+                // sorting in reverse order, as inner decorators are installed first by JobDecorators
+                .sorted(sortOuterToInner.reversed())
+                .map(MappedJobDecorator::getDecorator)
+                .collect(Collectors.toList());
+
+        // TODO: a second ExceptionsHandlerDecorator in the chain... must unify
+        return new JobDecorators(decoratorsInnerToOuter, new ExceptionsHandlerDecorator());
+    }
+
+    @Provides
+    @Singleton
+    MappedJobDecorator<LockHandler> provideMappedLockHandler(LockHandler lockHandler) {
+        return new MappedJobDecorator<>(lockHandler, JobDecorators.LOCK_HANDLER_DECORATOR_ORDER);
+    }
+
+    @Provides
+    @Singleton
+    MappedJobDecorator<JobLogger> provideMappedJobLogger(JobLogger jobLogger) {
+        return new MappedJobDecorator<>(jobLogger, JobDecorators.LOGGER_DECORATOR_ORDER);
+    }
+
+    @Provides
+    @Singleton
+    MappedJobDecorator<JobListenerDecorator> provideMappedJobLogger(JobListenerDecorator listenerDecorator) {
+        return new MappedJobDecorator<>(listenerDecorator, JobDecorators.LISTENERS_DECORATOR_ORDER);
+    }
+
+    @Provides
+    @Singleton
+    LockHandler provideLockHandler(Set<LockHandler> lockHandlers) {
         switch (lockHandlers.size()) {
             case 0:
                 // only use the default lock handler if none is provided by other modules
@@ -128,26 +166,6 @@ public class JobModule extends ConfigModule {
             default:
                 throw new RuntimeException("There's more than one LockHandler defined. Can't determine the default: " + lockHandlers);
         }
-    }
-
-    @Provides
-    @Singleton
-    JobDecorators provideDecorators(
-            JobLogger jobLogger,
-            LockHandler lockHandler,
-            JobListenerDecorator listenerDecorator) {
-
-        // TODO: Listeners should be changed to Decorators (can be done in backwards-compatible manner)
-        // TODO: JobExceptionsHandlerDecorator and ErrorHandlingJobDecorator must be unified
-        // lower indexes are inner decorators, and higher are outer
-        List<JobDecorator> decorators = List.of(
-                new JobNameDecorator(),
-                listenerDecorator,
-                new JobParamDefaultsDecorator(),
-                new JobExceptionsHandlerDecorator(),
-                jobLogger,
-                lockHandler);
-        return new JobDecorators(decorators, new ErrorHandlingJobDecorator());
     }
 
     @Provides

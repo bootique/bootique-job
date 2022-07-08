@@ -26,20 +26,31 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
+ * Manages job decorator chain.
+ *
  * @since 3.0
  */
 public class JobDecorators {
 
-    private final List<JobDecorator> decorators;
+    // ordering, outer to inner
+    public static final int LOGGER_DECORATOR_ORDER = 1000;
+    public static final int JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER = LOGGER_DECORATOR_ORDER + 1000;
+    public static final int LOCK_HANDLER_DECORATOR_ORDER = JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER + 1000;
+    public static final int PARAM_DEFAULTS_DECORATOR_ORDER = LOCK_HANDLER_DECORATOR_ORDER + 1000;
+    // listeners must be handled after default parameters are applied, so that they can have access to them
+    public static final int LISTENERS_DECORATOR_ORDER = PARAM_DEFAULTS_DECORATOR_ORDER + 1000;
+    public static final int JOB_NAME_DECORATOR_ORDER = LISTENERS_DECORATOR_ORDER + 1000;
+
+    private final List<JobDecorator> decoratorsInnerToOuter;
     private final JobDecorator exceptionHandler;
 
-    public JobDecorators(List<JobDecorator> decorators, JobDecorator exceptionHandler) {
-        this.decorators = Objects.requireNonNull(decorators);
+    public JobDecorators(List<JobDecorator> decoratorsInnerToOuter, JobDecorator exceptionHandler) {
+        this.decoratorsInnerToOuter = Objects.requireNonNull(decoratorsInnerToOuter);
         this.exceptionHandler = Objects.requireNonNull(exceptionHandler);
     }
 
     public Job decorate(Job job, String altName, Map<String, Object> prebindParams) {
-        for (JobDecorator decorator : decorators) {
+        for (JobDecorator decorator : decoratorsInnerToOuter) {
             job = decorator.decorate(job, altName, prebindParams);
         }
 

@@ -17,30 +17,29 @@
  * under the License.
  */
 
-package io.bootique.job.runtime;
-
-import io.bootique.job.Job;
-import io.bootique.job.JobDecorator;
-import io.bootique.job.JobResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
+package io.bootique.job;
 
 /**
+ * A wrapper around {@link JobDecorator} that maintains decorator ordering. Lower ordering means an outer listener,
+ * higher - inner.
+ *
  * @since 3.0
  */
-public class ErrorHandlingJobDecorator implements JobDecorator {
+public class MappedJobDecorator<T extends JobDecorator> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingJobDecorator.class);
+    private T decorator;
+    private int order;
 
-    @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
-        try {
-            return delegate.run(params);
-        } catch (Throwable th) {
-            LOGGER.info("Exception while running job '{}'", delegate.getMetadata().getName(), th);
-            return JobResult.failure(delegate.getMetadata(), th);
-        }
+    public MappedJobDecorator(T decorator, int order) {
+        this.decorator = decorator;
+        this.order = order;
+    }
+
+    public T getDecorator() {
+        return decorator;
+    }
+
+    public int getOrder() {
+        return order;
     }
 }
