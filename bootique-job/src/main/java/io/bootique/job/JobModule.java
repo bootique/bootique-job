@@ -99,7 +99,7 @@ public class JobModule extends ConfigModule {
                         .build())
                 .addCommand(ListCommand.class)
                 .addCommand(ScheduleCommand.class)
-                .addValueObjectDescriptor(Cron.class, new ValueObjectDescriptor("percent expression, e.g. '0 0 * * * *'"));
+                .addValueObjectDescriptor(Cron.class, new ValueObjectDescriptor("6-part cron expression, e.g. '0 0 * * * *'"));
     }
 
     @Provides
