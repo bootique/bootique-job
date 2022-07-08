@@ -50,27 +50,27 @@ public class JobDecorators {
     //  unordered decorators are always inner
     public static final int UNORDERED_ORDER = RENAMER_ORDER + 1000;
 
-    private final List<JobDecorator> allDecoratorsInnerToOuter;
-    private final List<JobDecorator> groupMemberDecoratorsInnerToOuter;
+    private final List<JobDecorator> topDecoratorsInnerToOuter;
+    private final List<JobDecorator> subDecoratorsInnerToOuter;
 
     public static Builder builder() {
         return new Builder();
     }
 
     protected JobDecorators(
-            List<JobDecorator> allDecoratorsInnerToOuter,
-            List<JobDecorator> groupMemberDecoratorsInnerToOuter) {
+            List<JobDecorator> topDecoratorsInnerToOuter,
+            List<JobDecorator> subDecoratorsInnerToOuter) {
 
-        this.allDecoratorsInnerToOuter = allDecoratorsInnerToOuter;
-        this.groupMemberDecoratorsInnerToOuter = groupMemberDecoratorsInnerToOuter;
+        this.topDecoratorsInnerToOuter = topDecoratorsInnerToOuter;
+        this.subDecoratorsInnerToOuter = subDecoratorsInnerToOuter;
     }
 
-    public Job decorateStandaloneJob(Job job, String altName, Map<String, Object> prebindParams) {
-        return decorate(allDecoratorsInnerToOuter, job, altName, prebindParams);
+    public Job decorateTopJob(Job job, String altName, Map<String, Object> prebindParams) {
+        return decorate(topDecoratorsInnerToOuter, job, altName, prebindParams);
     }
 
-    public Job decorateGroupMemberJob(Job job, String altName, Map<String, Object> prebindParams) {
-        return decorate(groupMemberDecoratorsInnerToOuter, job, altName, prebindParams);
+    public Job decorateSubJob(Job job, String altName, Map<String, Object> prebindParams) {
+        return decorate(subDecoratorsInnerToOuter, job, altName, prebindParams);
     }
 
     protected Job decorate(
@@ -106,47 +106,49 @@ public class JobDecorators {
 
         public JobDecorators create() {
 
-            Set<MappedJobDecorator<?>> all = new HashSet<>(10);
-
-            // same as "all", but no custom decorators, no listeners and no lock handlers
+            Set<MappedJobDecorator<?>> topDecorators = new HashSet<>(10);
+            
+            // same as "top", but exclude custom decorators, listeners and lock handlers
             // TODO: would lock handlers actually make sense for child jobs?
-            Set<MappedJobDecorator<?>> forGroupMember = new HashSet<>(5);
+            Set<MappedJobDecorator<?>> subDecorators = new HashSet<>(5);
 
-            all.addAll(otherDecorators);
+            topDecorators.addAll(otherDecorators);
+
+            if (listenerDispatcher != null) {
+                topDecorators.add(new MappedJobDecorator<>(listenerDispatcher, LISTENERS_DISPATCHER_ORDER));
+            }
+
+            if (lockHandler != null) {
+                topDecorators.add(new MappedJobDecorator<>(lockHandler, LOCK_HANDLER_ORDER));
+            }
 
             if (logger != null) {
                 MappedJobDecorator<?> d = new MappedJobDecorator<>(logger, LOGGER_ORDER);
-                all.add(d);
-                forGroupMember.add(d);
+                topDecorators.add(d);
+                subDecorators.add(d);
             }
 
             if (exceptionHandler != null) {
                 MappedJobDecorator<?> d = new MappedJobDecorator<>(exceptionHandler, EXCEPTIONS_HANDLER_ORDER);
-                all.add(d);
-                forGroupMember.add(d);
+                topDecorators.add(d);
+                subDecorators.add(d);
             }
 
             if (paramsBinder != null) {
                 MappedJobDecorator<?> d = new MappedJobDecorator<>(paramsBinder, PARAMS_BINDER_ORDER);
-                all.add(d);
-                forGroupMember.add(d);
+                topDecorators.add(d);
+                subDecorators.add(d);
             }
 
             if (renamer != null) {
-                all.add(new MappedJobDecorator<>(renamer, RENAMER_ORDER));
-            }
-
-            if (listenerDispatcher != null) {
-                all.add(new MappedJobDecorator<>(listenerDispatcher, LISTENERS_DISPATCHER_ORDER));
-            }
-
-            if (lockHandler != null) {
-                all.add(new MappedJobDecorator<>(lockHandler, LOCK_HANDLER_ORDER));
+                MappedJobDecorator<?> d = new MappedJobDecorator<>(renamer, RENAMER_ORDER);
+                topDecorators.add(d);
+                subDecorators.add(d);
             }
 
             return new JobDecorators(
-                    sortedInnerToOuter(all),
-                    sortedInnerToOuter(forGroupMember)
+                    sortedInnerToOuter(topDecorators),
+                    sortedInnerToOuter(subDecorators)
             );
         }
 

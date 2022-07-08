@@ -106,7 +106,7 @@ public class JobRunBuilder {
         if (job != null) {
             return noDecorators
                     ? job
-                    : decorators.decorateStandaloneJob(job, null, Collections.emptyMap());
+                    : decorators.decorateTopJob(job, null, Collections.emptyMap());
         }
 
         throw new IllegalStateException("Neither 'job' nor 'jobName' are set");
