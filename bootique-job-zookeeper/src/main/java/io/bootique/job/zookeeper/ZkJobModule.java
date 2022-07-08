@@ -19,7 +19,7 @@ public class ZkJobModule extends ConfigModule {
 
     @Override
     public void configure(Binder binder) {
-        JobModule.extend(binder).addLockHandler(ZkClusterLockHandler.class);
+        JobModule.extend(binder).setLockHandler(ZkClusterLockHandler.class);
     }
 
     @Provides

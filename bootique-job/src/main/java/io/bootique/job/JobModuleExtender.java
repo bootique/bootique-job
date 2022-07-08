@@ -76,7 +76,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0.M1
      */
-    public JobModuleExtender addLockHandler(LockHandler handler) {
+    public JobModuleExtender setLockHandler(LockHandler handler) {
         contributeLockHandlers().addInstance(handler);
         return this;
     }
@@ -84,7 +84,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0.M1
      */
-    public JobModuleExtender addLockHandler(Class<? extends LockHandler> handlerType) {
+    public JobModuleExtender setLockHandler(Class<? extends LockHandler> handlerType) {
         contributeLockHandlers().add(handlerType);
         return this;
     }

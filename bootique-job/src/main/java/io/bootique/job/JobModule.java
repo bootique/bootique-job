@@ -120,6 +120,7 @@ public class JobModule extends ConfigModule {
     LockHandler provideDefaultLockHandler(Set<LockHandler> lockHandlers) {
         switch (lockHandlers.size()) {
             case 0:
+                // only use the default lock handler if none is provided by other modules
                 return new LocalLockHandler();
             case 1:
                 LOGGER.info("Using '{}' lock handler", lockHandlers.iterator().next());

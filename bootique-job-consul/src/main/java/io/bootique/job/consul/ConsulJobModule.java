@@ -38,7 +38,7 @@ public class ConsulJobModule extends ConfigModule {
 
     @Override
     public void configure(Binder binder) {
-        JobModule.extend(binder).addLockHandler(CompositeConsulLockHandler.class);
+        JobModule.extend(binder).setLockHandler(CompositeConsulLockHandler.class);
     }
 
     @Provides
