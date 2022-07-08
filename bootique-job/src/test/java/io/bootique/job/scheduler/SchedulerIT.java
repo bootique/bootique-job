@@ -47,7 +47,7 @@ public class SchedulerIT {
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
             .module(JobModule.class)
-            .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addDecorator(listener, JobDecorators.JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER + 1))
+            .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addDecorator(listener, JobDecorators.EXCEPTIONS_HANDLER_ORDER + 1))
             .createRuntime();
 
 

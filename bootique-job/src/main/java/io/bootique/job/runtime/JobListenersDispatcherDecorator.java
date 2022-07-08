@@ -33,11 +33,11 @@ import java.util.function.Consumer;
  * @deprecated since 3.0, as each {@link io.bootique.job.JobListener} can be easily converted into a {@link JobDecorator}
  */
 @Deprecated
-public class JobListenerDecorator implements JobDecorator {
+public class JobListenersDispatcherDecorator implements JobDecorator {
 
     private final Collection<MappedJobListener> listeners;
 
-    public JobListenerDecorator(Collection<MappedJobListener> listeners) {
+    public JobListenersDispatcherDecorator(Collection<MappedJobListener> listeners) {
         this.listeners = listeners;
     }
 

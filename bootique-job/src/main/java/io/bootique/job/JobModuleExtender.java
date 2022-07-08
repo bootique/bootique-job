@@ -31,7 +31,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     private SetBuilder<JobListener> listeners;
     private SetBuilder<MappedJobListener> mappedListeners;
     private SetBuilder<JobDecorator> decorators;
-    private SetBuilder<MappedJobDecorator> mappedDecorators;
+    private SetBuilder<MappedJobDecorator<?>> mappedDecorators;
     private SetBuilder<LockHandler> lockHandlers;
 
     public JobModuleExtender(Binder binder) {
@@ -210,9 +210,10 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
         return decorators;
     }
 
-    protected SetBuilder<MappedJobDecorator> contributeMappedDecorators() {
+    protected SetBuilder<MappedJobDecorator<?>> contributeMappedDecorators() {
         if (mappedDecorators == null) {
-            mappedDecorators = newSet(MappedJobDecorator.class);
+            mappedDecorators = binder.bindSet(new TypeLiteral<>() {
+            });
         }
         return mappedDecorators;
     }

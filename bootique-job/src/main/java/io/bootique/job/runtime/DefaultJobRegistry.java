@@ -113,13 +113,13 @@ public class DefaultJobRegistry implements JobRegistry {
             case 1:
                 JobRef ref = graph.topSort().get(0).iterator().next();
                 Job job = standaloneJobsInGraph.get(0);
-                return decorators.decorate(job, jobName, ref.getParams());
+                return decorators.decorateStandaloneJob(job, jobName, ref.getParams());
             case 0:
                 // fall through to the JobGroup
                 LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
             default:
                 Job group = createJobGroup(jobName, graph);
-                return decorators.decorate(group, jobName, Collections.emptyMap());
+                return decorators.decorateStandaloneJob(group, jobName, Collections.emptyMap());
         }
     }
 
@@ -150,8 +150,7 @@ public class DefaultJobRegistry implements JobRegistry {
             for (JobRef e : s) {
 
                 Job undecorated = standaloneJobs.get(e.getJobName());
-                Job decorated = decorateGroupMemberJob(undecorated, e.getParams());
-
+                Job decorated = decorators.decorateGroupMemberJob(undecorated, null, e.getParams());
                 stepJobs.add(decorated);
             }
 
@@ -194,12 +193,6 @@ public class DefaultJobRegistry implements JobRegistry {
         }
 
         return map;
-    }
-
-    // TODO: move group decoration logic to JobDecorators. E.g. applicability criteria can be "!metadata.isGroup()"
-    @Deprecated
-    protected Job decorateGroupMemberJob(Job undecorated, Map<String, Object> prebindParams) {
-        return new JobParamDefaultsDecorator().decorate(undecorated, undecorated.getMetadata().getName(), prebindParams);
     }
 
     private List<Job> standaloneJobsInGraph(Digraph<JobRef> graph) {

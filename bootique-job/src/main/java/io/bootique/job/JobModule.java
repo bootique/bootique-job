@@ -24,7 +24,6 @@ import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
-import io.bootique.di.TypeLiteral;
 import io.bootique.help.ValueObjectDescriptor;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
@@ -44,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class JobModule extends ConfigModule {
 
@@ -75,18 +73,7 @@ public class JobModule extends ConfigModule {
     @Override
     public void configure(Binder binder) {
 
-        JobModule.extend(binder).initAllExtensions()
-                .addMappedDecorator(new TypeLiteral<MappedJobDecorator<JobLogger>>() {
-                })
-                .addDecorator(new ExceptionsHandlerDecorator(), JobDecorators.JOB_EXCEPTIONS_HANDLER_DECORATOR_ORDER)
-                .addMappedDecorator(new TypeLiteral<MappedJobDecorator<LockHandler>>() {
-                })
-                .addDecorator(new JobParamDefaultsDecorator(), JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER)
-                // TODO: Listeners should be changed to Decorators (can be done in backwards-compatible manner)
-                .addMappedDecorator(new TypeLiteral<MappedJobDecorator<JobListenerDecorator>>() {
-                })
-                .addDecorator(new JobNameDecorator(), JobDecorators.JOB_NAME_DECORATOR_ORDER)
-        ;
+        JobModule.extend(binder).initAllExtensions();
 
         // binding via provider, to simplify overriding in the "bootique-job-instrumented" module
         binder.bind(JobRegistry.class).toProvider(JobRegistryProvider.class).inSingletonScope();
@@ -115,42 +102,23 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    JobDecorators provideDecorators(Set<JobDecorator> decorators, Set<MappedJobDecorator> mappedDecorators) {
+    JobDecorators provideDecorators(
+            LockHandler lockHandler,
+            JobLogger jobLogger,
+            JobListenersDispatcherDecorator listenerDispatcher,
+            Set<JobDecorator> decorators,
+            Set<MappedJobDecorator<?>> mappedDecorators) {
 
-        List<MappedJobDecorator> localDecorators = new ArrayList<>(mappedDecorators.size() + decorators.size());
-        localDecorators.addAll(mappedDecorators);
-
-        //  Integer.MAX_VALUE means placing bare unordered decorators after (== inside) mapped decorators
-        decorators.forEach(d -> localDecorators.add(new MappedJobDecorator<>(d, Integer.MAX_VALUE)));
-
-        Comparator<MappedJobDecorator> sortOuterToInner = Comparator.comparing(MappedJobDecorator::getOrder);
-
-        List<JobDecorator> decoratorsInnerToOuter = localDecorators.stream()
-                // sorting in reverse order, as inner decorators are installed first by JobDecorators
-                .sorted(sortOuterToInner.reversed())
-                .map(MappedJobDecorator::getDecorator)
-                .collect(Collectors.toList());
-
-        // TODO: a second ExceptionsHandlerDecorator in the chain... must unify
-        return new JobDecorators(decoratorsInnerToOuter, new ExceptionsHandlerDecorator());
-    }
-
-    @Provides
-    @Singleton
-    MappedJobDecorator<LockHandler> provideMappedLockHandler(LockHandler lockHandler) {
-        return new MappedJobDecorator<>(lockHandler, JobDecorators.LOCK_HANDLER_DECORATOR_ORDER);
-    }
-
-    @Provides
-    @Singleton
-    MappedJobDecorator<JobLogger> provideMappedJobLogger(JobLogger jobLogger) {
-        return new MappedJobDecorator<>(jobLogger, JobDecorators.LOGGER_DECORATOR_ORDER);
-    }
-
-    @Provides
-    @Singleton
-    MappedJobDecorator<JobListenerDecorator> provideMappedJobLogger(JobListenerDecorator listenerDecorator) {
-        return new MappedJobDecorator<>(listenerDecorator, JobDecorators.LISTENERS_DECORATOR_ORDER);
+        return JobDecorators.builder()
+                .add(decorators)
+                .addMapped(mappedDecorators)
+                .exceptionHandler(new ExceptionsHandlerDecorator())
+                .logger(jobLogger)
+                .lockHandler(lockHandler)
+                .listenerDispatcher(listenerDispatcher)
+                .renamer(new JobNameDecorator())
+                .paramsBinder(new JobParamsBinderDecorator())
+                .create();
     }
 
     @Provides
@@ -176,7 +144,7 @@ public class JobModule extends ConfigModule {
 
     @Provides
     @Singleton
-    JobListenerDecorator provideListenerDecorator(Set<JobListener> listeners, Set<MappedJobListener> mappedListeners) {
+    JobListenersDispatcherDecorator provideListenerDecorator(Set<JobListener> listeners, Set<MappedJobListener> mappedListeners) {
         // not checking for dupes between MappedJobListener and JobListener collections. Is that a problem?
         List<MappedJobListener> localListeners = new ArrayList<>(mappedListeners.size() + listeners.size());
         localListeners.addAll(mappedListeners);
@@ -185,6 +153,6 @@ public class JobModule extends ConfigModule {
         listeners.forEach(listener -> localListeners.add(new MappedJobListener<>(listener, Integer.MAX_VALUE)));
         localListeners.sort(Comparator.comparing(MappedJobListener::getOrder));
 
-        return new JobListenerDecorator(localListeners);
+        return new JobListenersDispatcherDecorator(localListeners);
     }
 }

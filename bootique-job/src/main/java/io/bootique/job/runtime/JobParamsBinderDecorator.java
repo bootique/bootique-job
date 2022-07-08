@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-public class JobParamDefaultsDecorator implements JobDecorator {
+public class JobParamsBinderDecorator implements JobDecorator {
 
     @Override
     public boolean isApplicable(JobMetadata metadata, String altName, Map<String, Object> prebindParams) {

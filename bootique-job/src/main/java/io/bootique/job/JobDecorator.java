@@ -23,6 +23,9 @@ import io.bootique.job.runtime.DecoratedJob;
 import java.util.Map;
 
 /**
+ * An interceptor that can add behavior to a job during its execution. There are standard decorators that add logging,
+ * exception handling, pre-bind default parameters, etc. Users can register their own custom decorators.
+ *
  * @since 3.0
  */
 @FunctionalInterface

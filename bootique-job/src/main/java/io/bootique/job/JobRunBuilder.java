@@ -99,14 +99,14 @@ public class JobRunBuilder {
 
     protected Job resolveJob() {
         if (jobName != null) {
+            // registry jobs are already decorated. No explicit decorators need to apply
             return registry.getJob(jobName);
         }
 
         if (job != null) {
             return noDecorators
-                    // even if no decorators are requested, let's add a mandatory exception handler decorator
-                    ? decorators.decorateWithExceptionHandler(job, null, Collections.emptyMap())
-                    : decorators.decorate(job, null, Collections.emptyMap());
+                    ? job
+                    : decorators.decorateStandaloneJob(job, null, Collections.emptyMap());
         }
 
         throw new IllegalStateException("Neither 'job' nor 'jobName' are set");

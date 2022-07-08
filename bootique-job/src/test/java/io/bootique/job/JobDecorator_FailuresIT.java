@@ -45,7 +45,7 @@ public class JobDecorator_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addDecorator(listener, JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER + 1))
+                .module(b -> JobModule.extend(b).addJob(job).addDecorator(listener, JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
@@ -62,7 +62,7 @@ public class JobDecorator_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addDecorator(new StartException(), JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER + 1))
+                .module(b -> JobModule.extend(b).addJob(job).addDecorator(new StartException(), JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
@@ -79,7 +79,7 @@ public class JobDecorator_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addDecorator(new EndException(), JobDecorators.PARAM_DEFAULTS_DECORATOR_ORDER + 1))
+                .module(b -> JobModule.extend(b).addJob(job).addDecorator(new EndException(), JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
