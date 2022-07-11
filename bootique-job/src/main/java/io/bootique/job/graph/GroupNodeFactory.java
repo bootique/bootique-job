@@ -41,28 +41,28 @@ public class GroupNodeFactory implements JobGraphNodeFactory<GroupNode> {
 
     // TODO: we should be able to use groups as children, but this requires testing of the entire dispatch mechanism.
     //   E.g. JobGraphBuilder has some SingleJobDefinition casts
-    private Map<String, SingleJobNodeFactory> jobs;
+    private Map<String, JobNodeFactory> jobs;
 
     @Override
     public GroupNode create(String jobName, Map<String, Job> standaloneJobs) {
 
         if (jobs == null) {
-            return new GroupNode(Collections.emptyMap());
+            return new GroupNode(jobName, Collections.emptyMap());
         }
 
-        Map<String, SingleJobNode> children = new HashMap<>();
+        Map<String, JobNode> children = new HashMap<>();
 
-        for (Map.Entry<String, SingleJobNodeFactory> j : jobs.entrySet()) {
+        for (Map.Entry<String, JobNodeFactory> j : jobs.entrySet()) {
             Objects.requireNonNull(j.getValue(), () -> "Null job definition for group job '" + j.getKey() + "'");
             children.put(j.getKey(), j.getValue().create(j.getKey(), standaloneJobs));
         }
 
-        return new GroupNode(children);
+        return new GroupNode(jobName, children);
     }
 
     @BQConfigProperty("Jobs and job groups, that belong to this job group." +
             " Overriding of default parameters and dependencies can be done here.")
-    public void setJobs(Map<String, SingleJobNodeFactory> jobs) {
+    public void setJobs(Map<String, JobNodeFactory> jobs) {
         this.jobs = jobs;
     }
 }

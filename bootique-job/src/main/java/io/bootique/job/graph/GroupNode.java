@@ -31,10 +31,12 @@ import java.util.stream.Collectors;
  */
 public class GroupNode implements JobGraphNode {
 
-    private final Map<String, SingleJobNode> jobs;
+    private final String name;
+    private final Map<String, JobNode> children;
 
-    public GroupNode(Map<String, SingleJobNode> jobs) {
-        this.jobs = jobs;
+    public GroupNode(String name, Map<String, JobNode> children) {
+        this.name = name;
+        this.children = children;
     }
 
     @Override
@@ -43,8 +45,13 @@ public class GroupNode implements JobGraphNode {
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public Set<String> getDependsOn() {
-        return jobs.keySet();
+        return children.keySet();
     }
 
     @Override
@@ -57,12 +64,12 @@ public class GroupNode implements JobGraphNode {
         return Collections.emptyMap();
     }
 
-    public Map<String, SingleJobNode> getJobs() {
-        return jobs;
+    public Map<String, JobNode> getChildren() {
+        return children;
     }
 
     @Override
     public String toString() {
-        return "job group => jobs: " + getDependsOn().stream().collect(Collectors.joining(",", "[", "]"));
+        return "job group '" + getName() + "' => jobs: " + getDependsOn().stream().collect(Collectors.joining(",", "[", "]"));
     }
 }

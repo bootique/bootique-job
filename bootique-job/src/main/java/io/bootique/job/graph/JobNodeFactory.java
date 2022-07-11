@@ -32,14 +32,14 @@ import java.util.*;
  * @since 3.0
  */
 @BQConfig("Standalone job with optional dependencies.")
-@JsonTypeName("single")
-public class SingleJobNodeFactory implements JobGraphNodeFactory<SingleJobNode> {
+@JsonTypeName("job")
+public class JobNodeFactory implements JobGraphNodeFactory<JobNode> {
 
     private Map<String, String> params;
     private List<String> dependsOn;
 
     @Override
-    public SingleJobNode create(String jobName, Map<String, Job> standaloneJobs) {
+    public JobNode create(String jobName, Map<String, Job> standaloneJobs) {
 
         Job job = standaloneJobs.get(jobName);
 
@@ -47,7 +47,8 @@ public class SingleJobNodeFactory implements JobGraphNodeFactory<SingleJobNode> 
             throw new BootiqueException(1, "No job object for name '" + jobName + "'");
         }
 
-        return new SingleJobNode(
+        return new JobNode(
+                job,
                 createParams(job.getMetadata().getParameters()),
                 dependsOn != null ? new LinkedHashSet<>(dependsOn) : Collections.emptySet(),
 

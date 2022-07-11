@@ -21,7 +21,7 @@ package io.bootique.job;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.JobGraphNodeFactory;
-import io.bootique.job.graph.SingleJobNode;
+import io.bootique.job.graph.JobNode;
 import io.bootique.job.runtime.DefaultJobRegistry;
 import io.bootique.job.runtime.JobDecorators;
 import io.bootique.type.TypeRef;
@@ -100,13 +100,14 @@ public class JobRegistryProvider implements Provider<JobRegistry> {
         jobsByName.entrySet()
                 .stream()
                 .filter(e -> !nodes.containsKey(e.getKey()))
-                .forEach(e -> nodes.put(e.getKey(), createDefaultNode(e.getValue().getMetadata())));
+                .forEach(e -> nodes.put(e.getKey(), createDefaultNode(e.getValue())));
 
         return nodes;
     }
 
-    protected JobGraphNode createDefaultNode(JobMetadata metadata) {
-        return new SingleJobNode(createDefaultParams(metadata), metadata.getDependsOn(), false);
+    protected JobGraphNode createDefaultNode(Job job) {
+        JobMetadata metadata = job.getMetadata();
+        return new JobNode(job, createDefaultParams(metadata), metadata.getDependsOn(), false);
     }
 
     protected Map<String, Object> createDefaultParams(JobMetadata metadata) {

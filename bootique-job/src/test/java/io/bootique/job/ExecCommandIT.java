@@ -294,7 +294,7 @@ public class ExecCommandIT extends BaseJobExecIT {
                 .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.g1.type", "group")
-                        .setProperty("bq.jobs.g1.jobs.job1.type", "single")
+                        .setProperty("bq.jobs.g1.jobs.job1.type", "job")
                         .setProperty("bq.jobs.job1.dependsOn[0]", "job2")
                         .setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
                 .run();
@@ -312,9 +312,9 @@ public class ExecCommandIT extends BaseJobExecIT {
                 .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.g1.type", "group")
-                        .setProperty("bq.jobs.g1.jobs.job1.type", "single")
-                        .setProperty("bq.jobs.g1.jobs.job2.type", "single")
-                        .setProperty("bq.jobs.g1.jobs.job3.type", "single")
+                        .setProperty("bq.jobs.g1.jobs.job1.type", "job")
+                        .setProperty("bq.jobs.g1.jobs.job2.type", "job")
+                        .setProperty("bq.jobs.g1.jobs.job3.type", "job")
                         .setProperty("bq.jobs.job1.dependsOn[0]", "job2")
                         .setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
                 .run();

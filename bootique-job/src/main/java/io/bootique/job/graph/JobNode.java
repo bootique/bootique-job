@@ -19,21 +19,25 @@
 
 package io.bootique.job.graph;
 
+import io.bootique.job.Job;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * A job dependency graph node representing a single job.
+ * A job dependency graph node representing a specific job.
  *
  * @since 3.0
  */
-public class SingleJobNode implements JobGraphNode {
+public class JobNode implements JobGraphNode {
 
+    private final Job job;
     private final Map<String, Object> params;
     private final Set<String> dependsOn;
     private final boolean forceNoDependencies;
 
-    public SingleJobNode(Map<String, Object> params, Set<String> dependsOn, boolean forceNoDependencies) {
+    public JobNode(Job job, Map<String, Object> params, Set<String> dependsOn, boolean forceNoDependencies) {
+        this.job = job;
         this.params = Objects.requireNonNull(params);
         this.dependsOn = Objects.requireNonNull(dependsOn);
 
@@ -48,7 +52,12 @@ public class SingleJobNode implements JobGraphNode {
 
     @Override
     public void accept(JobGraphNodeVisitor v) {
-        v.visitSingle(this);
+        v.visitJob(this);
+    }
+
+    @Override
+    public String getName() {
+        return job.getMetadata().getName();
     }
 
     @Override
@@ -65,7 +74,11 @@ public class SingleJobNode implements JobGraphNode {
         return params;
     }
 
-    public SingleJobNode merge(SingleJobNode overriding) {
+    public Job getJob() {
+        return job;
+    }
+
+    public JobNode merge(JobNode overriding) {
 
         Map<String, Object> mergedParams = new HashMap<>(params);
         mergedParams.putAll(overriding.getParams());
@@ -74,12 +87,12 @@ public class SingleJobNode implements JobGraphNode {
                 ? overriding.dependsOn
                 : this.dependsOn;
 
-        return new SingleJobNode(mergedParams, mergedDependsOn, false);
+        return new JobNode(overriding.job, mergedParams, mergedDependsOn, false);
     }
 
     @Override
     public String toString() {
-        return "job => depends:"
+        return "job '" + getName() + "' => depends:"
                 + dependsOn.stream().collect(Collectors.joining(",", "[", "]"))
                 + ", params: " + params.keySet().stream().collect(Collectors.joining(",", "[", "]"));
     }

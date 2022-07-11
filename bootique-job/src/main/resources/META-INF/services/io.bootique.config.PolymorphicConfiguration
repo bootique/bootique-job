@@ -1,3 +1,3 @@
 io.bootique.job.graph.JobGraphNodeFactory
-io.bootique.job.graph.SingleJobNodeFactory
+io.bootique.job.graph.JobNodeFactory
 io.bootique.job.graph.GroupNodeFactory

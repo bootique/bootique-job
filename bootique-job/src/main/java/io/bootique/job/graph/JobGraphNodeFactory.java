@@ -30,7 +30,7 @@ import java.util.Map;
  * @since 3.0
  */
 @BQConfig("Job of a given type.")
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = SingleJobNodeFactory.class)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = JobNodeFactory.class)
 public interface JobGraphNodeFactory<T extends JobGraphNode> extends PolymorphicConfiguration {
 
     T create(String jobName, Map<String, Job> standaloneJobs);

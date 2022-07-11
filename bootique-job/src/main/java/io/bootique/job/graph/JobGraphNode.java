@@ -31,6 +31,8 @@ public interface JobGraphNode {
 
     void accept(JobGraphNodeVisitor v);
 
+    String getName();
+
     Set<String> getDependsOn();
 
     boolean isGroup();

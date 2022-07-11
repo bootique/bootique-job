@@ -20,7 +20,6 @@
 package io.bootique.job.graph;
 
 import io.bootique.BootiqueException;
-import io.bootique.job.Job;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,88 +28,83 @@ import java.util.Objects;
 
 public class JobGraphBuilder {
 
-    private final Map<String, JobRef> knownExecutions;
-    private final Map<String, Job> standaloneJobs;
     private final JobGraphNodes nodes;
+    private final Map<String, JobNode> seenNodes;
 
-    public JobGraphBuilder(Map<String, JobGraphNode> nodes, Map<String, Job> standaloneJobs) {
+    public JobGraphBuilder(Map<String, JobGraphNode> nodes) {
         this.nodes = new JobGraphNodes(nodes);
-        this.standaloneJobs = standaloneJobs;
-        this.knownExecutions = new LinkedHashMap<>();
+        this.seenNodes = new LinkedHashMap<>();
     }
 
     /**
      * Creates a dependency graph rooted in the given job name
      */
-    public Digraph<JobRef> createGraph(String rootJobName) {
-        Digraph<JobRef> graph = new Digraph<>();
+    public Digraph<JobNode> createGraph(String rootJobName) {
+
+        // build a graph that contains relationships between JobNodes (skipping group nodes that are not executable)
+
+        Digraph<JobNode> graph = new Digraph<>();
         populateWithDependencies(rootJobName, null, graph, nodes, new HashMap<>());
         return graph;
     }
 
     private void populateWithDependencies(
             String jobName,
-            JobRef childRef,
-            Digraph<JobRef> graph,
+            JobNode childRef,
+            Digraph<JobNode> graph,
             JobGraphNodes nodes,
-            Map<String, JobRef> childRefs) {
+            Map<String, JobNode> childRefs) {
 
         JobGraphNode node = nodes.getNode(jobName);
 
         node.accept(new JobGraphNodeVisitor() {
             @Override
-            public void visitSingle(SingleJobNode singleJob) {
-                JobRef ref = getOrCreateRef(jobName, singleJob);
-                graph.add(ref);
+            public void visitJob(JobNode jobNode) {
+
+                JobNode uniqueNode = uniqueNode(jobNode);
+
+                graph.add(uniqueNode);
                 if (childRef != null) {
-                    graph.add(ref, childRef);
+                    graph.add(uniqueNode, childRef);
                 }
-                populateWithSingleJobDependencies(ref, graph, nodes, childRefs);
+                populateWithSingleJobDependencies(uniqueNode, graph, nodes, childRefs);
             }
 
             @Override
             public void visitGroup(GroupNode group) {
-                group.getJobs().forEach((name, definition) -> populateWithDependencies(
+                group.getChildren().forEach((name, definition) -> populateWithDependencies(
                         name,
                         childRef,
                         graph,
-                        new JobGraphNodes(group.getJobs(), nodes), childRefs)
+                        new JobGraphNodes(group.getChildren(), nodes), childRefs)
                 );
             }
         });
     }
 
     private void populateWithSingleJobDependencies(
-            JobRef ref,
-            Digraph<JobRef> graph,
+            JobNode node,
+            Digraph<JobNode> graph,
             JobGraphNodes nodes,
-            Map<String, JobRef> childRefs) {
+            Map<String, JobNode> childNodes) {
 
-        String jobName = ref.getJobName();
-        childRefs.put(jobName, ref);
+        String jobName = node.getName();
+        childNodes.put(jobName, node);
 
         nodes.getNode(jobName).getDependsOn().forEach(parentName -> {
-            if (childRefs.containsKey(parentName)) {
+            if (childNodes.containsKey(parentName)) {
                 String message = String.format("Job dependency cycle detected: [...] -> %s -> %s", jobName, parentName);
                 throw new IllegalStateException(message);
             }
-            populateWithDependencies(parentName, ref, graph, nodes, childRefs);
+            populateWithDependencies(parentName, node, graph, nodes, childNodes);
         });
-        childRefs.remove(jobName);
+        childNodes.remove(jobName);
     }
 
-    private JobRef getOrCreateRef(String jobName, SingleJobNode node) {
-        return knownExecutions.computeIfAbsent(jobName, jn -> createRef(jn, node));
-    }
-
-    private JobRef createRef(String jobName, SingleJobNode node) {
-        Job job = standaloneJobs.get(jobName);
-
-        if (job == null) {
-            throw new BootiqueException(1, "No job object for name '" + jobName + "'");
-        }
-
-        return new JobRef(jobName, node.getParams());
+    private JobNode uniqueNode(JobNode node) {
+        // TODO: what if the same job name is used twice in the graph, but with different params and dependencies?
+        //  It is probably incorrect to collapse it to a single exec node
+        return seenNodes.computeIfAbsent(node.getName(), name -> node);
     }
 
     static class JobGraphNodes {
@@ -131,8 +125,8 @@ public class JobGraphBuilder {
             JobGraphNode defaultNode = defaults != null ? defaults.getNode(jobName) : null;
             JobGraphNode overrideNode = nodes.get(jobName);
 
-            if (overrideNode instanceof SingleJobNode && defaultNode instanceof SingleJobNode) {
-                return ((SingleJobNode) defaultNode).merge((SingleJobNode) overrideNode);
+            if (overrideNode instanceof JobNode && defaultNode instanceof JobNode) {
+                return ((JobNode) defaultNode).merge((JobNode) overrideNode);
             }
 
             if (overrideNode == null && defaultNode == null) {

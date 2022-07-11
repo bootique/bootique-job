@@ -79,14 +79,13 @@ public class DefaultJobRegistry implements JobRegistry {
 
         checkJobExists(jobName);
 
-        Digraph<JobRef> graph = new JobGraphBuilder(allNodes, standaloneJobs).createGraph(jobName);
+        Digraph<JobNode> graph = new JobGraphBuilder(allNodes).createGraph(jobName);
         List<Job> standaloneJobsInGraph = standaloneJobsInGraph(graph);
 
         switch (standaloneJobsInGraph.size()) {
             case 1:
-                JobRef ref = graph.topSort().get(0).iterator().next();
-                Job job = standaloneJobsInGraph.get(0);
-                return decorators.decorateTopJob(job, jobName, ref.getParams());
+                JobNode node = graph.topSort().get(0).iterator().next();
+                return decorators.decorateTopJob(node.getJob(), jobName, node.getParams());
             case 0:
                 // fall through to the JobGroup
                 LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
@@ -96,18 +95,18 @@ public class DefaultJobRegistry implements JobRegistry {
         }
     }
 
-    protected JobGroup createJobGroup(String jobName, Digraph<JobRef> graph) {
-        List<Set<JobRef>> sortedRefs = graph.reverseTopSort();
+    protected JobGroup createJobGroup(String jobName, Digraph<JobNode> graph) {
+        List<Set<JobNode>> sortedNodes = graph.reverseTopSort();
         return createJobGroup(
-                groupMetadata(jobName, allNodes.get(jobName), sortedRefs),
-                jobGroupSteps(sortedRefs));
+                groupMetadata(jobName, allNodes.get(jobName), sortedNodes),
+                jobGroupSteps(sortedNodes));
     }
 
     protected JobGroup createJobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
         return new JobGroup(groupMetadata, steps);
     }
 
-    private JobMetadata groupMetadata(String groupName, JobGraphNode groupConfig, List<Set<JobRef>> refs) {
+    private JobMetadata groupMetadata(String groupName, JobGraphNode groupConfig, List<Set<JobNode>> nodes) {
 
         JobMetadata.Builder builder = JobMetadata
                 .builder(groupName)
@@ -117,24 +116,24 @@ public class DefaultJobRegistry implements JobRegistry {
         // TODO: While we do need to capture parameters (especially for single job groups), is it correct for the
         //  group parameters to be the union of child job params? What if there are conflicting names?
 
-        for (Set<JobRef> refSet : refs) {
-            for (JobRef ref : refSet) {
-                standaloneJobs.get(ref.getJobName()).getMetadata().getParameters().forEach(builder::param);
+        for (Set<JobNode> nodeSet : nodes) {
+            for (JobNode node : nodeSet) {
+                node.getJob().getMetadata().getParameters().forEach(builder::param);
             }
         }
 
         return builder.build();
     }
 
-    protected List<JobGroupStep> jobGroupSteps(List<Set<JobRef>> sortedRefs) {
+    protected List<JobGroupStep> jobGroupSteps(List<Set<JobNode>> sortedNodes) {
 
-        List<JobGroupStep> steps = new ArrayList<>(sortedRefs.size());
+        List<JobGroupStep> steps = new ArrayList<>(sortedNodes.size());
 
-        for (Set<JobRef> s : sortedRefs) {
+        for (Set<JobNode> s : sortedNodes) {
             List<Job> stepJobs = new ArrayList<>();
-            for (JobRef e : s) {
+            for (JobNode e : s) {
 
-                Job undecorated = standaloneJobs.get(e.getJobName());
+                Job undecorated = standaloneJobs.get(e.getName());
                 Job decorated = decorators.decorateSubJob(undecorated, null, e.getParams());
                 stepJobs.add(decorated);
             }
@@ -162,10 +161,9 @@ public class DefaultJobRegistry implements JobRegistry {
         return new ParallelJobBatchStep(scheduler.get(), stepJobs);
     }
 
-    private List<Job> standaloneJobsInGraph(Digraph<JobRef> graph) {
+    private List<Job> standaloneJobsInGraph(Digraph<JobNode> graph) {
         return graph.allVertices().stream()
-                .map(e -> standaloneJobs.get(e.getJobName()))
-                .filter(j -> j != null)
+                .map(JobNode::getJob)
                 .collect(Collectors.toList());
     }
 

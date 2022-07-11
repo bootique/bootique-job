@@ -23,7 +23,7 @@ package io.bootique.job.graph;
  */
 public interface JobGraphNodeVisitor {
 
-    void visitSingle(SingleJobNode singleJob);
+    void visitJob(JobNode jobNode);
 
-    void visitGroup(GroupNode group);
+    void visitGroup(GroupNode groupNode);
 }

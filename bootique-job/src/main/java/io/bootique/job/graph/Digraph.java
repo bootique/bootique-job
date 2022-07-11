@@ -48,7 +48,7 @@ public class Digraph<V> {
             return;
         }
 
-        neighbors.put(vertex, new ArrayList<V>());
+        neighbors.put(vertex, new ArrayList<>());
     }
 
     /**
