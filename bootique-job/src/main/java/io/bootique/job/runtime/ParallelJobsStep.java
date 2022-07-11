@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.group;
+package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobFuture;
@@ -31,24 +31,24 @@ import java.util.stream.Collectors;
 /**
  * @since 3.0
  */
-public class ParallelJobBatchStep extends JobGroupStep {
+public class ParallelJobsStep extends GraphJobStep {
 
     private final List<Job> jobs;
 
-    public ParallelJobBatchStep(Scheduler scheduler, List<Job> jobs) {
+    public ParallelJobsStep(Scheduler scheduler, List<Job> jobs) {
         super(scheduler);
         this.jobs = Objects.requireNonNull(jobs);
     }
 
     @Override
-    public JobGroupStepResult run(Map<String, Object> params) {
+    public JobResult run(Map<String, Object> params) {
 
         // schedule 2...N jobs in the background (non-blocking)
         // to ensure parallel execution, must collect futures in an explicit collection,
         // and then "get" them in a separate stream / loop
         List<JobFuture> futures = jobs.stream()
                 .skip(1)
-                .map(j -> submitGroupMember(j, params))
+                .map(j -> submitMember(j, params))
                 .collect(Collectors.toList());
 
         // run the first job on the group thread (blocking)
@@ -56,8 +56,8 @@ public class ParallelJobBatchStep extends JobGroupStep {
         logResult(blockingResult);
 
         if (!blockingResult.isSuccess()) {
-            // TODO: don't bother to cancel other running jobs?
-            return JobGroupStepResult.failed(blockingResult);
+            // TODO: should we cancel other running jobs?
+            return blockingResult;
         }
 
         for (JobFuture f : futures) {
@@ -66,15 +66,15 @@ public class ParallelJobBatchStep extends JobGroupStep {
             logResult(result);
 
             if (!result.isSuccess()) {
-                // TODO: don't bother to cancel other running jobs?
-                return JobGroupStepResult.failed(result);
+                // TODO: should we cancel other running jobs?
+                return result;
             }
         }
 
-        return JobGroupStepResult.succeeded(blockingResult);
+        return blockingResult;
     }
 
-    protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {
+    protected JobFuture submitMember(Job job, Map<String, Object> params) {
         return scheduler.runBuilder().job(job).params(params).noDecorators().runNonBlocking();
     }
 }

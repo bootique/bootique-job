@@ -31,7 +31,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
-public class JobGraphIT {
+public class GraphJobIT {
 
     @BQTestTool
     static final BQTestFactory testFactory = new BQTestFactory();

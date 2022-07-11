@@ -40,6 +40,10 @@ public class Digraph<V> {
         return neighbors.keySet();
     }
 
+    public int verticesCount() {
+        return neighbors.size();
+    }
+
     /**
      * Add a vertex to the graph. Nothing happens if vertex is already in graph.
      */

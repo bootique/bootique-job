@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @BQTest
-public class Scheduler_JobGroupIT {
+public class Scheduler_GraphJobIT {
     
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup.yml")

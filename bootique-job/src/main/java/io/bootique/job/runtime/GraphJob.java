@@ -16,32 +16,41 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.group;
 
-import io.bootique.job.Job;
+package io.bootique.job.runtime;
+
+import io.bootique.job.BaseJob;
+import io.bootique.job.JobMetadata;
 import io.bootique.job.JobResult;
-import io.bootique.job.Scheduler;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
+ * A job that is internally composed of a graph of multiple interdependent jobs.
+ *
  * @since 3.0
  */
-public class SingleJobStep extends JobGroupStep {
+public class GraphJob extends BaseJob {
 
-    private final Job job;
+    // linear steps, each one may be a single job or a set of parallel jobs
+    private final List<GraphJobStep> steps;
 
-    public SingleJobStep(Scheduler scheduler, Job job) {
-        super(scheduler);
-        this.job = Objects.requireNonNull(job);
+    public GraphJob(JobMetadata metadata, List<GraphJobStep> steps) {
+        super(metadata);
+        this.steps = steps;
     }
 
     @Override
-    public JobGroupStepResult run(Map<String, Object> params) {
-        JobResult result = scheduler.runBuilder().job(job).params(params).noDecorators().runBlocking();
-        logResult(result);
+    public JobResult run(Map<String, Object> params) {
+        for (GraphJobStep step : steps) {
+            JobResult result = step.run(params);
 
-        return result.isSuccess() ? JobGroupStepResult.succeeded(result) : JobGroupStepResult.failed(result);
+            if (!result.isSuccess()) {
+                return result;
+            }
+        }
+
+        return JobResult.success(getMetadata());
     }
 }

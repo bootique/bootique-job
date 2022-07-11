@@ -52,7 +52,6 @@ public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
     public JobRegistry get() {
         Map<String, Job> jobsByName = jobsByName(standaloneJobs);
         return new InstrumentedJobRegistry(
-                jobsByName,
                 graphNodes(jobsByName),
                 scheduler,
                 decorators,

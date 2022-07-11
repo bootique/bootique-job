@@ -16,12 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.group;
+package io.bootique.job.runtime;
+
+import io.bootique.job.Job;
+import io.bootique.job.JobResult;
+import io.bootique.job.Scheduler;
+
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @since 3.0
  */
-public enum JobGroupStepOutcome {
+public class SingleJobStep extends GraphJobStep {
 
-    succeeded, failed;
+    private final Job job;
+
+    public SingleJobStep(Scheduler scheduler, Job job) {
+        super(scheduler);
+        this.job = Objects.requireNonNull(job);
+    }
+
+    @Override
+    public JobResult run(Map<String, Object> params) {
+        JobResult result = scheduler.runBuilder().job(job).params(params).noDecorators().runBlocking();
+        logResult(result);
+        return result;
+    }
 }

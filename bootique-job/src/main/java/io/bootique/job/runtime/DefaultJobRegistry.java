@@ -24,10 +24,6 @@ import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.Scheduler;
 import io.bootique.job.graph.*;
-import io.bootique.job.group.JobGroup;
-import io.bootique.job.group.JobGroupStep;
-import io.bootique.job.group.ParallelJobBatchStep;
-import io.bootique.job.group.SingleJobStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,88 +31,80 @@ import javax.inject.Provider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 public class DefaultJobRegistry implements JobRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobRegistry.class);
 
     protected final Provider<Scheduler> scheduler;
-    protected final Map<String, Job> standaloneJobs;
-    protected final Map<String, JobGraphNode> allNodes;
+    protected final Map<String, JobGraphNode> jobDescriptors;
     protected final JobDecorators decorators;
 
-    // Lazily populated map of decorated runnable jobs (either standalone or groups)
-    private final ConcurrentMap<String, Job> decoratedJobAndGroups;
+    // Lazily populated map of decorated runnable jobs (jobs or graphs) produced from standalone jobs and groups
+    private final ConcurrentMap<String, Job> executableJobs;
 
     public DefaultJobRegistry(
-            Map<String, Job> standaloneJobs,
             Map<String, JobGraphNode> nodes,
             Provider<Scheduler> scheduler,
             JobDecorators decorators) {
 
-        this.standaloneJobs = standaloneJobs;
-        this.allNodes = nodes;
-        this.decoratedJobAndGroups = new ConcurrentHashMap<>((int) (nodes.size() / 0.75d) + 1);
+        this.jobDescriptors = nodes;
+        this.executableJobs = new ConcurrentHashMap<>((int) (nodes.size() / 0.75d) + 1);
         this.scheduler = scheduler;
         this.decorators = decorators;
     }
 
     @Override
     public Set<String> getJobNames() {
-        return allNodes.keySet();
+        return jobDescriptors.keySet();
     }
 
     @Override
     public Job getJob(String jobName) {
-        return decoratedJobAndGroups.computeIfAbsent(jobName, this::createJob);
+        return executableJobs.computeIfAbsent(jobName, this::createExecutableJob);
     }
 
     /**
      * @since 3.0
      */
-    protected Job createJob(String jobName) {
+    protected Job createExecutableJob(String name) {
 
-        checkJobExists(jobName);
+        checkJobExists(name);
 
-        Digraph<JobNode> graph = new JobGraphBuilder(allNodes).createGraph(jobName);
-        List<Job> standaloneJobsInGraph = standaloneJobsInGraph(graph);
+        JobNodeDigraph graph = JobNodeDigraph.builder(jobDescriptors).create(name);
 
-        switch (standaloneJobsInGraph.size()) {
+        switch (graph.verticesCount()) {
             case 1:
                 JobNode node = graph.topSort().get(0).iterator().next();
-                return decorators.decorateTopJob(node.getJob(), jobName, node.getParams());
+                return decorators.decorateTopJob(node.getJob(), name, node.getParams());
             case 0:
                 // fall through to the JobGroup
-                LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", jobName);
+                LOGGER.warn("Job group '{}' is empty. It is valid, but will do nothing", name);
             default:
-                Job group = createJobGroup(jobName, graph);
-                return decorators.decorateTopJob(group, jobName, Collections.emptyMap());
+                Job group = createExecutableGraph(name, graph);
+                return decorators.decorateTopJob(group, name, Collections.emptyMap());
         }
     }
 
-    protected JobGroup createJobGroup(String jobName, Digraph<JobNode> graph) {
+    protected GraphJob createExecutableGraph(String name, Digraph<JobNode> graph) {
         List<Set<JobNode>> sortedNodes = graph.reverseTopSort();
-        return createJobGroup(
-                groupMetadata(jobName, allNodes.get(jobName), sortedNodes),
+
+        return new GraphJob(
+                createGraphMetadata(jobDescriptors.get(name), sortedNodes),
                 jobGroupSteps(sortedNodes));
     }
 
-    protected JobGroup createJobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
-        return new JobGroup(groupMetadata, steps);
-    }
-
-    private JobMetadata groupMetadata(String groupName, JobGraphNode groupConfig, List<Set<JobNode>> nodes) {
+    private JobMetadata createGraphMetadata(JobGraphNode graphNode, List<Set<JobNode>> executionNodes) {
 
         JobMetadata.Builder builder = JobMetadata
-                .builder(groupName)
-                .dependsOn(groupConfig.getDependsOn())
+                .builder(graphNode.getName())
+                .dependsOn(graphNode.getDependsOn())
                 .group(true);
 
         // TODO: While we do need to capture parameters (especially for single job groups), is it correct for the
         //  group parameters to be the union of child job params? What if there are conflicting names?
 
-        for (Set<JobNode> nodeSet : nodes) {
+        for (Set<JobNode> nodeSet : executionNodes) {
             for (JobNode node : nodeSet) {
                 node.getJob().getMetadata().getParameters().forEach(builder::param);
             }
@@ -125,17 +113,29 @@ public class DefaultJobRegistry implements JobRegistry {
         return builder.build();
     }
 
-    protected List<JobGroupStep> jobGroupSteps(List<Set<JobNode>> sortedNodes) {
+    protected List<GraphJobStep> jobGroupSteps(List<Set<JobNode>> sortedNodes) {
 
-        List<JobGroupStep> steps = new ArrayList<>(sortedNodes.size());
+        List<GraphJobStep> steps = new ArrayList<>(sortedNodes.size());
 
         for (Set<JobNode> s : sortedNodes) {
             List<Job> stepJobs = new ArrayList<>();
             for (JobNode e : s) {
 
-                Job undecorated = standaloneJobs.get(e.getName());
-                Job decorated = decorators.decorateSubJob(undecorated, null, e.getParams());
-                stepJobs.add(decorated);
+                JobGraphNode node = jobDescriptors.get(e.getName());
+
+                node.accept(new JobGraphNodeVisitor() {
+                    @Override
+                    public void visitJob(JobNode jobNode) {
+                        Job decorated = decorators.decorateSubJob(jobNode.getJob(), null, e.getParams());
+                        stepJobs.add(decorated);
+                    }
+
+                    @Override
+                    public void visitGroup(GroupNode groupNode) {
+                        // TODO: no reason we can't support groups as children of jobs or other groups
+                        throw new IllegalStateException("Don't (yet) support groups as children on the job dependency tree: " + groupNode.getName());
+                    }
+                });
             }
 
             switch (stepJobs.size()) {
@@ -157,18 +157,12 @@ public class DefaultJobRegistry implements JobRegistry {
         return new SingleJobStep(scheduler.get(), job);
     }
 
-    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs) {
-        return new ParallelJobBatchStep(scheduler.get(), stepJobs);
-    }
-
-    private List<Job> standaloneJobsInGraph(Digraph<JobNode> graph) {
-        return graph.allVertices().stream()
-                .map(JobNode::getJob)
-                .collect(Collectors.toList());
+    protected ParallelJobsStep createParallelGroupStep(List<Job> stepJobs) {
+        return new ParallelJobsStep(scheduler.get(), stepJobs);
     }
 
     private void checkJobExists(String jobName) {
-        if (!allNodes.containsKey(jobName)) {
+        if (!jobDescriptors.containsKey(jobName)) {
             throw new IllegalArgumentException("Unknown job: " + jobName);
         }
     }

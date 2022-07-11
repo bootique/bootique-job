@@ -21,7 +21,7 @@ package io.bootique.job.instrumented;
 import io.bootique.job.Job;
 import io.bootique.job.JobFuture;
 import io.bootique.job.Scheduler;
-import io.bootique.job.group.ParallelJobBatchStep;
+import io.bootique.job.runtime.ParallelJobsStep;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 
 import java.util.List;
@@ -30,24 +30,24 @@ import java.util.Map;
 /**
  * @since 3.0
  */
-public class TxIdAwareJobGroupStep extends ParallelJobBatchStep {
+public class TxIdAwareParallelJobsStep extends ParallelJobsStep {
 
     private final TransactionIdMDC transactionIdMDC;
 
-    public TxIdAwareJobGroupStep(Scheduler scheduler, List<Job> jobs, TransactionIdMDC transactionIdMDC) {
+    public TxIdAwareParallelJobsStep(Scheduler scheduler, List<Job> jobs, TransactionIdMDC transactionIdMDC) {
         super(scheduler, jobs);
         this.transactionIdMDC = transactionIdMDC;
     }
 
     @Override
-    protected JobFuture submitGroupMember(Job job, Map<String, Object> params) {
+    protected JobFuture submitMember(Job job, Map<String, Object> params) {
 
         // IMPORTANT: do not attempt to cache the decorated job. It must be invoked on the same thread as
         // the group "run" method to capture the current transaction ID.
 
         Job withInheritedTxId = decorateWithGroupTxId(job);
 
-        return super.submitGroupMember(withInheritedTxId, params);
+        return super.submitMember(withInheritedTxId, params);
     }
 
     protected Job decorateWithGroupTxId(Job job) {

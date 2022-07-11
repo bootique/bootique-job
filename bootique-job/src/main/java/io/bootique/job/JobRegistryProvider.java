@@ -63,7 +63,6 @@ public class JobRegistryProvider implements Provider<JobRegistry> {
         Map<String, Job> jobsByName = jobsByName(standaloneJobs);
 
         return new DefaultJobRegistry(
-                jobsByName,
                 graphNodes(jobsByName),
                 scheduler,
                 decorators);

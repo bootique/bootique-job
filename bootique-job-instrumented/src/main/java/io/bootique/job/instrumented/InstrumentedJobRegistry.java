@@ -21,7 +21,7 @@ package io.bootique.job.instrumented;
 import io.bootique.job.Job;
 import io.bootique.job.Scheduler;
 import io.bootique.job.graph.JobGraphNode;
-import io.bootique.job.group.ParallelJobBatchStep;
+import io.bootique.job.runtime.ParallelJobsStep;
 import io.bootique.job.runtime.DefaultJobRegistry;
 import io.bootique.job.runtime.JobDecorators;
 
@@ -37,18 +37,17 @@ public class InstrumentedJobRegistry extends DefaultJobRegistry {
     private final JobMDCManager mdcManager;
 
     public InstrumentedJobRegistry(
-            Map<String, Job> standaloneJobs,
             Map<String, JobGraphNode> jobDefinitions,
             Provider<Scheduler> scheduler,
             JobDecorators decorators,
             JobMDCManager mdcManager) {
-        super(standaloneJobs, jobDefinitions, scheduler, decorators);
+        super(jobDefinitions, scheduler, decorators);
 
         this.mdcManager = mdcManager;
     }
 
     @Override
-    protected ParallelJobBatchStep createParallelGroupStep(List<Job> stepJobs) {
-        return new TxIdAwareJobGroupStep(scheduler.get(), stepJobs, mdcManager.getTransactionIdMDC());
+    protected ParallelJobsStep createParallelGroupStep(List<Job> stepJobs) {
+        return new TxIdAwareParallelJobsStep(scheduler.get(), stepJobs, mdcManager.getTransactionIdMDC());
     }
 }
