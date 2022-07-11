@@ -19,6 +19,7 @@
 * #108 Upgrade Consul client to 1.5.3
 * #109 Unify job decoration approach
 * #110 Package reorg
+* #111 Add job dependencies to the JobMetadata
 
 ## 2.0.M1
 

@@ -124,29 +124,30 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     protected JobGroup createJobGroup(String jobName, Digraph<JobRef> graph) {
-        JobMetadata groupMetadata = groupMetadata(jobName, allNodes.get(jobName), standaloneJobs.values());
-        List<JobGroupStep> steps = jobGroupSteps(graph.reverseTopSort());
-        return createJobGroup(groupMetadata, steps);
+        List<Set<JobRef>> sortedRefs = graph.reverseTopSort();
+        return createJobGroup(
+                groupMetadata(jobName, allNodes.get(jobName), sortedRefs),
+                jobGroupSteps(sortedRefs));
     }
 
     protected JobGroup createJobGroup(JobMetadata groupMetadata, List<JobGroupStep> steps) {
         return new JobGroup(groupMetadata, steps);
     }
 
-    private JobMetadata groupMetadata(String groupName, JobGraphNode groupConfig, Collection<Job> jobs) {
+    private JobMetadata groupMetadata(String groupName, JobGraphNode groupConfig, List<Set<JobRef>> refs) {
 
         JobMetadata.Builder builder = JobMetadata
                 .builder(groupName)
                 .dependsOn(groupConfig.getDependsOn())
                 .group(true);
 
-        // TODO: Is it correct for the group parameters to be the union of child job params? What if there are conflicting names?
+        // TODO: While we do need to capture parameters (especially for single job groups), is it correct for the
+        //  group parameters to be the union of child job params? What if there are conflicting names?
 
-        // TODO: Moreover the caller passes all (!) jobs to this method, not just the ones this group depends on. So need
-        //  to at least filter that out
-
-        for (Job job : jobs) {
-            job.getMetadata().getParameters().forEach(builder::param);
+        for (Set<JobRef> refSet : refs) {
+            for (JobRef ref : refSet) {
+                standaloneJobs.get(ref.getJobName()).getMetadata().getParameters().forEach(builder::param);
+            }
         }
 
         return builder.build();
