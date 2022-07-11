@@ -21,9 +21,8 @@ package io.bootique.job;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class JobMetadata {
@@ -32,10 +31,18 @@ public class JobMetadata {
     private final Collection<JobParameterMetadata<?>> parameters;
     private final boolean group;
     private final boolean serial;
+    private final Set<String> dependsOn;
 
-    JobMetadata(String name, Collection<JobParameterMetadata<?>> parameters, boolean group, boolean serial) {
+    protected JobMetadata(
+            String name,
+            Collection<JobParameterMetadata<?>> parameters,
+            Set<String> dependsOn,
+            boolean group,
+            boolean serial) {
+
         this.name = name;
         this.parameters = parameters;
+        this.dependsOn = dependsOn;
         this.group = group;
         this.serial = serial;
     }
@@ -97,6 +104,13 @@ public class JobMetadata {
     /**
      * @since 3.0
      */
+    public Set<String> getDependsOn() {
+        return dependsOn;
+    }
+
+    /**
+     * @since 3.0
+     */
     public boolean isSerial() {
         return serial;
     }
@@ -128,12 +142,24 @@ public class JobMetadata {
 
         private final String name;
         private final Collection<JobParameterMetadata<?>> parameters;
+        private final Set<String> dependsOn;
         private boolean serial;
         private boolean group;
 
         private Builder(String name) {
             this.name = name;
             this.parameters = new ArrayList<>();
+            this.dependsOn = new LinkedHashSet<>();
+        }
+
+        /**
+         * Syntactic sugar that allows e.g. to load multiple dependencies from a collection in a fluent style
+         *
+         * @since 3.0
+         */
+        public Builder config(Consumer<Builder> configurator) {
+            configurator.accept(this);
+            return this;
         }
 
         /**
@@ -152,6 +178,21 @@ public class JobMetadata {
             return this;
         }
 
+        /**
+         * @since 3.0
+         */
+        public Builder dependsOn(String... jobNames) {
+            this.dependsOn.addAll(Arrays.asList(jobNames));
+            return this;
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder dependsOn(Collection<String> jobNames) {
+            this.dependsOn.addAll(jobNames);
+            return this;
+        }
 
         public Builder param(JobParameterMetadata<?> param) {
             this.parameters.add(param);
@@ -253,7 +294,7 @@ public class JobMetadata {
                 throw new IllegalStateException("Job name is not configured");
             }
 
-            return new JobMetadata(name, parameters, group, serial);
+            return new JobMetadata(name, parameters, dependsOn, group, serial);
         }
     }
 }
