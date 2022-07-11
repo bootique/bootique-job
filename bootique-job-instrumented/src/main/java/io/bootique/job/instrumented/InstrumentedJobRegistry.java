@@ -19,14 +19,13 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.graph.JobGraphNode;
-import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.Scheduler;
-import io.bootique.job.runtime.DefaultJobRegistry;
+import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.group.ParallelJobBatchStep;
+import io.bootique.job.runtime.DefaultJobRegistry;
+import io.bootique.job.runtime.JobDecorators;
 
 import javax.inject.Provider;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +37,7 @@ public class InstrumentedJobRegistry extends DefaultJobRegistry {
     private final JobMDCManager mdcManager;
 
     public InstrumentedJobRegistry(
-            Collection<Job> standaloneJobs,
+            Map<String, Job> standaloneJobs,
             Map<String, JobGraphNode> jobDefinitions,
             Provider<Scheduler> scheduler,
             JobDecorators decorators,

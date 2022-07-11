@@ -44,54 +44,27 @@ public class DefaultJobRegistry implements JobRegistry {
     protected final Provider<Scheduler> scheduler;
     protected final Map<String, Job> standaloneJobs;
     protected final Map<String, JobGraphNode> allNodes;
-    protected final Set<String> allJobsAndGroupNames;
     protected final JobDecorators decorators;
 
     // Lazily populated map of decorated runnable jobs (either standalone or groups)
     private final ConcurrentMap<String, Job> decoratedJobAndGroups;
 
     public DefaultJobRegistry(
-            Collection<Job> standaloneJobs,
+            Map<String, Job> standaloneJobs,
             Map<String, JobGraphNode> nodes,
             Provider<Scheduler> scheduler,
             JobDecorators decorators) {
 
-        this.standaloneJobs = jobsByName(standaloneJobs);
-        this.allJobsAndGroupNames = allJobsAndGroupNames(this.standaloneJobs, nodes);
-        this.allNodes = allNodes(this.standaloneJobs.keySet(), nodes);
+        this.standaloneJobs = standaloneJobs;
+        this.allNodes = nodes;
         this.decoratedJobAndGroups = new ConcurrentHashMap<>((int) (nodes.size() / 0.75d) + 1);
         this.scheduler = scheduler;
         this.decorators = decorators;
     }
 
-    private Set<String> allJobsAndGroupNames(
-            Map<String, Job> standaloneJobs,
-            Map<String, JobGraphNode> jobDefinitions) {
-
-        // TODO: how do we check for conflicts between standalone job names and group names?
-        Set<String> jobNames = new HashSet<>(standaloneJobs.keySet());
-        jobNames.addAll(jobDefinitions.keySet());
-        return jobNames;
-    }
-
-    private Map<String, JobGraphNode> allNodes(
-            Set<String> standaloneJobsNames,
-            Map<String, JobGraphNode> configured) {
-
-        // combine explicit job nodes from config with default nodes for the existing jobs
-        Map<String, JobGraphNode> combined = new HashMap<>(configured);
-
-        // create a node for each job, that is not explicitly present in the config
-        standaloneJobsNames.stream()
-                .filter(n -> !combined.containsKey(n))
-                .forEach(n -> combined.put(n, new SingleJobNode()));
-
-        return combined;
-    }
-
     @Override
     public Set<String> getJobNames() {
-        return allJobsAndGroupNames;
+        return allNodes.keySet();
     }
 
     @Override
@@ -189,24 +162,6 @@ public class DefaultJobRegistry implements JobRegistry {
         return new ParallelJobBatchStep(scheduler.get(), stepJobs);
     }
 
-    private Map<String, Job> jobsByName(Collection<Job> jobs) {
-
-        // report job name conflicts, but otherwise ignore them
-        // TODO: should we throw?
-
-        Map<String, Job> map = new HashMap<>();
-        for (Job j : jobs) {
-
-            String name = j.getMetadata().getName();
-            Job existing = map.put(name, j);
-            if (existing != null && existing != j) {
-                LOGGER.warn("Duplicate job name '{}' was ignored and one of the jobs discarded", name);
-            }
-        }
-
-        return map;
-    }
-
     private List<Job> standaloneJobsInGraph(Digraph<JobRef> graph) {
         return graph.allVertices().stream()
                 .map(e -> standaloneJobs.get(e.getJobName()))
@@ -215,7 +170,7 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     private void checkJobExists(String jobName) {
-        if (!allJobsAndGroupNames.contains(jobName)) {
+        if (!allNodes.containsKey(jobName)) {
             throw new IllegalArgumentException("Unknown job: " + jobName);
         }
     }

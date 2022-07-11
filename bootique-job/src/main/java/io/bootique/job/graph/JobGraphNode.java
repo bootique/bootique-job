@@ -19,6 +19,7 @@
 
 package io.bootique.job.graph;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,4 +32,8 @@ public interface JobGraphNode {
     void accept(JobGraphNodeVisitor v);
 
     Set<String> getDependsOn();
+
+    boolean isGroup();
+
+    Map<String, Object> getParams();
 }

@@ -21,8 +21,6 @@ package io.bootique.job.graph;
 
 import io.bootique.BootiqueException;
 import io.bootique.job.Job;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.JobParameterMetadata;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -91,7 +89,7 @@ public class JobGraphBuilder {
         String jobName = ref.getJobName();
         childRefs.put(jobName, ref);
 
-        ((SingleJobNode) nodes.getNode(jobName)).getDependsOn().forEach(parentName -> {
+        nodes.getNode(jobName).getDependsOn().forEach(parentName -> {
             if (childRefs.containsKey(parentName)) {
                 String message = String.format("Job dependency cycle detected: [...] -> %s -> %s", jobName, parentName);
                 throw new IllegalStateException(message);
@@ -112,18 +110,7 @@ public class JobGraphBuilder {
             throw new BootiqueException(1, "No job object for name '" + jobName + "'");
         }
 
-        return new JobRef(jobName, convertParams(job.getMetadata(), node.getParams()));
-    }
-
-    private Map<String, Object> convertParams(JobMetadata jobMD, Map<String, String> params) {
-        // clone params map in order to preserve parameters that were not specified in metadata
-        Map<String, Object> convertedParams = new HashMap<>(params);
-        for (JobParameterMetadata<?> param : jobMD.getParameters()) {
-            String valueString = params.get(param.getName());
-            Object value = param.fromString(valueString);
-            convertedParams.put(param.getName(), value);
-        }
-        return convertedParams;
+        return new JobRef(jobName, node.getParams());
     }
 
     static class JobGraphNodes {

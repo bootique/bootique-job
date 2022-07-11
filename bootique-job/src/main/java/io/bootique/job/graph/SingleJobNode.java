@@ -29,15 +29,11 @@ import java.util.stream.Collectors;
  */
 public class SingleJobNode implements JobGraphNode {
 
-    private final Map<String, String> params;
+    private final Map<String, Object> params;
     private final Set<String> dependsOn;
     private final boolean forceNoDependencies;
 
-    public SingleJobNode() {
-        this(Collections.emptyMap(), Collections.emptySet(), false);
-    }
-
-    public SingleJobNode(Map<String, String> params, Set<String> dependsOn, boolean forceNoDependencies) {
+    public SingleJobNode(Map<String, Object> params, Set<String> dependsOn, boolean forceNoDependencies) {
         this.params = Objects.requireNonNull(params);
         this.dependsOn = Objects.requireNonNull(dependsOn);
 
@@ -55,9 +51,23 @@ public class SingleJobNode implements JobGraphNode {
         v.visitSingle(this);
     }
 
+    @Override
+    public Set<String> getDependsOn() {
+        return dependsOn;
+    }
+
+    @Override
+    public boolean isGroup() {
+        return false;
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
+    }
+
     public SingleJobNode merge(SingleJobNode overriding) {
 
-        Map<String, String> mergedParams = new HashMap<>(params);
+        Map<String, Object> mergedParams = new HashMap<>(params);
         mergedParams.putAll(overriding.getParams());
 
         Set<String> mergedDependsOn = overriding.forceNoDependencies || !overriding.dependsOn.isEmpty()
@@ -65,15 +75,6 @@ public class SingleJobNode implements JobGraphNode {
                 : this.dependsOn;
 
         return new SingleJobNode(mergedParams, mergedDependsOn, false);
-    }
-
-    public Map<String, String> getParams() {
-        return params;
-    }
-
-    @Override
-    public Set<String> getDependsOn() {
-        return dependsOn;
     }
 
     @Override

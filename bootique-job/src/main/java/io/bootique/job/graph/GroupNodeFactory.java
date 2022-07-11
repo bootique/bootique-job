@@ -22,6 +22,7 @@ package io.bootique.job.graph;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.job.Job;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ public class GroupNodeFactory implements JobGraphNodeFactory<GroupNode> {
     private Map<String, SingleJobNodeFactory> jobs;
 
     @Override
-    public GroupNode create() {
+    public GroupNode create(String jobName, Map<String, Job> standaloneJobs) {
 
         if (jobs == null) {
             return new GroupNode(Collections.emptyMap());
@@ -53,7 +54,7 @@ public class GroupNodeFactory implements JobGraphNodeFactory<GroupNode> {
 
         for (Map.Entry<String, SingleJobNodeFactory> j : jobs.entrySet()) {
             Objects.requireNonNull(j.getValue(), () -> "Null job definition for group job '" + j.getKey() + "'");
-            children.put(j.getKey(), j.getValue().create());
+            children.put(j.getKey(), j.getValue().create(j.getKey(), standaloneJobs));
         }
 
         return new GroupNode(children);

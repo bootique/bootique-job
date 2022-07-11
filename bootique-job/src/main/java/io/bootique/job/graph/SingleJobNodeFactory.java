@@ -20,13 +20,13 @@
 package io.bootique.job.graph;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.bootique.BootiqueException;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.job.Job;
+import io.bootique.job.JobParameterMetadata;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @since 3.0
@@ -39,9 +39,16 @@ public class SingleJobNodeFactory implements JobGraphNodeFactory<SingleJobNode> 
     private List<String> dependsOn;
 
     @Override
-    public SingleJobNode create() {
+    public SingleJobNode create(String jobName, Map<String, Job> standaloneJobs) {
+
+        Job job = standaloneJobs.get(jobName);
+
+        if (job == null) {
+            throw new BootiqueException(1, "No job object for name '" + jobName + "'");
+        }
+
         return new SingleJobNode(
-                params != null ? params : Collections.emptyMap(),
+                createParams(job.getMetadata().getParameters()),
                 dependsOn != null ? new LinkedHashSet<>(dependsOn) : Collections.emptySet(),
 
                 // an explicitly set empty list means that, when the node is used as an override, overridden
@@ -55,12 +62,28 @@ public class SingleJobNodeFactory implements JobGraphNodeFactory<SingleJobNode> 
         this.params = params;
     }
 
-
     @BQConfigProperty("List of dependencies, that should be run prior to the current job." +
             " May include names of both standalone jobs and job groups." +
             " The order of execution of dependencies may be different from the order, in which they appear in this list." +
             " If you'd like the dependencies to be executed in a particular order, consider creating an explicit job group.")
     public void setDependsOn(List<String> dependsOn) {
         this.dependsOn = dependsOn;
+    }
+
+    private Map<String, Object> createParams(Collection<JobParameterMetadata<?>> paramsMetadata) {
+
+        if (params == null) {
+            return Collections.emptyMap();
+        }
+
+        // clone params map in order to preserve parameters that were not specified in metadata
+        Map<String, Object> convertedParams = new HashMap<>(params);
+        for (JobParameterMetadata<?> param : paramsMetadata) {
+            String valueString = params.get(param.getName());
+            Object value = param.fromString(valueString);
+            convertedParams.put(param.getName(), value);
+        }
+
+        return convertedParams;
     }
 }

@@ -22,6 +22,9 @@ package io.bootique.job.graph;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.bootique.annotation.BQConfig;
 import io.bootique.config.PolymorphicConfiguration;
+import io.bootique.job.Job;
+
+import java.util.Map;
 
 /**
  * @since 3.0
@@ -30,5 +33,5 @@ import io.bootique.config.PolymorphicConfiguration;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = SingleJobNodeFactory.class)
 public interface JobGraphNodeFactory<T extends JobGraphNode> extends PolymorphicConfiguration {
 
-    T create();
+    T create(String jobName, Map<String, Job> standaloneJobs);
 }

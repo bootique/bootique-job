@@ -73,9 +73,11 @@ public class ExecCommand extends CommandWithMetadata {
 
         LOGGER.info("Will run job(s): {}", jobNames);
 
+        Scheduler scheduler = schedulerProvider.get();
+
         return cli.hasOption(SERIAL_OPTION)
-                ? runSerial(jobNames, schedulerProvider.get())
-                : runParallel(jobNames, schedulerProvider.get());
+                ? runSerial(jobNames, scheduler)
+                : runParallel(jobNames, scheduler);
     }
 
     private CommandOutcome runParallel(List<String> jobNames, Scheduler scheduler) {

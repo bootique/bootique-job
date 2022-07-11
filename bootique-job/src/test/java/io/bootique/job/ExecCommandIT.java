@@ -23,10 +23,7 @@ import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.BootiqueException;
 import io.bootique.command.CommandOutcome;
-import io.bootique.job.fixture.ExecutableAtMostOnceJob;
-import io.bootique.job.fixture.Job1;
-import io.bootique.job.fixture.Job2;
-import io.bootique.job.fixture.Job3;
+import io.bootique.di.DIRuntimeException;
 import io.bootique.job.fixture.*;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -175,53 +172,63 @@ public class ExecCommandIT extends BaseJobExecIT {
 
     @Test
     public void testSingleJob_DefaultParams() {
-        List<ExecutableAtMostOnceJob> jobs = List.of(new Job1());
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=job1");
-        assertExecuted(jobs);
+        Job1 j1 = new Job1();
+        Job2 j2 = new Job2();
+        Job3 j3 = new Job3(10000);
+
+        executeJobs(List.of(j1, j2, j3), "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=job1");
+        assertExecuted(List.of(j1));
     }
 
     @Test
     public void testGroup1_SingleJob_DefaultParams() {
-        List<ExecutableAtMostOnceJob> jobs = List.of(new Job1());
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group1");
-        assertExecuted(jobs);
+        Job1 j1 = new Job1();
+        Job2 j2 = new Job2();
+        Job3 j3 = new Job3(10000);
+
+        executeJobs(List.of(j1, j2, j3), "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group1");
+        assertExecuted(List.of(j1));
     }
 
     @Test
     public void testGroup6_SingleJob_OverriddenParams() {
-        Job1 job1 = new Job1();
+        Job1 j1 = new Job1();
+        Job2 j2 = new Job2();
+        Job3 j3 = new Job3(10000);
 
-        List<ExecutableAtMostOnceJob> jobs = List.of(job1);
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group6");
-        assertExecutedWithParams(job1, Map.of("a", "overridden", "b", "default"));
+        executeJobs(List.of(j1, j2, j3), "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group6");
+        assertExecutedWithParams(j1, Map.of("a", "overridden", "b", "default"));
     }
 
     @Test
     public void testGroup2_MultipleJobs_Parallel_DefaultParams() {
-        List<ExecutableAtMostOnceJob> jobs = List.of(new Job1(), new Job2());
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group2");
-        assertExecuted(jobs);
+        Job1 j1 = new Job1();
+        Job2 j2 = new Job2();
+        Job3 j3 = new Job3(10000);
+
+        executeJobs(List.of(j1, j2, j3), "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group2");
+        assertExecuted(List.of(j1, j2));
     }
 
     @Test
     public void testGroup3_MultipleJobs_Parallel_OverriddenParams() {
-        Job1 job1 = new Job1();
-        Job2 job2 = new Job2();
+        Job1 j1 = new Job1();
+        Job2 j2 = new Job2();
+        Job3 j3 = new Job3(10000);
 
-        List<ExecutableAtMostOnceJob> jobs = List.of(job1, job2);
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group3");
-        assertExecutedWithParams(job1, Map.of("a", "overridden", "b", "default"));
-        assertExecutedWithParams(job2, Map.of("e", "default", "y", "added"));
+        executeJobs(List.of(j1, j2, j3), "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group3");
+        assertExecutedWithParams(j1, Map.of("a", "overridden", "b", "default"));
+        assertExecutedWithParams(j2, Map.of("e", "default", "y", "added"));
     }
 
     @Test
     public void testGroup4_MultipleJobs_Dependent_OverriddenParams() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
+        Job3 job3 = new Job3(1000);
 
-        List<ExecutableAtMostOnceJob> jobs = List.of(job2, job1);
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group4");
-        assertExecutedInOrder(jobs);
+        executeJobs(List.of(job1, job2, job3), "--config=classpath:io/bootique/job/config.yml", "--exec", "--job=group4");
+        assertExecutedInOrder(List.of(job2, job1));
         assertExecutedWithParams(job2, Map.of("e", "overridden"));
     }
 
@@ -246,7 +253,15 @@ public class ExecCommandIT extends BaseJobExecIT {
         Job3 job3 = new Job3(100000);
 
         List<ExecutableAtMostOnceJob> jobs = List.of(job3, job2, job1);
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job1");
+
+        testFactory.app("--exec", "--job=job1")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> BQCoreModule.extend(b)
+                        .setProperty("bq.jobs.job1.dependsOn[0]", "job2")
+                        .setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
+                .run();
+
         assertExecutedInOrder(jobs);
     }
 
@@ -256,7 +271,13 @@ public class ExecCommandIT extends BaseJobExecIT {
         Job3 job3 = new Job3(1000);
 
         List<ExecutableAtMostOnceJob> jobs = List.of(job3, job2);
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=job2");
+
+        testFactory.app("--exec", "--job=job2")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
+                .run();
+
         assertExecutedInOrder(jobs);
     }
 
@@ -267,46 +288,80 @@ public class ExecCommandIT extends BaseJobExecIT {
         Job3 job3 = new Job3(100000);
 
         List<ExecutableAtMostOnceJob> jobs = List.of(job3, job2, job1);
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group1");
+
+        testFactory.app("--exec", "--job=g1")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> BQCoreModule.extend(b)
+                        .setProperty("bq.jobs.g1.type", "group")
+                        .setProperty("bq.jobs.g1.jobs.job1.type", "single")
+                        .setProperty("bq.jobs.job1.dependsOn[0]", "job2")
+                        .setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
+                .run();
+
         assertExecutedInOrder(jobs);
     }
 
     @Test
     public void testGroup2_DefaultDependencies() {
+
         List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(100000), new Job2(1000), new Job1());
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group2");
+
+        testFactory.app("--exec", "--job=g1")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> BQCoreModule.extend(b)
+                        .setProperty("bq.jobs.g1.type", "group")
+                        .setProperty("bq.jobs.g1.jobs.job1.type", "single")
+                        .setProperty("bq.jobs.g1.jobs.job2.type", "single")
+                        .setProperty("bq.jobs.g1.jobs.job3.type", "single")
+                        .setProperty("bq.jobs.job1.dependsOn[0]", "job2")
+                        .setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
+                .run();
         assertExecutedInOrder(jobs);
     }
 
     @Test
     public void testGroup3_OverriddenDependencies() {
-        List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(1000), new Job1());
-        executeJobs(jobs,
-                "--config=classpath:io/bootique/job/config_overriding_dependencies.yml",
-                "--exec",
-                "--job=group3");
-        assertExecutedInOrder(jobs);
+
+        Job1 job1 = new Job1();
+        Job2 job2 = new Job2(1000);
+        Job3 job3 = new Job3(100000);
+
+        List<ExecutableAtMostOnceJob> jobs = List.of(job1, job2, job3);
+        testFactory.app("--exec", "--job=g1")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> BQCoreModule.extend(b)
+                        .setProperty("bq.jobs.g1.type", "group")
+                        .setProperty("bq.jobs.g1.jobs.job1.dependsOn[0]", "job3")
+                        .setProperty("bq.jobs.job1.dependsOn[0]", "job2")
+                        .setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
+                .run();
+
+        assertExecutedInOrder(List.of(job3, job1));
     }
 
     @Test
     public void testGroup4_OverriddenDependencies() {
         List<ExecutableAtMostOnceJob> jobs = List.of(new Job2(), new Job1(), new Job3(1000));
-        executeJobs(jobs, "--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=group4");
+        executeJobs(jobs, "--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=g1");
         assertExecutedInOrder(jobs);
     }
 
     @Test
     public void testDefaultParameterValue() {
-        ParameterizedJob1 job = new ParameterizedJob1();
+        ParameterizedJob1 p1 = new ParameterizedJob1();
+        ParameterizedJob2 p2 = new ParameterizedJob2();
 
         testFactory.app("--config=classpath:io/bootique/job/config_parameters_conversion.yml",
                         "--exec",
                         "--job=parameterizedjob1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> JobModule.extend(b).addJob(p1).addJob(p2))
                 .run();
 
-        job.assertExecuted(Map.of("longp", 777L));
+        p1.assertExecuted(Map.of("longp", 777L));
     }
 
     @Test
@@ -366,21 +421,27 @@ public class ExecCommandIT extends BaseJobExecIT {
                 .autoLoadModules()
                 .createRuntime();
 
-        assertThrows(BootiqueException.class, app::run);
+        try {
+            app.run();
+            fail("Exception expected - no such job");
+        } catch (DIRuntimeException e) {
+            assertTrue(e.getCause() instanceof BootiqueException);
+        }
     }
 
     @Test
     public void testGroup1_ParametersConversion() {
-        ParameterizedJob1 job = new ParameterizedJob1();
+        ParameterizedJob1 p1 = new ParameterizedJob1();
+        ParameterizedJob2 p2 = new ParameterizedJob2();
 
         testFactory.app("--config=classpath:io/bootique/job/config_parameters_conversion.yml",
                         "--exec",
                         "--job=group1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> JobModule.extend(b).addJob(p1).addJob(p2))
                 .run();
 
-        job.assertExecuted(Map.of("longp", 1L));
+        p1.assertExecuted(Map.of("longp", 1L));
     }
 
     @Test

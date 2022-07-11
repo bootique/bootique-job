@@ -19,12 +19,15 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.job.*;
-import io.bootique.job.runtime.JobDecorators;
+import io.bootique.job.Job;
+import io.bootique.job.JobRegistry;
+import io.bootique.job.JobRegistryProvider;
 import io.bootique.job.Scheduler;
+import io.bootique.job.runtime.JobDecorators;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -47,9 +50,10 @@ public class InstrumentedJobRegistryProvider extends JobRegistryProvider {
 
     @Override
     public JobRegistry get() {
+        Map<String, Job> jobsByName = jobsByName(standaloneJobs);
         return new InstrumentedJobRegistry(
-                standaloneJobs,
-                graphNodes(),
+                jobsByName,
+                graphNodes(jobsByName),
                 scheduler,
                 decorators,
                 mdcManager);

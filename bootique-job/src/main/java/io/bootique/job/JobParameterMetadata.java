@@ -21,9 +21,6 @@ package io.bootique.job;
 
 import java.util.function.Function;
 
-/**
- * @param <T>
- */
 public class JobParameterMetadata<T> {
 
     private final String name;
