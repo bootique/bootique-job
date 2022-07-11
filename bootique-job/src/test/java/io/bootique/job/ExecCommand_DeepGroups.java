@@ -18,6 +18,7 @@
  */
 package io.bootique.job;
 
+import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.command.CommandOutcome;
@@ -44,11 +45,19 @@ public class ExecCommand_DeepGroups {
 
     @BQApp(skipRun = true)
     static final BQRuntime app = Bootique.app(
-                    "--config=classpath:io/bootique/job/config_deep_groups.yml",
                     "--exec",
                     "--job=group")
             .autoLoadModules()
-            .module(b -> JobModule.extend(b).addJob(J1.class).addJob(J2.class).addJob(J3.class).addJob(J4.class)
+            .module(b -> BQCoreModule.extend(b)
+                    .setProperty("bq.jobs.group.type", "group")
+                    .setProperty("bq.jobs.group.jobs.j1.dependsOn[0]", "j2")
+                    .setProperty("bq.jobs.group.jobs.j1.dependsOn[1]", "j3")
+                    .setProperty("bq.jobs.group.jobs.j1.dependsOn[2]", "j4")
+                    .setProperty("bq.jobs.j4.dependsOn[0]", "j5")
+                    .setProperty("bq.jobs.j4.dependsOn[1]", "j6"))
+            .module(b -> JobModule.extend(b)
+                    .addJob(J1.class).addJob(J2.class)
+                    .addJob(J3.class).addJob(J4.class)
                     .addJob(J5.class).addJob(J6.class))
             .createRuntime();
 
