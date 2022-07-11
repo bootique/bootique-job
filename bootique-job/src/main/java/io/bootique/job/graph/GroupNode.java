@@ -20,6 +20,7 @@
 package io.bootique.job.graph;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -40,12 +41,17 @@ public class GroupNode implements JobGraphNode {
         v.visitGroup(this);
     }
 
+    @Override
+    public Set<String> getDependsOn() {
+        return jobs.keySet();
+    }
+
     public Map<String, SingleJobNode> getJobs() {
         return jobs;
     }
 
     @Override
     public String toString() {
-        return "job group => jobs: " + jobs.keySet().stream().collect(Collectors.joining(",", "[", "]"));
+        return "job group => jobs: " + getDependsOn().stream().collect(Collectors.joining(",", "[", "]"));
     }
 }

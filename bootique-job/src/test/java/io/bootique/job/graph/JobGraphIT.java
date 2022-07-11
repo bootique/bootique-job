@@ -49,10 +49,12 @@ public class JobGraphIT {
                 .getInstance(JobRegistry.class);
 
         Job j1 = registry.getJob("j1");
+        // everything that has dependencies is wrapped into a group
         assertTrue(j1.getMetadata().isGroup());
         assertEquals(Set.of("j2"), j1.getMetadata().getDependsOn());
 
         Job j2 = registry.getJob("j2");
+        // everything that has dependencies is wrapped into a group
         assertTrue(j2.getMetadata().isGroup());
         assertEquals(Set.of("j3"), j2.getMetadata().getDependsOn());
 

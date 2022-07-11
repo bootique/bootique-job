@@ -19,6 +19,8 @@
 
 package io.bootique.job.graph;
 
+import java.util.Set;
+
 /**
  * A node in a job dependency graph.
  *
@@ -27,4 +29,6 @@ package io.bootique.job.graph;
 public interface JobGraphNode {
 
     void accept(JobGraphNodeVisitor v);
+
+    Set<String> getDependsOn();
 }

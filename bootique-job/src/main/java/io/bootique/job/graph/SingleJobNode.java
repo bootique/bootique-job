@@ -30,14 +30,14 @@ import java.util.stream.Collectors;
 public class SingleJobNode implements JobGraphNode {
 
     private final Map<String, String> params;
-    private final List<String> dependsOn;
+    private final Set<String> dependsOn;
     private final boolean forceNoDependencies;
 
     public SingleJobNode() {
-        this(Collections.emptyMap(), Collections.emptyList(), false);
+        this(Collections.emptyMap(), Collections.emptySet(), false);
     }
 
-    public SingleJobNode(Map<String, String> params, List<String> dependsOn, boolean forceNoDependencies) {
+    public SingleJobNode(Map<String, String> params, Set<String> dependsOn, boolean forceNoDependencies) {
         this.params = Objects.requireNonNull(params);
         this.dependsOn = Objects.requireNonNull(dependsOn);
 
@@ -60,7 +60,7 @@ public class SingleJobNode implements JobGraphNode {
         Map<String, String> mergedParams = new HashMap<>(params);
         mergedParams.putAll(overriding.getParams());
 
-        List<String> mergedDependsOn = overriding.forceNoDependencies || !overriding.dependsOn.isEmpty()
+        Set<String> mergedDependsOn = overriding.forceNoDependencies || !overriding.dependsOn.isEmpty()
                 ? overriding.dependsOn
                 : this.dependsOn;
 
@@ -71,7 +71,8 @@ public class SingleJobNode implements JobGraphNode {
         return params;
     }
 
-    public List<String> getDependsOn() {
+    @Override
+    public Set<String> getDependsOn() {
         return dependsOn;
     }
 

@@ -24,6 +24,7 @@ import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,7 @@ public class SingleJobNodeFactory implements JobGraphNodeFactory<SingleJobNode> 
     public SingleJobNode create() {
         return new SingleJobNode(
                 params != null ? params : Collections.emptyMap(),
-                dependsOn != null ? dependsOn : Collections.emptyList(),
+                dependsOn != null ? new LinkedHashSet<>(dependsOn) : Collections.emptySet(),
 
                 // an explicitly set empty list means that, when the node is used as an override, overridden
                 // node's dependencies will need to be wiped out

@@ -124,7 +124,7 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     protected JobGroup createJobGroup(String jobName, Digraph<JobRef> graph) {
-        JobMetadata groupMetadata = groupMetadata(jobName, standaloneJobs.values());
+        JobMetadata groupMetadata = groupMetadata(jobName, allNodes.get(jobName), standaloneJobs.values());
         List<JobGroupStep> steps = jobGroupSteps(graph.reverseTopSort());
         return createJobGroup(groupMetadata, steps);
     }
@@ -133,12 +133,18 @@ public class DefaultJobRegistry implements JobRegistry {
         return new JobGroup(groupMetadata, steps);
     }
 
-    private JobMetadata groupMetadata(String groupName, Collection<Job> jobs) {
+    private JobMetadata groupMetadata(String groupName, JobGraphNode groupConfig, Collection<Job> jobs) {
+
         JobMetadata.Builder builder = JobMetadata
                 .builder(groupName)
+                .dependsOn(groupConfig.getDependsOn())
                 .group(true);
 
-        // TODO: is it correct for the group parameters to be the union of child job params? What if there are conflicting names?
+        // TODO: Is it correct for the group parameters to be the union of child job params? What if there are conflicting names?
+
+        // TODO: Moreover the caller passes all (!) jobs to this method, not just the ones this group depends on. So need
+        //  to at least filter that out
+
         for (Job job : jobs) {
             job.getMetadata().getParameters().forEach(builder::param);
         }
