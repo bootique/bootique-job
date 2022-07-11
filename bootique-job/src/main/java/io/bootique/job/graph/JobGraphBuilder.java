@@ -93,7 +93,8 @@ public class JobGraphBuilder {
 
         ((SingleJobNode) nodes.getNode(jobName)).getDependsOn().forEach(parentName -> {
             if (childRefs.containsKey(parentName)) {
-                throw new IllegalStateException(String.format("Cycle: [...] -> %s -> %s", jobName, parentName));
+                String message = String.format("Job dependency cycle detected: [...] -> %s -> %s", jobName, parentName);
+                throw new IllegalStateException(message);
             }
             populateWithDependencies(parentName, ref, graph, nodes, childRefs);
         });
