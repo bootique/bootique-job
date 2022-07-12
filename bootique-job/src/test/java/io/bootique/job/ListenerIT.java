@@ -135,32 +135,6 @@ public class ListenerIT {
         assertEquals("_L1_started_L2_started_L3_started_L3_finished_L2_finished_L1_finished", SharedState.getAndReset());
     }
 
-    @Test
-    public void testAddListener_YieldingJob() {
-        XJob x = new XJob();
-        YJob y = new YJob();
-        ZJob z = new ZJob();
-
-        testFactory.app("--exec", "--job=g1")
-                .autoLoadModules()
-                .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.g1.type", "group")
-                        .setProperty("bq.jobs.g1.jobs.x.type", "job")
-                        .setProperty("bq.jobs.g1.jobs.y.type", "job")
-                        .setProperty("bq.jobs.g1.jobs.z.type", "job"))
-                .module(b -> JobModule.extend(b)
-                        .addJob(x)
-                        .addJob(y)
-                        .addJob(z)
-                        .addListener(new Listener1()))
-                .run();
-
-        x.assertExecuted();
-        y.assertExecuted();
-        z.assertExecuted();
-
-        assertEquals("_L1_started_L1_finished", SharedState.getAndReset());
-    }
-
     public static class SharedState {
         private static StringBuilder BUFFER;
 

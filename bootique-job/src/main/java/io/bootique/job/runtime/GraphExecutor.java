@@ -18,42 +18,43 @@
  */
 package io.bootique.job.runtime;
 
-
+import io.bootique.job.Job;
 import io.bootique.job.JobResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
- * A collection of jobs within an execution graph that are independent of each other and can be run in parallel.
+ * A secondary thread pool to run graph subtasks without deadlocking the main pool used by the Scheduler.
  *
  * @since 3.0
  */
-public abstract class GraphJobStep {
+public class GraphExecutor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GraphJobStep.class);
+    private final ExecutorService pool;
 
-    public abstract JobResult run(Map<String, Object> params);
+    public GraphExecutor(ExecutorService pool) {
+        this.pool = pool;
+    }
 
-    protected void logResult(JobResult result) {
+    public Future<JobResult> submit(Job job, Map<String, Object> params) {
+        return pool.submit(new CallableJob(job, params));
+    }
 
-        if (!LOGGER.isDebugEnabled()) {
-            return;
+    static class CallableJob implements Callable<JobResult> {
+        final Job job;
+        final Map<String, Object> params;
+
+        CallableJob(Job job, Map<String, Object> params) {
+            this.job = job;
+            this.params = params;
         }
 
-        if (result.isSuccess()) {
-            LOGGER.debug("graph member '{}' finished", result.getMetadata().getName());
-        } else {
-
-            LOGGER.debug("graph member '{}' finished: {} - {}",
-                    result.getMetadata().getName(),
-                    result.getOutcome(),
-                    result.getMessage());
-
-            if (result.getThrowable() != null) {
-                LOGGER.debug("graph member error", result.getThrowable());
-            }
+        @Override
+        public JobResult call() {
+            return job.run(params);
         }
     }
 }

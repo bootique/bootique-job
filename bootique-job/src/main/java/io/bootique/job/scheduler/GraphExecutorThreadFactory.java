@@ -16,29 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.runtime;
+package io.bootique.job.scheduler;
 
-import io.bootique.job.Job;
-import io.bootique.job.JobResult;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import java.util.Map;
-import java.util.Objects;
+class GraphExecutorThreadFactory implements ThreadFactory {
 
-/**
- * @since 3.0
- */
-public class SingleJobStep extends GraphJobStep {
-
-    private final Job job;
-
-    public SingleJobStep(Job job) {
-        this.job = Objects.requireNonNull(job);
-    }
+    private final AtomicInteger counter = new AtomicInteger();
 
     @Override
-    public JobResult run(Map<String, Object> params) {
-        JobResult result = job.run(params);
-        logResult(result);
-        return result;
+    public Thread newThread(Runnable r) {
+        Thread t = new Thread(r);
+        t.setName("bootique-job-graph-" + counter.getAndIncrement());
+        t.setDaemon(true);
+        return t;
     }
 }

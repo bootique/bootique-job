@@ -16,29 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.runtime;
+package io.bootique.job.instrumented;
 
-import io.bootique.job.Job;
-import io.bootique.job.JobResult;
+import io.bootique.annotation.BQConfig;
+import io.bootique.di.Injector;
+import io.bootique.job.runtime.GraphExecutor;
+import io.bootique.job.scheduler.SchedulerFactory;
+import io.bootique.metrics.mdc.TransactionIdMDC;
+import io.bootique.shutdown.ShutdownManager;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @since 3.0
  */
-public class SingleJobStep extends GraphJobStep {
-
-    private final Job job;
-
-    public SingleJobStep(Job job) {
-        this.job = Objects.requireNonNull(job);
-    }
+@BQConfig
+public class InstrumentedSchedulerFactory extends SchedulerFactory {
 
     @Override
-    public JobResult run(Map<String, Object> params) {
-        JobResult result = job.run(params);
-        logResult(result);
-        return result;
+    public GraphExecutor createGraphExecutor(Injector injector, ShutdownManager shutdownManager) {
+        ExecutorService pool = createGraphExecutorService();
+        shutdownManager.addShutdownHook(() -> pool.shutdownNow());
+        return new InstrumentedGraphExecutor(pool, injector.getInstance(TransactionIdMDC.class));
     }
 }

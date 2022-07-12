@@ -266,6 +266,30 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
+    public void testGroup_SlowParallelJob() {
+        XJob x = new XJob();
+        YJob y = new YJob();
+        ZJob z = new ZJob();
+
+        testFactory.app("--exec", "--job=g1")
+                .autoLoadModules()
+                .module(b -> BQCoreModule.extend(b)
+                        .setProperty("bq.jobs.g1.type", "group")
+                        .setProperty("bq.jobs.g1.jobs.x.type", "job")
+                        .setProperty("bq.jobs.g1.jobs.y.type", "job")
+                        .setProperty("bq.jobs.g1.jobs.z.type", "job"))
+                .module(b -> JobModule.extend(b)
+                        .addJob(x)
+                        .addJob(y)
+                        .addJob(z))
+                .run();
+
+        x.assertExecuted();
+        y.assertExecuted();
+        z.assertExecuted();
+    }
+
+    @Test
     public void testJobWithDependencies_2() {
         Job2 job2 = new Job2();
         Job3 job3 = new Job3(1000);
@@ -459,5 +483,43 @@ public class ExecCommandIT extends BaseJobExecIT {
         job1.assertExecuted(Map.of("longp", 777L));
         job2.assertExecuted(Map.of("longp", 33L));
         job2.assertExecutedBefore(job1);
+    }
+
+    static class XJob extends BaseTestJob<XJob> {
+        public XJob() {
+            super(XJob.class);
+        }
+    }
+
+    static class YJob extends BaseTestJob<YJob> {
+        public YJob() {
+            super(YJob.class);
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            try {
+                Thread.sleep(600L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return super.run(params);
+        }
+    }
+
+    static class ZJob extends BaseTestJob<ZJob> {
+        public ZJob() {
+            super(ZJob.class);
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return super.run(params);
+        }
     }
 }

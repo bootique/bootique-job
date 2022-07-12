@@ -25,7 +25,6 @@ import io.bootique.Bootique;
 import io.bootique.job.*;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
@@ -47,22 +46,28 @@ public class Scheduler_NoDeadlockIT {
             .autoLoadModules()
             .module(b -> BQCoreModule.extend(b)
                     .setProperty("bq.scheduler.threadPoolSize", "2")
+                    .setProperty("bq.scheduler.graphExecutorThreadPoolSize", "2")
                     .setProperty("bq.jobs.j1.dependsOn[0]", "j2")
                     .setProperty("bq.jobs.j1.dependsOn[1]", "j3")
+                    .setProperty("bq.jobs.j1.dependsOn[2]", "j4")
+                    .setProperty("bq.jobs.j1.dependsOn[3]", "j5")
             )
             .module(b -> JobModule.extend(b)
                     .addJob(J1.class)
                     .addJob(J2.class)
-                    .addJob(J3.class))
+                    .addJob(J3.class)
+                    .addJob(J4.class)
+                    .addJob(J5.class))
             .createRuntime();
 
-    @Disabled
     @Timeout(5)
     @RepeatedTest(3)
     public void testAttemptDeadlock_Get() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         List<JobFuture> futures = List.of(
+                scheduler.runBuilder().jobName("j1").runNonBlocking(),
+                scheduler.runBuilder().jobName("j1").runNonBlocking(),
                 scheduler.runBuilder().jobName("j1").runNonBlocking(),
                 scheduler.runBuilder().jobName("j1").runNonBlocking());
 
@@ -72,7 +77,6 @@ public class Scheduler_NoDeadlockIT {
         }
     }
 
-    @Disabled
     @Timeout(5)
     @RepeatedTest(3)
     public void testAttemptDeadlock_GetWithTimeout() {
@@ -123,6 +127,32 @@ public class Scheduler_NoDeadlockIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             LOGGER.info("3 in progress");
+            return JobResult.success(getMetadata());
+        }
+    }
+
+    static final class J4 extends BaseJob {
+
+        public J4() {
+            super(JobMetadata.build(J4.class));
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            LOGGER.info("4 in progress");
+            return JobResult.success(getMetadata());
+        }
+    }
+
+    static final class J5 extends BaseJob {
+
+        public J5() {
+            super(JobMetadata.build(J5.class));
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            LOGGER.info("5 in progress");
             return JobResult.success(getMetadata());
         }
     }

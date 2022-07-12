@@ -23,6 +23,7 @@ import io.bootique.BQCoreModule;
 import io.bootique.ConfigModule;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
+import io.bootique.di.Injector;
 import io.bootique.di.Provides;
 import io.bootique.help.ValueObjectDescriptor;
 import io.bootique.job.command.ExecCommand;
@@ -98,6 +99,16 @@ public class JobModule extends ConfigModule {
             ShutdownManager shutdownManager) {
 
         return config(SchedulerFactory.class, configFactory).createScheduler(jobRegistry, decorators, shutdownManager);
+    }
+
+    // this is a secondary thread pool used for graph execution
+    @Provides
+    @Singleton
+    GraphExecutor createGraphExecutor(
+            ConfigurationFactory configFactory,
+            Injector injector,
+            ShutdownManager shutdownManager) {
+        return config(SchedulerFactory.class, configFactory).createGraphExecutor(injector, shutdownManager);
     }
 
     @Provides

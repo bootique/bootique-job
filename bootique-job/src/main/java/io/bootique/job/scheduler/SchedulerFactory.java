@@ -21,8 +21,10 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.di.Injector;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.Scheduler;
+import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobDecorators;
 import io.bootique.shutdown.ShutdownManager;
 import org.springframework.scheduling.TaskScheduler;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * A configuration object that is used to setup jobs runtime.
@@ -40,11 +43,16 @@ import java.util.List;
 public class SchedulerFactory {
 
     private Collection<TriggerFactory> triggers;
-    private int threadPoolSize;
+    private Integer threadPoolSize;
+    private Integer graphExecutorThreadPoolSize;
 
-    public SchedulerFactory() {
-        this.triggers = new ArrayList<>();
-        this.threadPoolSize = 4;
+    // TODO: GraphExecutor kinda exists outside of the Scheduler, so probably warrants its own factory
+    // TODO: GraphExecutor will become obsolete once project Loom becomes mainstream, and we can use virtual
+    //  threads in the main Scheduler pool
+    public GraphExecutor createGraphExecutor(Injector injector, ShutdownManager shutdownManager) {
+        ExecutorService pool = createGraphExecutorService();
+        shutdownManager.addShutdownHook(() -> pool.shutdownNow());
+        return new GraphExecutor(pool);
     }
 
     public Scheduler createScheduler(
@@ -70,7 +78,7 @@ public class SchedulerFactory {
 
     protected TaskScheduler createTaskScheduler(ShutdownManager shutdownManager) {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(threadPoolSize);
+        taskScheduler.setPoolSize(createThreadPoolSize());
         taskScheduler.setThreadNamePrefix("bootique-job-");
         taskScheduler.initialize();
 
@@ -78,14 +86,38 @@ public class SchedulerFactory {
         return taskScheduler;
     }
 
+    protected int createThreadPoolSize() {
+        // TODO: make the default to be equal to the number of CPUs on the system?
+        return threadPoolSize != null ? threadPoolSize : 4;
+    }
+
+    protected ExecutorService createGraphExecutorService() {
+        return Executors.newFixedThreadPool(createGraphExecutorThreadPoolSize(), new GraphExecutorThreadFactory());
+    }
+
+    protected int createGraphExecutorThreadPoolSize() {
+        return graphExecutorThreadPoolSize != null
+                ? graphExecutorThreadPoolSize
+
+                // TODO: that this will compete with the scheduler thread pool, so perhaps there should be a balance
+                //   between the two
+                : Runtime.getRuntime().availableProcessors();
+    }
+
     @BQConfigProperty("Collection of job triggers.")
     public void setTriggers(Collection<TriggerFactory> triggers) {
         this.triggers = triggers;
     }
 
-    @BQConfigProperty("Minimum number of workers to keep alive (and not allow to time out etc)." +
-            " Should be 1 or higher. Default value is 1.")
+    @BQConfigProperty("The max number of worker threads in the scheduler pool. Default is 4")
     public void setThreadPoolSize(int threadPoolSize) {
         this.threadPoolSize = threadPoolSize;
     }
+
+    @BQConfigProperty("The max number of worker threads in the scheduler pool. Default is the number of CPU cores on the machine")
+    public SchedulerFactory setGraphExecutorThreadPoolSize(Integer graphExecutorThreadPoolSize) {
+        this.graphExecutorThreadPoolSize = graphExecutorThreadPoolSize;
+        return this;
+    }
+
 }

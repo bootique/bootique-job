@@ -132,14 +132,15 @@ public class JobDecoratorIT {
     }
 
     @Test
-    public void testAddListener_YieldingJob() {
+    public void testAddDecorator_SlowParallelJob() {
         XJob x = new XJob();
         YJob y = new YJob();
         ZJob z = new ZJob();
 
         testFactory.app("--exec", "--job=g1")
                 .autoLoadModules()
-                .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.g1.type", "group")
+                .module(b -> BQCoreModule.extend(b)
+                        .setProperty("bq.jobs.g1.type", "group")
                         .setProperty("bq.jobs.g1.jobs.x.type", "job")
                         .setProperty("bq.jobs.g1.jobs.y.type", "job")
                         .setProperty("bq.jobs.g1.jobs.z.type", "job"))

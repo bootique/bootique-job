@@ -22,7 +22,6 @@ package io.bootique.job.runtime;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.Scheduler;
 import io.bootique.job.graph.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,22 +35,25 @@ public class DefaultJobRegistry implements JobRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobRegistry.class);
 
-    protected final Provider<Scheduler> scheduler;
     protected final Map<String, JobGraphNode> jobDescriptors;
     protected final JobDecorators decorators;
+
+    // GraphExecutor internally keeps a thread pool. Initialize it lazily, so that it won't start for the
+    // apps that don't have jobs with dependencies
+    protected final Provider<GraphExecutor> graphExecutor;
 
     // Lazily populated map of decorated runnable jobs (jobs or graphs) produced from standalone jobs and groups
     private final ConcurrentMap<String, Job> executableJobs;
 
     public DefaultJobRegistry(
             Map<String, JobGraphNode> nodes,
-            Provider<Scheduler> scheduler,
-            JobDecorators decorators) {
+            JobDecorators decorators,
+            Provider<GraphExecutor> graphExecutor) {
 
         this.jobDescriptors = nodes;
         this.executableJobs = new ConcurrentHashMap<>((int) (nodes.size() / 0.75d) + 1);
-        this.scheduler = scheduler;
         this.decorators = decorators;
+        this.graphExecutor = graphExecutor;
     }
 
     @Override
@@ -154,11 +156,11 @@ public class DefaultJobRegistry implements JobRegistry {
     }
 
     protected SingleJobStep createSingleJobStep(Job job) {
-        return new SingleJobStep(scheduler.get(), job);
+        return new SingleJobStep(job);
     }
 
     protected ParallelJobsStep createParallelGroupStep(List<Job> stepJobs) {
-        return new ParallelJobsStep(scheduler.get(), stepJobs);
+        return new ParallelJobsStep(graphExecutor.get(), stepJobs);
     }
 
     private void checkJobExists(String jobName) {

@@ -13,6 +13,7 @@
 * #98 Bump spring-core from 5.3.18 to 5.3.19
 * #100 Job listeners are not notified when a job throws an exception
 * #101 Bump spring-core from 5.3.19 to 5.3.20
+* #102 Jobs with dependencies and job groups cause deadlocks on pool starvation
 * #103 Job group to reuse the group dispatch thread when possible
 * #105 @SerialJob should be part of the Job metadata
 * #106 Reorg JobFuture hierarchy

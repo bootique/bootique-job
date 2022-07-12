@@ -23,6 +23,7 @@ import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.JobGraphNodeFactory;
 import io.bootique.job.graph.JobNode;
 import io.bootique.job.runtime.DefaultJobRegistry;
+import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobDecorators;
 import io.bootique.type.TypeRef;
 import org.slf4j.Logger;
@@ -41,19 +42,19 @@ public class JobRegistryProvider implements Provider<JobRegistry> {
 
     protected final Set<Job> standaloneJobs;
     protected final JobDecorators decorators;
-    protected final Provider<Scheduler> scheduler;
+    protected final Provider<GraphExecutor> graphExecutor;
     protected final ConfigurationFactory configFactory;
 
     @Inject
     public JobRegistryProvider(
             Set<Job> standaloneJobs,
             JobDecorators decorators,
-            Provider<Scheduler> scheduler,
+            Provider<GraphExecutor> graphExecutor,
             ConfigurationFactory configFactory) {
 
         this.standaloneJobs = standaloneJobs;
         this.decorators = decorators;
-        this.scheduler = scheduler;
+        this.graphExecutor = graphExecutor;
         this.configFactory = configFactory;
     }
 
@@ -64,8 +65,8 @@ public class JobRegistryProvider implements Provider<JobRegistry> {
 
         return new DefaultJobRegistry(
                 graphNodes(jobsByName),
-                scheduler,
-                decorators);
+                decorators,
+                graphExecutor);
     }
 
     protected Map<String, Job> jobsByName(Collection<Job> jobs) {

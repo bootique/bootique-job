@@ -19,13 +19,15 @@
 package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobFuture;
 import io.bootique.job.JobResult;
-import io.bootique.job.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -33,48 +35,59 @@ import java.util.stream.Collectors;
  */
 public class ParallelJobsStep extends GraphJobStep {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ParallelJobsStep.class);
+
+    private final GraphExecutor executor;
     private final List<Job> jobs;
 
-    public ParallelJobsStep(Scheduler scheduler, List<Job> jobs) {
-        super(scheduler);
+    public ParallelJobsStep(GraphExecutor executor, List<Job> jobs) {
+        this.executor = executor;
         this.jobs = Objects.requireNonNull(jobs);
     }
 
     @Override
     public JobResult run(Map<String, Object> params) {
 
-        // schedule 2...N jobs in the background (non-blocking)
-        // to ensure parallel execution, must collect futures in an explicit collection,
-        // and then "get" them in a separate stream / loop
-        List<JobFuture> futures = jobs.stream()
+        List<Future<JobResult>> submitted = jobs
+                .stream()
                 .skip(1)
-                .map(j -> submitMember(j, params))
+                .map(j -> executor.submit(j, params))
                 .collect(Collectors.toList());
 
-        // run the first job on the group thread (blocking)
-        JobResult blockingResult = scheduler.runBuilder().job(jobs.get(0)).params(params).noDecorators().runBlocking();
-        logResult(blockingResult);
+        JobResult r0 = jobs.get(0).run(params);
+        logResult(r0);
 
-        if (!blockingResult.isSuccess()) {
-            // TODO: should we cancel other running jobs?
-            return blockingResult;
+        if (!r0.isSuccess()) {
+            LOGGER.debug("First job '{}' failed, canceling the remaining ones", r0.getMetadata().getName());
+            cancelAll(submitted);
+            return r0;
         }
 
-        for (JobFuture f : futures) {
+        for (int i = 0; i < submitted.size(); i++) {
 
-            JobResult result = f.get();
-            logResult(result);
+            JobResult r;
+            try {
+                r = submitted.get(i).get();
+            } catch (ExecutionException | InterruptedException e) {
+                r = JobResult.failure(jobs.get(i).getMetadata(), e);
+            }
 
-            if (!result.isSuccess()) {
-                // TODO: should we cancel other running jobs?
-                return result;
+            logResult(r);
+
+            if (!r.isSuccess()) {
+                if (i + 1 < submitted.size()) {
+                    LOGGER.debug("Job '{}' failed, canceling the remaining ones", r.getMetadata().getName());
+                    cancelAll(submitted.subList(i + 1, submitted.size()));
+                }
+
+                return r;
             }
         }
 
-        return blockingResult;
+        return r0;
     }
 
-    protected JobFuture submitMember(Job job, Map<String, Object> params) {
-        return scheduler.runBuilder().job(job).params(params).noDecorators().runNonBlocking();
+    private void cancelAll(List<Future<JobResult>> tasks) {
+        tasks.forEach(t -> t.cancel(true));
     }
 }

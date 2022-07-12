@@ -21,20 +21,27 @@ package io.bootique.job.instrumented;
 
 import com.codahale.metrics.MetricRegistry;
 import io.bootique.ConfigModule;
-import io.bootique.di.Binder;
+import io.bootique.config.ConfigurationFactory;
+import io.bootique.di.Injector;
 import io.bootique.di.Provides;
-import io.bootique.job.JobRegistry;
+import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobLogger;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
 import io.bootique.metrics.mdc.TransactionIdMDC;
+import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;
 
 public class JobInstrumentedModule extends ConfigModule {
 
-    @Override
-    public void configure(Binder binder) {
-        binder.override(JobRegistry.class).toProvider(InstrumentedJobRegistryProvider.class);
+    @Provides
+    @Singleton
+    GraphExecutor createGraphExecutor(
+            ConfigurationFactory configFactory,
+            Injector injector,
+            ShutdownManager shutdownManager) {
+        return config(InstrumentedSchedulerFactory.class, configFactory)
+                .createGraphExecutor(injector, shutdownManager);
     }
 
     @Provides
