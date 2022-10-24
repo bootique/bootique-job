@@ -110,10 +110,16 @@ public class ExecCommand extends CommandWithMetadata {
     }
 
     private void processResult(JobResult result) {
-        String message = String.format("Finished job '%s', result: %s, message: %s",
+        String message = result.getMessage() != null
+
+                ? String.format("Finished job '%s', result: %s, message: %s",
                 result.getMetadata().getName(),
                 result.getOutcome(),
-                result.getMessage());
+                result.getMessage())
+
+                : String.format("Finished job '%s', result: %s",
+                result.getMetadata().getName(),
+                result.getOutcome());
 
         if (result.getThrowable() == null) {
             LOGGER.info(message);

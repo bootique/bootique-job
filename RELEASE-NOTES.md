@@ -21,6 +21,7 @@
 * #109 Unify job decoration approach
 * #110 Package reorg
 * #111 Add job dependencies to the JobMetadata
+* #114 ExecCommand status reporting: "message: null"
 
 ## 2.0.M1
 
