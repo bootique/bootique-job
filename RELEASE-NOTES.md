@@ -1,6 +1,7 @@
 ## 3.0.M1
 
 * #83 More flexible job lock handlers
+* #84 Parameter-aware lock handler
 * #89 Bump Spring dependency from 4.3.x to 5.3.x
 * #90 Jobs in job group assume transaction IDs of unrelated jobs
 * #91 Transaction ids for jobs within job groups
