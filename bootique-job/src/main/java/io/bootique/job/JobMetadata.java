@@ -29,6 +29,7 @@ public class JobMetadata {
 
     private final String name;
     private final Collection<JobParameterMetadata<?>> parameters;
+    private final String lockName;
     private final boolean group;
     private final boolean serial;
     private final Set<String> dependsOn;
@@ -36,11 +37,12 @@ public class JobMetadata {
     protected JobMetadata(
             String name,
             Collection<JobParameterMetadata<?>> parameters,
+            String lockName,
             Set<String> dependsOn,
             boolean group,
             boolean serial) {
-
         this.name = name;
+        this.lockName = lockName;
         this.parameters = parameters;
         this.dependsOn = dependsOn;
         this.group = group;
@@ -97,6 +99,14 @@ public class JobMetadata {
         return name;
     }
 
+    /**
+     * @return lock name to use with this job
+     * @since 3.0
+     */
+    public String getLockName() {
+        return lockName;
+    }
+
     public Collection<JobParameterMetadata<?>> getParameters() {
         return parameters != null ? parameters : Collections.emptyList();
     }
@@ -145,6 +155,7 @@ public class JobMetadata {
         private final Set<String> dependsOn;
         private boolean serial;
         private boolean group;
+        private String lockName;
 
         private Builder(String name) {
             this.name = name;
@@ -191,6 +202,22 @@ public class JobMetadata {
          */
         public Builder dependsOn(Collection<String> jobNames) {
             this.dependsOn.addAll(jobNames);
+            return this;
+        }
+
+        /**
+         * Set custom lock name that will be used by a {@link io.bootique.job.lock.LockHandler} implementation to
+         * disable this job parallel execution.
+         * <br/>
+         * By default job name will be used as a lock name.
+         *
+         * @param lockName optional name of the lock to use
+         * @return this builder
+         *
+         * @since 3.0
+         */
+        public Builder lockName(String lockName) {
+            this.lockName = lockName;
             return this;
         }
 
@@ -294,7 +321,10 @@ public class JobMetadata {
                 throw new IllegalStateException("Job name is not configured");
             }
 
-            return new JobMetadata(name, parameters, dependsOn, group, serial);
+            if (lockName == null) {
+                lockName = name;
+            }
+            return new JobMetadata(name, parameters, lockName, dependsOn, group, serial);
         }
     }
 }

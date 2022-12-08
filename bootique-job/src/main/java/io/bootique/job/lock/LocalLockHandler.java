@@ -69,7 +69,7 @@ public class LocalLockHandler implements LockHandler {
         return locks.computeIfAbsent(lockName, k -> new ReentrantLock());
     }
 
-    private String toLockName(JobMetadata metadata) {
-        return metadata.getName();
-    }
+	private String toLockName(JobMetadata metadata) {
+		return metadata.getLockName();
+	}
 }

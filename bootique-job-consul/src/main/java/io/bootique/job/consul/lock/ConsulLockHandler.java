@@ -70,8 +70,8 @@ public class ConsulLockHandler implements LockHandler {
     }
 
     private String getLockName(JobMetadata metadata) {
-        String jobName = metadata.getName();
+        String lockName = metadata.getLockName();
         return (serviceGroup == null || serviceGroup.isEmpty()) ?
-                jobName : (serviceGroup + "/" + jobName);
+                lockName : (serviceGroup + "/" + lockName);
     }
 }
