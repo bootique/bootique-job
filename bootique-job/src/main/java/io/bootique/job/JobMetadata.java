@@ -207,9 +207,7 @@ public class JobMetadata {
 
         /**
          * Set custom lock name that will be used by a {@link io.bootique.job.lock.LockHandler} implementation to
-         * disable this job parallel execution.
-         * <br/>
-         * By default job name will be used as a lock name.
+         * disable this job parallel execution. By default, job name will be used as a lock name.
          *
          * @param lockName optional name of the lock to use
          * @return this builder
