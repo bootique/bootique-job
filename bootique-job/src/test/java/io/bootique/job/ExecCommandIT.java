@@ -389,6 +389,18 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
+    public void testCliParameters() {
+        ParameterizedJob2 job = new ParameterizedJob2();
+
+        testFactory.app("--exec", "--job=parameterizedjob2{\"longp\":15,\"xp\":3}")
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(job))
+                .run();
+
+        job.assertExecuted(Map.of("longp", 15L, "xp", 3));
+    }
+
+    @Test
     public void testParametersOverriddenWithProps() {
         ParameterizedJob2 job = new ParameterizedJob2();
 

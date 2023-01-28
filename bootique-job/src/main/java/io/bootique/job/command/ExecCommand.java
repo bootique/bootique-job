@@ -26,6 +26,8 @@ import io.bootique.job.JobFuture;
 import io.bootique.job.JobResult;
 import io.bootique.job.JobModule;
 import io.bootique.job.Scheduler;
+import io.bootique.job.trigger.JobExec;
+import io.bootique.job.trigger.JobExecParser;
 import io.bootique.meta.application.CommandMetadata;
 import io.bootique.meta.application.OptionMetadata;
 import org.slf4j.Logger;
@@ -42,6 +44,7 @@ public class ExecCommand extends CommandWithMetadata {
 
     public static final String SERIAL_OPTION = "serial";
 
+    private final Provider<JobExecParser> jobExecParser;
     private final Provider<Scheduler> schedulerProvider;
 
     private static OptionMetadata.Builder createSerialOption() {
@@ -57,35 +60,39 @@ public class ExecCommand extends CommandWithMetadata {
 
     // using Provider for lazy init
     @Inject
-    public ExecCommand(Provider<Scheduler> schedulerProvider) {
+    public ExecCommand(Provider<JobExecParser> jobExecParser, Provider<Scheduler> schedulerProvider) {
         super(createMetadata());
+        this.jobExecParser = jobExecParser;
         this.schedulerProvider = schedulerProvider;
     }
 
     @Override
     public CommandOutcome run(Cli cli) {
 
-        List<String> jobNames = cli.optionStrings(JobModule.JOB_OPTION);
-        if (jobNames == null || jobNames.isEmpty()) {
+        List<String> jobStrings = cli.optionStrings(JobModule.JOB_OPTION);
+        if (jobStrings == null || jobStrings.isEmpty()) {
             return CommandOutcome.failed(1,
                     String.format("No jobs specified. Use '--%s' option to provide job names", JobModule.JOB_OPTION));
         }
 
-        LOGGER.info("Will run job(s): {}", jobNames);
+        LOGGER.info("Will run job(s): {}", jobStrings);
+
+        JobExecParser parser = jobExecParser.get();
+        List<JobExec> executions = jobStrings.stream().map(parser::parse).collect(Collectors.toList());
 
         Scheduler scheduler = schedulerProvider.get();
 
         return cli.hasOption(SERIAL_OPTION)
-                ? runSerial(jobNames, scheduler)
-                : runParallel(jobNames, scheduler);
+                ? runSerial(executions, scheduler)
+                : runParallel(executions, scheduler);
     }
 
-    private CommandOutcome runParallel(List<String> jobNames, Scheduler scheduler) {
+    private CommandOutcome runParallel(List<JobExec> execs, Scheduler scheduler) {
 
         // to ensure parallel execution, must collect futures in an explicit collection,
         // and then "get" them in a separate stream
-        List<JobFuture> futures = jobNames.stream()
-                .map(j -> scheduler.runBuilder().jobName(j).runNonBlocking())
+        List<JobFuture> futures = execs.stream()
+                .map(e -> scheduler.runBuilder().jobName(e.getJobName()).params(e.getParams()).runNonBlocking())
                 .collect(Collectors.toList());
 
         String failed = futures.stream()
@@ -98,12 +105,12 @@ public class ExecCommand extends CommandWithMetadata {
         return failed.isEmpty() ? CommandOutcome.succeeded() : CommandOutcome.failed(1, "Some of the jobs failed: " + failed);
     }
 
-    private CommandOutcome runSerial(List<String> jobNames, Scheduler scheduler) {
-        for (String jobName : jobNames) {
-            JobResult result = scheduler.runBuilder().jobName(jobName).runBlocking();
+    private CommandOutcome runSerial(List<JobExec> execs, Scheduler scheduler) {
+        for (JobExec e : execs) {
+            JobResult result = scheduler.runBuilder().jobName(e.getJobName()).params(e.getParams()).runBlocking();
             processResult(result);
             if (!result.isSuccess()) {
-                return CommandOutcome.failed(1, "One of the jobs failed: " + jobName);
+                return CommandOutcome.failed(1, "One of the jobs failed: " + e.getJobName());
             }
         }
         return CommandOutcome.succeeded();
