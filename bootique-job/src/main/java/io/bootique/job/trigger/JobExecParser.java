@@ -22,7 +22,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.bootique.job.JobRegistry;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -50,11 +49,12 @@ public class JobExecParser {
 
         int paramsIndex = jobWithParams.indexOf(JOB_PARAMS_SEPARATOR);
         if (paramsIndex < 0) {
-            return new JobExec(jobWithParams, Collections.emptyMap());
+            // use a mutable
+            return new JobExec(jobWithParams);
         } else if (paramsIndex == 0) {
             throw new IllegalArgumentException("Job name can't start with '" + JOB_PARAMS_SEPARATOR + "': " + jobWithParams);
         } else if (paramsIndex == jobWithParams.length() - 1) {
-            return new JobExec(jobWithParams.substring(0, paramsIndex), Collections.emptyMap());
+            return new JobExec(jobWithParams.substring(0, paramsIndex));
         } else {
             String jobName = jobWithParams.substring(0, paramsIndex);
             return new JobExec(

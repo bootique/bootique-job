@@ -18,6 +18,7 @@
  */
 package io.bootique.job.trigger;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,6 +31,11 @@ public class JobExec {
 
     private final String jobName;
     private final Map<String, Object> params;
+
+    public JobExec(String jobName) {
+        // use a mutable map for params. Downstream code may alter them
+        this(jobName, new HashMap<>());
+    }
 
     public JobExec(String jobName, Map<String, Object> params) {
         this.jobName = Objects.requireNonNull(jobName);

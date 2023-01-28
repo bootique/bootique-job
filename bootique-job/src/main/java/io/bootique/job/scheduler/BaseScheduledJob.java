@@ -24,8 +24,6 @@ import io.bootique.job.ScheduledJob;
 import io.bootique.job.trigger.*;
 import io.bootique.job.value.Cron;
 
-import java.util.Collections;
-
 /**
  * @since 3.0
  */
@@ -55,7 +53,7 @@ public abstract class BaseScheduledJob implements ScheduledJob {
         Trigger oldTrigger = state.getTrigger();
         JobExec exec = oldTrigger != null
                 ? oldTrigger.getExec()
-                : new JobExec(getJobName(), Collections.emptyMap());
+                : new JobExec(getJobName());
 
         return schedule(new CronTrigger(exec, TriggerFactory.generateTriggerName(), cron));
     }
@@ -65,7 +63,7 @@ public abstract class BaseScheduledJob implements ScheduledJob {
         Trigger oldTrigger = state.getTrigger();
         JobExec exec = oldTrigger != null
                 ? oldTrigger.getExec()
-                : new JobExec(getJobName(), Collections.emptyMap());
+                : new JobExec(getJobName());
 
         return schedule(new FixedRateTrigger(exec, TriggerFactory.generateTriggerName(), fixedRateMs, initialDelayMs));
     }
@@ -75,7 +73,7 @@ public abstract class BaseScheduledJob implements ScheduledJob {
         Trigger oldTrigger = state.getTrigger();
         JobExec exec = oldTrigger != null
                 ? oldTrigger.getExec()
-                : new JobExec(getJobName(), Collections.emptyMap());
+                : new JobExec(getJobName());
         return schedule(new FixedDelayTrigger(exec, TriggerFactory.generateTriggerName(), fixedDelayMs, initialDelayMs));
     }
 

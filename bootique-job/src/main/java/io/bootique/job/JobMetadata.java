@@ -140,13 +140,17 @@ public class JobMetadata {
      */
     public Map<String, Object> convertParameters(Map<String, ?> rawParams) {
 
+        // Making a mutable copy of the original params regardless whether it is empty, or whether conversions are
+        // going to be performed, as downstream code may actually modify this map.
+
+        Map<String, Object> converted = rawParams != null ? new HashMap<>(rawParams) : new HashMap<>();
+
         Collection<JobParameterMetadata<?>> paramsMd = getParameters();
         if (paramsMd.isEmpty()) {
-            return rawParams != null ? (Map<String, Object>) rawParams : Collections.emptyMap();
+            return converted;
         }
 
         // merge custom parameters with converted values (custom or default) of declared parameters
-        Map<String, Object> converted = rawParams != null ? new HashMap<>(rawParams) : new HashMap<>();
         for (JobParameterMetadata<?> param : paramsMd) {
             Object rawVal = rawParams.get(param.getName());
             Object value = param.fromString(rawVal != null ? rawVal.toString() : null);
