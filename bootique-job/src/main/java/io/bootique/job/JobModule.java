@@ -26,6 +26,7 @@ import io.bootique.di.Binder;
 import io.bootique.di.Injector;
 import io.bootique.di.Provides;
 import io.bootique.help.ValueObjectDescriptor;
+import io.bootique.jackson.JacksonService;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
@@ -33,6 +34,7 @@ import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runtime.*;
 import io.bootique.job.scheduler.SchedulerFactory;
+import io.bootique.job.trigger.JobExecParser;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
@@ -88,6 +90,12 @@ public class JobModule extends ConfigModule {
                 .addCommand(ListCommand.class)
                 .addCommand(ScheduleCommand.class)
                 .addValueObjectDescriptor(Cron.class, new ValueObjectDescriptor("6-part cron expression, e.g. '0 0 * * * *'"));
+    }
+
+    @Provides
+    @Singleton
+    JobExecParser createExecParser(JobRegistry registry, JacksonService jackson) {
+        return new JobExecParser(registry, jackson.newObjectMapper());
     }
 
     @Provides
