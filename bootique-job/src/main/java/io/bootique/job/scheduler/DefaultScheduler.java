@@ -22,6 +22,7 @@ package io.bootique.job.scheduler;
 import io.bootique.BootiqueException;
 import io.bootique.job.*;
 import io.bootique.job.runtime.JobDecorators;
+import io.bootique.job.trigger.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -46,7 +47,7 @@ public class DefaultScheduler implements Scheduler {
         Map<String, Collection<Trigger>> map = new HashMap<>();
 
         for (Trigger t : triggers) {
-            map.computeIfAbsent(t.getJobName(), tn -> new ArrayList<>()).add(t);
+            map.computeIfAbsent(t.getExec().getJobName(), tn -> new ArrayList<>()).add(t);
         }
 
         return map;
@@ -107,8 +108,8 @@ public class DefaultScheduler implements Scheduler {
 
         String badTriggers = triggers
                 .stream()
-                .filter(t -> !jobRegistry.getJobNames().contains(t.getJobName()))
-                .map(t -> t.getJobName() + ":" + t.getTriggerName())
+                .filter(t -> !jobRegistry.getJobNames().contains(t.getExec().getJobName()))
+                .map(t -> t.getExec().getJobName() + ":" + t.getName())
                 .collect(Collectors.joining(", "));
 
         if (badTriggers.length() > 0) {
@@ -123,7 +124,7 @@ public class DefaultScheduler implements Scheduler {
 
     private void scheduleTrigger(Trigger trigger) {
         ScheduledJob scheduled = schedule(trigger);
-        scheduledJobsByName.computeIfAbsent(trigger.getJobName(), k -> new ArrayList<>()).add(scheduled);
+        scheduledJobsByName.computeIfAbsent(trigger.getExec().getJobName(), k -> new ArrayList<>()).add(scheduled);
     }
 
     private void tryStart() {
@@ -153,7 +154,7 @@ public class DefaultScheduler implements Scheduler {
     }
 
     protected ScheduledJob schedule(Trigger trigger) {
-        String jobName = trigger.getJobName();
+        String jobName = trigger.getExec().getJobName();
         Job job = jobRegistry.getJob(jobName);
 
         ScheduledJob scheduledJob = new SpringScheduledJob(job, taskScheduler);

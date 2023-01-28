@@ -16,45 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler;
+package io.bootique.job.trigger;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
+ * A descriptor of a job execution with job name and execution parameters.
+ *
  * @since 3.0
  */
-public class FixedDelayTrigger extends Trigger {
+public class JobExec {
 
-    private final long fixedDelayMs;
-    private final long initialDelayMs;
+    private final String jobName;
+    private final Map<String, Object> params;
 
-    public FixedDelayTrigger(
-            String jobName,
-            String triggerName,
-            Map<String, Object> params,
-            long fixedDelayMs,
-            long initialDelayMs) {
-
-        super(jobName, triggerName, params);
-        this.fixedDelayMs = fixedDelayMs;
-        this.initialDelayMs = initialDelayMs;
+    public JobExec(String jobName, Map<String, Object> params) {
+        this.jobName = Objects.requireNonNull(jobName);
+        this.params = Objects.requireNonNull(params);
     }
 
-    @Override
-    public <T> T accept(TriggerVisitor<T> visitor) {
-        return visitor.visitFixedDelay(this);
+    public String getJobName() {
+        return jobName;
     }
 
-    public long getInitialDelayMs() {
-        return initialDelayMs;
-    }
-
-    public long getFixedDelayMs() {
-        return fixedDelayMs;
-    }
-
-    @Override
-    public String toString() {
-        return "fixed delay trigger " + fixedDelayMs + " ms";
+    public Map<String, Object> getParams() {
+        return params;
     }
 }

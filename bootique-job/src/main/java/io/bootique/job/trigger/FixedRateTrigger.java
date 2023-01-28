@@ -16,44 +16,42 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package io.bootique.job.scheduler;
-
-import java.util.Map;
-import java.util.Objects;
+package io.bootique.job.trigger;
 
 /**
- * Defines execution schedule for a given job.
- *
  * @since 3.0
  */
-public abstract class Trigger {
+public class FixedRateTrigger extends Trigger {
 
-    private final String jobName;
-    private final String triggerName;
-    private final Map<String, Object> params;
+    private final long fixedRateMs;
+    private final long initialDelayMs;
 
-    public Trigger(
-            String jobName,
+    public FixedRateTrigger(
+            JobExec exec,
             String triggerName,
-            Map<String, Object> params) {
+            long fixedRateMs,
+            long initialDelayMs) {
 
-        this.jobName = Objects.requireNonNull(jobName);
-        this.triggerName = Objects.requireNonNull(triggerName);
-        this.params = Objects.requireNonNull(params);
+        super(exec, triggerName);
+        this.fixedRateMs = fixedRateMs;
+        this.initialDelayMs = initialDelayMs;
     }
 
-    public abstract <T> T accept(TriggerVisitor<T> visitor);
-
-    public String getJobName() {
-        return jobName;
+    @Override
+    public <T> T accept(TriggerVisitor<T> visitor) {
+        return visitor.visitFixedRate(this);
     }
 
-    public String getTriggerName() {
-        return triggerName;
+    public long getFixedRateMs() {
+        return fixedRateMs;
     }
 
-    public Map<String, Object> getParams() {
-        return params;
+    public long getInitialDelayMs() {
+        return initialDelayMs;
+    }
+
+    @Override
+    public String toString() {
+        return "fixed rate trigger " + fixedRateMs + " ms";
     }
 }

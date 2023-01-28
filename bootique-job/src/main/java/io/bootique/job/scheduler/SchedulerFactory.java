@@ -26,6 +26,8 @@ import io.bootique.job.JobRegistry;
 import io.bootique.job.Scheduler;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobDecorators;
+import io.bootique.job.trigger.Trigger;
+import io.bootique.job.trigger.TriggerFactory;
 import io.bootique.shutdown.ShutdownManager;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;

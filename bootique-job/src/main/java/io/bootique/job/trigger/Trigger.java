@@ -16,41 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler;
 
-import io.bootique.job.value.Cron;
+package io.bootique.job.trigger;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
+ * Defines execution schedule for a given job.
+ *
  * @since 3.0
  */
-public class CronTrigger extends Trigger {
+public abstract class Trigger {
 
-    private final Cron cron;
+    private final JobExec exec;
+    private final String name;
 
-    public CronTrigger(
-            String jobName,
-            String triggerName,
-            Map<String, Object> params,
-            Cron cron) {
-
-        super(jobName, triggerName, params);
-        this.cron = Objects.requireNonNull(cron);
+    public Trigger(JobExec exec, String name) {
+        this.exec = Objects.requireNonNull(exec);
+        this.name = Objects.requireNonNull(name);
     }
 
-    @Override
-    public <T> T accept(TriggerVisitor<T> visitor) {
-        return visitor.visitCron(this);
+    public abstract <T> T accept(TriggerVisitor<T> visitor);
+
+    public String getName() {
+        return name;
     }
 
-    public Cron getCron() {
-        return cron;
-    }
-
-    @Override
-    public String toString() {
-        return "cron trigger " + cron.getExpression();
+    public JobExec getExec() {
+        return exec;
     }
 }

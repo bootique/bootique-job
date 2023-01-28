@@ -18,6 +18,8 @@
  */
 package io.bootique.job.scheduler;
 
+import io.bootique.job.trigger.Trigger;
+
 import java.util.concurrent.ScheduledFuture;
 
 /**

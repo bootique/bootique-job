@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.bootique.job.scheduler;
+package io.bootique.job.trigger;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
@@ -42,7 +42,7 @@ public class TriggerFactory {
     private Duration initialDelay;
     private Map<String, Object> params;
 
-    static String generateTriggerName() {
+    public static String generateTriggerName() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
@@ -57,11 +57,11 @@ public class TriggerFactory {
 
         // TODO: use a polymorphic factory
         if (cron != null) {
-            return new CronTrigger(job, triggerName, params, cron);
+            return new CronTrigger(new JobExec(job, params), triggerName, cron);
         } else if (fixedDelayMs > 0) {
-            return new FixedDelayTrigger(job, triggerName, params, fixedDelayMs, initialDelayMs);
+            return new FixedDelayTrigger(new JobExec(job, params), triggerName, fixedDelayMs, initialDelayMs);
         } else if (fixedRateMs > 0) {
-            return new FixedRateTrigger(job, triggerName, params, fixedRateMs, initialDelayMs);
+            return new FixedRateTrigger(new JobExec(job, params), triggerName, fixedRateMs, initialDelayMs);
         }
 
         throw new IllegalStateException("Trigger must have either cron or fixed rate or fixed delay configured");

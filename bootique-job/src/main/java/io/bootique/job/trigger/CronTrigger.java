@@ -16,45 +16,39 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.scheduler;
+package io.bootique.job.trigger;
 
-import java.util.Map;
+import io.bootique.job.value.Cron;
+
+import java.util.Objects;
 
 /**
  * @since 3.0
  */
-public class FixedRateTrigger extends Trigger {
+public class CronTrigger extends Trigger {
 
-    private final long fixedRateMs;
-    private final long initialDelayMs;
+    private final Cron cron;
 
-    public FixedRateTrigger(
-            String jobName,
+    public CronTrigger(
+            JobExec exec,
             String triggerName,
-            Map<String, Object> params,
-            long fixedRateMs,
-            long initialDelayMs) {
+            Cron cron) {
 
-        super(jobName, triggerName, params);
-        this.fixedRateMs = fixedRateMs;
-        this.initialDelayMs = initialDelayMs;
+        super(exec, triggerName);
+        this.cron = Objects.requireNonNull(cron);
     }
 
     @Override
     public <T> T accept(TriggerVisitor<T> visitor) {
-        return visitor.visitFixedRate(this);
+        return visitor.visitCron(this);
     }
 
-    public long getFixedRateMs() {
-        return fixedRateMs;
-    }
-
-    public long getInitialDelayMs() {
-        return initialDelayMs;
+    public Cron getCron() {
+        return cron;
     }
 
     @Override
     public String toString() {
-        return "fixed rate trigger " + fixedRateMs + " ms";
+        return "cron trigger " + cron.getExpression();
     }
 }

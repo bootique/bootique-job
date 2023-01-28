@@ -21,10 +21,10 @@ package io.bootique.job.scheduler;
 
 import io.bootique.job.Job;
 import io.bootique.job.ScheduledJob;
+import io.bootique.job.trigger.*;
 import io.bootique.job.value.Cron;
 
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * @since 3.0
@@ -53,25 +53,30 @@ public abstract class BaseScheduledJob implements ScheduledJob {
     @Override
     public boolean schedule(Cron cron) {
         Trigger oldTrigger = state.getTrigger();
-        String jobName = oldTrigger != null ? oldTrigger.getJobName() : getJobName();
-        Map<String, Object> params = oldTrigger != null ? oldTrigger.getParams() : Collections.emptyMap();
-        return schedule(new CronTrigger(jobName, TriggerFactory.generateTriggerName(), params, cron));
+        JobExec exec = oldTrigger != null
+                ? oldTrigger.getExec()
+                : new JobExec(getJobName(), Collections.emptyMap());
+
+        return schedule(new CronTrigger(exec, TriggerFactory.generateTriggerName(), cron));
     }
 
     @Override
     public boolean scheduleAtFixedRate(long fixedRateMs, long initialDelayMs) {
         Trigger oldTrigger = state.getTrigger();
-        String jobName = oldTrigger != null ? oldTrigger.getJobName() : getJobName();
-        Map<String, Object> params = oldTrigger != null ? oldTrigger.getParams() : Collections.emptyMap();
-        return schedule(new FixedRateTrigger(jobName, TriggerFactory.generateTriggerName(), params, fixedRateMs, initialDelayMs));
+        JobExec exec = oldTrigger != null
+                ? oldTrigger.getExec()
+                : new JobExec(getJobName(), Collections.emptyMap());
+
+        return schedule(new FixedRateTrigger(exec, TriggerFactory.generateTriggerName(), fixedRateMs, initialDelayMs));
     }
 
     @Override
     public boolean scheduleWithFixedDelay(long fixedDelayMs, long initialDelayMs) {
         Trigger oldTrigger = state.getTrigger();
-        String jobName = oldTrigger != null ? oldTrigger.getJobName() : getJobName();
-        Map<String, Object> params = oldTrigger != null ? oldTrigger.getParams() : Collections.emptyMap();
-        return schedule(new FixedDelayTrigger(jobName, TriggerFactory.generateTriggerName(), params, fixedDelayMs, initialDelayMs));
+        JobExec exec = oldTrigger != null
+                ? oldTrigger.getExec()
+                : new JobExec(getJobName(), Collections.emptyMap());
+        return schedule(new FixedDelayTrigger(exec, TriggerFactory.generateTriggerName(), fixedDelayMs, initialDelayMs));
     }
 
     @Override

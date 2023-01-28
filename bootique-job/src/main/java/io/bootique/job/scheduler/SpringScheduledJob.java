@@ -20,6 +20,7 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.job.Job;
+import io.bootique.job.trigger.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -68,8 +69,8 @@ public class SpringScheduledJob extends BaseScheduledJob {
 
     @Override
     protected ScheduledJobState doSchedule(Job job, Trigger trigger) {
-        LOGGER.info(String.format("Will schedule '%s'.. (%s)", getJobName(), trigger));
-        ScheduledFuture<?> future = taskScheduler.schedule(() -> job.run(trigger.getParams()), trigger.accept(springTriggerCompiler));
+        LOGGER.info("Will schedule '{}'.. ({})", getJobName(), trigger);
+        ScheduledFuture<?> future = taskScheduler.schedule(() -> job.run(trigger.getExec().getParams()), trigger.accept(springTriggerCompiler));
         return ScheduledJobState.scheduled(trigger, future);
     }
 }
