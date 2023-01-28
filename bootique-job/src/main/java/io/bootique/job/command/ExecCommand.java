@@ -82,7 +82,7 @@ public class ExecCommand extends CommandWithMetadata {
 
         Scheduler scheduler = schedulerProvider.get();
 
-        return cli.hasOption(SERIAL_OPTION)
+        return cli.hasOption(SERIAL_OPTION) || executions.size() == 1
                 ? runSerial(executions, scheduler)
                 : runParallel(executions, scheduler);
     }
