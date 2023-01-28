@@ -33,12 +33,15 @@ public interface JobRegistry {
     /**
      * Returns all known job names, including standalone jobs and job groups.
      *
-     * @since 3.0.M1
+     * @since 3.0
      */
     Set<String> getJobNames();
 
+    /**
+     * Returns a non-null Job object for the provided name. Throws an exception if there's no job in the registry
+     * matching the name.
+     */
     Job getJob(String jobName);
-
 
     /**
      * @see JobMetadata#isSerial()

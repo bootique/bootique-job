@@ -132,6 +132,30 @@ public class JobMetadata {
         return group;
     }
 
+    /**
+     * Creates and returns a map with parameters derived from "rawParams", where values of all known parameters are
+     * converted according to Job parameter metadata policies.
+     *
+     * @since 3.0
+     */
+    public Map<String, Object> convertParameters(Map<String, ?> rawParams) {
+
+        Collection<JobParameterMetadata<?>> paramsMd = getParameters();
+        if (paramsMd.isEmpty()) {
+            return rawParams != null ? (Map<String, Object>) rawParams : Collections.emptyMap();
+        }
+
+        // merge custom parameters with converted values (custom or default) of declared parameters
+        Map<String, Object> converted = rawParams != null ? new HashMap<>(rawParams) : new HashMap<>();
+        for (JobParameterMetadata<?> param : paramsMd) {
+            Object rawVal = rawParams.get(param.getName());
+            Object value = param.fromString(rawVal != null ? rawVal.toString() : null);
+            converted.put(param.getName(), value);
+        }
+
+        return converted;
+    }
+
     public static class Builder {
 
         static Integer parseInt(String value) {
@@ -211,7 +235,6 @@ public class JobMetadata {
          *
          * @param lockName optional name of the lock to use
          * @return this builder
-         *
          * @since 3.0
          */
         public Builder lockName(String lockName) {

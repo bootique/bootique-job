@@ -24,9 +24,11 @@ import io.bootique.BootiqueException;
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
 import io.bootique.job.Job;
-import io.bootique.job.JobParameterMetadata;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @since 3.0
@@ -49,7 +51,7 @@ public class JobNodeFactory implements JobGraphNodeFactory<JobNode> {
 
         return new JobNode(
                 job,
-                createParams(job.getMetadata().getParameters()),
+                job.getMetadata().convertParameters(params),
                 dependsOn != null ? new LinkedHashSet<>(dependsOn) : Collections.emptySet(),
 
                 // an explicitly set empty list means that, when the node is used as an override, overridden
@@ -69,22 +71,5 @@ public class JobNodeFactory implements JobGraphNodeFactory<JobNode> {
             " If you'd like the dependencies to be executed in a particular order, consider creating an explicit job group.")
     public void setDependsOn(List<String> dependsOn) {
         this.dependsOn = dependsOn;
-    }
-
-    private Map<String, Object> createParams(Collection<JobParameterMetadata<?>> paramsMetadata) {
-
-        if (params == null) {
-            return Collections.emptyMap();
-        }
-
-        // clone params map in order to preserve parameters that were not specified in metadata
-        Map<String, Object> convertedParams = new HashMap<>(params);
-        for (JobParameterMetadata<?> param : paramsMetadata) {
-            String valueString = params.get(param.getName());
-            Object value = param.fromString(valueString);
-            convertedParams.put(param.getName(), value);
-        }
-
-        return convertedParams;
     }
 }

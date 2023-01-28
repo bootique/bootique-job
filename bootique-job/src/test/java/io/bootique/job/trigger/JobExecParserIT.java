@@ -20,11 +20,16 @@ package io.bootique.job.trigger;
 
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
-import io.bootique.job.*;
+import io.bootique.job.Job;
+import io.bootique.job.JobMetadata;
+import io.bootique.job.JobModule;
+import io.bootique.job.JobResult;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,16 +65,26 @@ public class JobExecParserIT {
 
     @Test
     public void testJobNameOnly_TrailingColon() {
-        JobExec exec = parser.parse("j1:");
+        JobExec exec = parser.parse("j1{");
         assertEquals("j1", exec.getJobName());
         assertEquals(Map.of(), exec.getParams());
     }
 
     @Test
     public void testJobWithParams() {
-        JobExec exec = parser.parse("j1:{\"p1\":\"a1\",\"p2\":3}");
+        JobExec exec = parser.parse("j1{\"p1\":\"a1\",\"p2\":3}");
         assertEquals("j1", exec.getJobName());
         assertEquals(Map.of("p1", "a1", "p2", 3), exec.getParams());
+    }
+
+    @Test
+    public void testJobWithParams_Conversion() {
+        JobExec exec = parser.parse("j2{\"date\":\"2023-02-15\",\"time\":\"16:00:01\",\"int\":4}");
+        assertEquals("j2", exec.getJobName());
+        assertEquals(Map.of(
+                "date", LocalDate.of(2023, 2, 15),
+                "time", LocalTime.of(16, 0, 1),
+                "int", Integer.valueOf(4)), exec.getParams());
     }
 
     static class J1 implements Job {
@@ -89,7 +104,11 @@ public class JobExecParserIT {
 
         @Override
         public JobMetadata getMetadata() {
-            return JobMetadata.build(J2.class);
+            return JobMetadata.builder(J2.class)
+                    .param("int", "int", Integer::parseInt)
+                    .param("date", "date", LocalDate::parse)
+                    .param("time", "time", LocalTime::parse)
+                    .build();
         }
 
         @Override

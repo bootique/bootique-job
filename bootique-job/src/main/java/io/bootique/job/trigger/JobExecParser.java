@@ -31,7 +31,7 @@ import java.util.Objects;
  */
 public class JobExecParser {
 
-    private static final char JOB_PARAMS_SEPARATOR = ':';
+    private static final char JOB_PARAMS_SEPARATOR = '{';
 
     private final JobRegistry jobRegistry;
     private final ObjectMapper paramsParser;
@@ -48,21 +48,22 @@ public class JobExecParser {
             throw new IllegalArgumentException("Empty job name");
         }
 
-        int jobParamsSplit = jobWithParams.indexOf(JOB_PARAMS_SEPARATOR);
-        if (jobParamsSplit < 0) {
+        int paramsIndex = jobWithParams.indexOf(JOB_PARAMS_SEPARATOR);
+        if (paramsIndex < 0) {
             return new JobExec(jobWithParams, Collections.emptyMap());
-        } else if (jobParamsSplit == 0) {
+        } else if (paramsIndex == 0) {
             throw new IllegalArgumentException("Job name can't start with '" + JOB_PARAMS_SEPARATOR + "': " + jobWithParams);
-        } else if (jobParamsSplit == jobWithParams.length() - 1) {
-            return new JobExec(jobWithParams.substring(0, jobParamsSplit), Collections.emptyMap());
+        } else if (paramsIndex == jobWithParams.length() - 1) {
+            return new JobExec(jobWithParams.substring(0, paramsIndex), Collections.emptyMap());
         } else {
+            String jobName = jobWithParams.substring(0, paramsIndex);
             return new JobExec(
-                    jobWithParams.substring(0, jobParamsSplit),
-                    parseParams(jobWithParams.substring(jobParamsSplit + 1)));
+                    jobName,
+                    parseParams(jobName, jobWithParams.substring(paramsIndex)));
         }
     }
 
-    private Map<String, Object> parseParams(String paramsString) {
+    private Map<String, Object> parseParams(String jobName, String paramsString) {
 
         Map<String, Object> params;
         try {
@@ -71,8 +72,8 @@ public class JobExecParser {
             throw new IllegalArgumentException("Not a valid JSON map: " + paramsString, e);
         }
 
-        // TODO: convert to proper parameter types
-
-        return params;
+        return params.isEmpty()
+                ? params
+                : jobRegistry.getJob(jobName).getMetadata().convertParameters(params);
     }
 }
