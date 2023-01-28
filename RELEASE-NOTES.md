@@ -1,3 +1,7 @@
+## 3.0.M2
+
+* #99 Support passing parameters to jobs via CLI
+
 ## 3.0.M1
 
 * #83 More flexible job lock handlers
