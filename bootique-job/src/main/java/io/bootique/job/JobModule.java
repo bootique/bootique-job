@@ -82,7 +82,8 @@ public class JobModule extends ConfigModule {
         binder.bind(JobRegistry.class).toProvider(JobRegistryProvider.class).inSingletonScope();
 
         BQCoreModule.extend(binder).addCommand(ExecCommand.class)
-                .addOption(OptionMetadata.builder(JOB_OPTION).description("Specifies the name of the job to execute or schedule. "
+                .addOption(OptionMetadata.builder(JOB_OPTION).description("Specifies the name of a job to execute or schedule. "
+                                + "Job name may be optionally followed by a JSON map containing job parameters (e.g. 'myjob{\"p\":1}') "
                                 + "Used in conjunction with '--execute' or '--schedule' commands. "
                                 + "Available job names can be viewed using '--list' command.")
                         .valueRequired("job_name")
