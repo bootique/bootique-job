@@ -89,12 +89,10 @@ public class JobRunBuilder {
                 () -> result[0] = job.run(params),
                 new Date());
 
-        JobFuture f1 = new SimpleJobFuture(
+        return new SimpleJobFuture(
                 job.getMetadata().getName(),
                 future,
                 () -> result[0] != null ? result[0] : JobResult.unknown(job.getMetadata()));
-
-        return f1;
     }
 
     protected Job resolveJob() {
