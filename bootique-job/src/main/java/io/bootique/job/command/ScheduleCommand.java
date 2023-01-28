@@ -24,6 +24,8 @@ import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
 import io.bootique.job.JobModule;
 import io.bootique.job.Scheduler;
+import io.bootique.job.trigger.JobExec;
+import io.bootique.job.trigger.JobExecParser;
 import io.bootique.meta.application.CommandMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,17 +33,20 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class ScheduleCommand extends CommandWithMetadata {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleCommand.class);
 
+    private final Provider<JobExecParser> jobExecParser;
     private Provider<Scheduler> schedulerProvider;
 
     @Inject
-    public ScheduleCommand(Provider<Scheduler> schedulerProvider) {
+    public ScheduleCommand(Provider<JobExecParser> jobExecParser, Provider<Scheduler> schedulerProvider) {
         super(createMetadata());
+        this.jobExecParser = jobExecParser;
         this.schedulerProvider = schedulerProvider;
     }
 
@@ -53,16 +58,30 @@ public class ScheduleCommand extends CommandWithMetadata {
 
     @Override
     public CommandOutcome run(Cli cli) {
-        Scheduler scheduler = schedulerProvider.get();
 
         int jobCount;
+        Scheduler scheduler = schedulerProvider.get();
 
-        List<String> jobNames = cli.optionStrings(JobModule.JOB_OPTION);
-        if (jobNames == null || jobNames.isEmpty()) {
+        List<String> jobStrings = cli.optionStrings(JobModule.JOB_OPTION);
+        if (jobStrings == null || jobStrings.isEmpty()) {
             LOGGER.info("Starting scheduler");
             jobCount = scheduler.start();
         } else {
-            LOGGER.info("Starting scheduler for jobs: " + jobNames);
+            
+            JobExecParser parser = jobExecParser.get();
+            List<String> jobNames = jobStrings.stream()
+                    .map(parser::parse)
+                    // TODO: allow parameters to be passed to the scheduler the same way we allow it for individual
+                    //  executions
+                    .peek(e -> {
+                        if (!e.getParams().isEmpty()) {
+                            LOGGER.warn("Ignoring CLI parameters of job {} for scheduling: ", e.getJobName(), e.getParams());
+                        }
+                    })
+                    .map(JobExec::getJobName)
+                    .collect(Collectors.toList());
+
+            LOGGER.info("Starting scheduler for jobs: {}", jobNames);
             jobCount = scheduler.start(jobNames);
         }
 
