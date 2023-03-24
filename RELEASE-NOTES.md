@@ -1,6 +1,7 @@
 ## 3.0.M2
 
 * #99 Support passing parameters to jobs via CLI
+* #115 Bump spring-core from 5.3.20 to 5.3.26
 
 ## 3.0.M1
 
