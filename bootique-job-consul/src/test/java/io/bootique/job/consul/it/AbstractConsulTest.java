@@ -18,7 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public abstract class AbstractConsulTest {
 
     @Container
-    static final GenericContainer consul = new GenericContainer("consul:latest").withExposedPorts(8500);
+    static final GenericContainer consul = new GenericContainer("consul:1.15.4").withExposedPorts(8500);
 
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
