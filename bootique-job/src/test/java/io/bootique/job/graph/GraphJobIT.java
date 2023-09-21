@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @BQTest
 public class GraphJobIT {
@@ -61,6 +62,24 @@ public class GraphJobIT {
         Job j3 = registry.getJob("j3");
         assertFalse(j3.getMetadata().isGroup());
         assertEquals(Set.of(), j3.getMetadata().getDependsOn());
+    }
+
+    @Test
+    public void testDependency_RootHasParams() {
+
+        JobRegistry registry = testFactory.app()
+                .autoLoadModules()
+                .module(b -> JobModule.extend(b).addJob(J2.class).addJob(J3.class).addJob(J4.class))
+                .module(b -> BQCoreModule.extend(b)
+                        .setProperty("bq.jobs.j4.dependsOn[0]", "j2")
+                        .setProperty("bq.jobs.j4.dependsOn[1]", "j3"))
+                .createRuntime()
+                .getInstance(JobRegistry.class);
+
+        Job j4 = registry.getJob("j4");
+        // everything that has dependencies is wrapped into a group
+        assertTrue(j4.getMetadata().isGroup());
+        assertEquals(Set.of("j2", "j3"), j4.getMetadata().getDependsOn());
     }
 
     @Test
@@ -115,6 +134,21 @@ public class GraphJobIT {
         @Override
         public JobMetadata getMetadata() {
             return JobMetadata.build(J3.class);
+        }
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            return JobResult.success(getMetadata());
+        }
+    }
+
+    static class J4 implements Job {
+
+        @Override
+        public JobMetadata getMetadata() {
+            return JobMetadata.builder(J4.class)
+                    .dateParam("d1")
+                    .build();
         }
 
         @Override

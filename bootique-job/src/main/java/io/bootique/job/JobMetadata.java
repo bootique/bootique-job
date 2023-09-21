@@ -152,7 +152,7 @@ public class JobMetadata {
 
         // merge custom parameters with converted values (custom or default) of declared parameters
         for (JobParameterMetadata<?> param : paramsMd) {
-            Object rawVal = rawParams.get(param.getName());
+            Object rawVal = rawParams != null ? rawParams.get(param.getName()) : null;
             Object value = param.fromString(rawVal != null ? rawVal.toString() : null);
             converted.put(param.getName(), value);
         }

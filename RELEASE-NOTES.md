@@ -3,6 +3,7 @@
 * #99 Support passing parameters to jobs via CLI
 * #115 Bump spring-core from 5.3.20 to 5.3.26
 * #116 Bump spring-core from 5.3.26 to 5.3.27
+* #117 NPE during registry startup when a job with dependencies delcares params
 
 ## 3.0.M1
 
