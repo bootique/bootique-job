@@ -32,16 +32,14 @@ class TxIdAwareGroupMemberJobDecorator implements Job {
 
     private final Job delegate;
     private final String groupMDC;
-    private final TransactionIdMDC transactionIdMDC;
 
-    public static TxIdAwareGroupMemberJobDecorator captureCurrentTxId(Job delegate, TransactionIdMDC transactionIdMDC) {
-        return new TxIdAwareGroupMemberJobDecorator(delegate, transactionIdMDC.get(), transactionIdMDC);
+    public static TxIdAwareGroupMemberJobDecorator captureCurrentTxId(Job delegate) {
+        return new TxIdAwareGroupMemberJobDecorator(delegate, TransactionIdMDC.getId());
     }
 
-    TxIdAwareGroupMemberJobDecorator(Job delegate, String groupMDC, TransactionIdMDC transactionIdMDC) {
+    TxIdAwareGroupMemberJobDecorator(Job delegate, String groupMDC) {
         this.delegate = delegate;
         this.groupMDC = groupMDC;
-        this.transactionIdMDC = transactionIdMDC;
     }
 
     @Override
@@ -52,11 +50,11 @@ class TxIdAwareGroupMemberJobDecorator implements Job {
     @Override
     public JobResult run(Map<String, Object> parameters) {
 
-        transactionIdMDC.reset(groupMDC);
+        TransactionIdMDC.setId(groupMDC);
         try {
             return delegate.run(parameters);
         } finally {
-            transactionIdMDC.clear();
+            TransactionIdMDC.clearId();
         }
     }
 }

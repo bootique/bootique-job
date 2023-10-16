@@ -27,7 +27,6 @@ import io.bootique.di.Provides;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobLogger;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
-import io.bootique.metrics.mdc.TransactionIdMDC;
 import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;
@@ -52,8 +51,8 @@ public class JobInstrumentedModule extends ConfigModule {
 
     @Provides
     @Singleton
-    JobMDCManager provideJobMDCManager(TransactionIdGenerator generator, TransactionIdMDC mdc) {
-        return new JobMDCManager(generator, mdc);
+    JobMDCManager provideJobMDCManager(TransactionIdGenerator generator) {
+        return new JobMDCManager(generator);
     }
 
     @Provides

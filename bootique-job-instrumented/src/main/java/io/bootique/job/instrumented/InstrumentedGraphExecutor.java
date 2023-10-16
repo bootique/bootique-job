@@ -21,7 +21,6 @@ package io.bootique.job.instrumented;
 import io.bootique.job.Job;
 import io.bootique.job.JobResult;
 import io.bootique.job.runtime.GraphExecutor;
-import io.bootique.metrics.mdc.TransactionIdMDC;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -32,11 +31,8 @@ import java.util.concurrent.Future;
  */
 public class InstrumentedGraphExecutor extends GraphExecutor {
 
-    private final TransactionIdMDC transactionIdMDC;
-
-    public InstrumentedGraphExecutor(ExecutorService pool, TransactionIdMDC transactionIdMDC) {
+    public InstrumentedGraphExecutor(ExecutorService pool) {
         super(pool);
-        this.transactionIdMDC = transactionIdMDC;
     }
 
     @Override
@@ -46,6 +42,6 @@ public class InstrumentedGraphExecutor extends GraphExecutor {
     }
 
     protected Job decorateWithGroupTxId(Job job) {
-        return TxIdAwareGroupMemberJobDecorator.captureCurrentTxId(job, transactionIdMDC);
+        return TxIdAwareGroupMemberJobDecorator.captureCurrentTxId(job);
     }
 }

@@ -25,23 +25,17 @@ import io.bootique.metrics.mdc.TransactionIdMDC;
 public class JobMDCManager {
 
     private final TransactionIdGenerator idGenerator;
-    private final TransactionIdMDC transactionIdMDC;
 
-    JobMDCManager(TransactionIdGenerator idGenerator, TransactionIdMDC transactionIdMDC) {
+    public JobMDCManager(TransactionIdGenerator idGenerator) {
         this.idGenerator = idGenerator;
-        this.transactionIdMDC = transactionIdMDC;
-    }
-
-    public TransactionIdMDC getTransactionIdMDC() {
-        return transactionIdMDC;
     }
 
     public void onJobStarted() {
         String id = idGenerator.nextId();
-        transactionIdMDC.reset(id);
+        TransactionIdMDC.setId(id);
     }
 
     public void onJobFinished() {
-        transactionIdMDC.clear();
+        TransactionIdMDC.clearId();
     }
 }

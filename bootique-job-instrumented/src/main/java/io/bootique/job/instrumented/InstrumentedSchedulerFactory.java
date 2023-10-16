@@ -22,7 +22,6 @@ import io.bootique.annotation.BQConfig;
 import io.bootique.di.Injector;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.scheduler.SchedulerFactory;
-import io.bootique.metrics.mdc.TransactionIdMDC;
 import io.bootique.shutdown.ShutdownManager;
 
 import java.util.concurrent.ExecutorService;
@@ -37,6 +36,6 @@ public class InstrumentedSchedulerFactory extends SchedulerFactory {
     public GraphExecutor createGraphExecutor(Injector injector, ShutdownManager shutdownManager) {
         ExecutorService pool = createGraphExecutorService();
         shutdownManager.addShutdownHook(() -> pool.shutdownNow());
-        return new InstrumentedGraphExecutor(pool, injector.getInstance(TransactionIdMDC.class));
+        return new InstrumentedGraphExecutor(pool);
     }
 }
