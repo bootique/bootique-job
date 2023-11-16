@@ -25,17 +25,20 @@ import io.bootique.job.JobModule;
 import io.bootique.job.JobOutcome;
 import io.bootique.job.JobResult;
 import io.bootique.job.Scheduler;
-import io.bootique.job.fixture.SerialJob1;
+import io.bootique.job.fixture.SerialJob2;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @BQTest
 public class SchedulerSerialJobIT {
@@ -45,7 +48,7 @@ public class SchedulerSerialJobIT {
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app()
             .module(JobModule.class)
-            .module(b -> JobModule.extend(b).addJob(SerialJob1.class))
+            .module(b -> JobModule.extend(b).addJob(SerialJob2.class))
             .createRuntime();
 
     @BeforeEach
@@ -63,17 +66,14 @@ public class SchedulerSerialJobIT {
         Scheduler scheduler = app.getInstance(Scheduler.class);
         final int count = 5;
 
-        ConcurrentMap<JobOutcome, AtomicInteger> outcomes = new ConcurrentHashMap<>();
-        for (JobOutcome o : JobOutcome.values()) {
-            outcomes.put(o, new AtomicInteger(0));
-        }
-
+        ConcurrentMap<Integer, JobResult> results = new ConcurrentHashMap<>();
         CountDownLatch latch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
+            Integer id = i;
             executor.submit(() -> {
                 try {
-                    JobResult r = scheduler.runBuilder().jobName("serialjob1").runNonBlocking().get();
-                    outcomes.get(r.getOutcome()).incrementAndGet();
+                    JobResult r = scheduler.runBuilder().jobName("serialjob2").runNonBlocking().get();
+                    results.put(id, r);
                 } finally {
                     latch.countDown();
                 }
@@ -85,12 +85,23 @@ public class SchedulerSerialJobIT {
             fail("Timeout while waiting for job execution. Still left: " + latch.getCount());
         }
 
-        // The test is probabilistic... Some jobs may not have been scheduled yet, when the first
-        // job already finished. So, there may be some failures (because 'serialjob1' allows to be run only once),
-        // but all we need to check is that there were at least some skips.
-        // TODO: Even that does not guarantee the test would always pass. E.g. on a single CPU machine it would
-        //  probably fail
-        assertEquals(1, outcomes.get(JobOutcome.SUCCESS).get(), "No jobs finished successfully, expected exactly one");
-        assertTrue(outcomes.get(JobOutcome.SKIPPED).get() > 0, "At least some jobs should have been skipped");
+        // overlapping jobs should be canceled, and only non-overlapping can succeed.
+
+        List<Long[]> successRanges = results.values().stream()
+
+                // can either be non-overlapping successes or skipped
+                .peek(r -> assertTrue(r.getOutcome() == JobOutcome.SUCCESS || r.getOutcome() == JobOutcome.SKIPPED))
+
+                // check for success overlaps
+                .filter(r -> r.getOutcome() == JobOutcome.SUCCESS)
+                .map(r -> r.getMessage().split(":"))
+                .map(ss -> new Long[]{Long.parseLong(ss[0]), Long.parseLong(ss[1])})
+                .sorted(Comparator.comparing(ll -> ll[0]))
+                .collect(Collectors.toList());
+
+        assertTrue(!successRanges.isEmpty());
+        for (int i = 1; i < successRanges.size(); i++) {
+            assertTrue(successRanges.get(i - 1)[1] < successRanges.get(i)[0]);
+        }
     }
 }

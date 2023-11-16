@@ -31,6 +31,13 @@ public class JobResult {
         return new JobResult(metadata, JobOutcome.SUCCESS, null, null, null);
     }
 
+    /**
+     * @since 3.0
+     */
+    public static JobResult success(JobMetadata metadata, String message) {
+        return new JobResult(metadata, JobOutcome.SUCCESS, null, message, null);
+    }
+
     public static JobResult failure(JobMetadata metadata) {
         return new JobResult(metadata, JobOutcome.FAILURE, null, null, null);
     }
