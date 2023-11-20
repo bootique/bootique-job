@@ -18,8 +18,7 @@
   under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.bootique.modules.parent</groupId>
@@ -29,7 +28,7 @@
 
     <groupId>io.bootique.job</groupId>
     <artifactId>bootique-job-parent</artifactId>
-    <version>3.0.M2-SNAPSHOT</version>
+    <version>3.0.M2</version>
     <packaging>pom</packaging>
 
     <name>bootique-job-parent: Job framework with Bootique Integration</name>
@@ -53,7 +52,7 @@
     <scm>
         <developerConnection>scm:git:ssh://git@github.com/bootique/bootique-job</developerConnection>
         <url>https://github.com/bootique/bootique-job</url>
-        <tag>HEAD</tag>
+        <tag>3.0.M2</tag>
     </scm>
 
     <dependencyManagement>
