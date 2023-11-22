@@ -22,7 +22,7 @@
     <parent>
         <artifactId>bootique-job-parent</artifactId>
         <groupId>io.bootique.job</groupId>
-        <version>3.0.M3-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>bootique-job-zookeeper</artifactId>
