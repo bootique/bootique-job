@@ -146,7 +146,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @RepeatedTest(10)
-    public void testMultipleGroups_Parallel() {
+    public void multipleGroups_Parallel() {
         List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
         CommandOutcome outcome = executeJobs(jobs,
                 "--config=classpath:io/bootique/job/config_exec.yml",
@@ -158,7 +158,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @RepeatedTest(10)
-    public void testMultipleGroups_Serial() {
+    public void multipleGroups_Serial() {
         List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(10000), new Job2(1000), new Job1());
         CommandOutcome outcome = executeJobs(jobs,
                 "--config=classpath:io/bootique/job/config_exec.yml",

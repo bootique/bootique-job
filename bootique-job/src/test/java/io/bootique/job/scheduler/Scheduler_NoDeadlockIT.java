@@ -62,7 +62,7 @@ public class Scheduler_NoDeadlockIT {
 
     @Timeout(5)
     @RepeatedTest(3)
-    public void testAttemptDeadlock_Get() {
+    public void attemptDeadlock_Get() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         List<JobFuture> futures = List.of(
@@ -79,7 +79,7 @@ public class Scheduler_NoDeadlockIT {
 
     @Timeout(5)
     @RepeatedTest(3)
-    public void testAttemptDeadlock_GetWithTimeout() {
+    public void attemptDeadlock_GetWithTimeout() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         List<JobFuture> futures = List.of(

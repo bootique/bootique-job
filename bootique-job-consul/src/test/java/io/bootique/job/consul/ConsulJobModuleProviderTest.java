@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 public class ConsulJobModuleProviderTest {
 	
 	@Test
-	public void testAutoLoadable() {
+    public void autoLoadable() {
 		BQModuleProviderChecker.testAutoLoadable(ConsulJobModuleProvider.class);
 	}
 }

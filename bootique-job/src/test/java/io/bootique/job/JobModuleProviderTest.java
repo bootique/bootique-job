@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public class JobModuleProviderTest {
 	
 	@Test
-	public void testAutoLoadable() {
+    public void autoLoadable() {
 		BQModuleProviderChecker.testAutoLoadable(JobModuleProvider.class);
 	}
 }

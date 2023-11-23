@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class JobMetadataBuilderTest {
 
 	@Test
-	public void testBuild_static() {
+    public void build_static() {
 
 		JobMetadata j = JobMetadata.build("nn");
 		assertNotNull(j);
@@ -40,7 +40,7 @@ public class JobMetadataBuilderTest {
 	}
 
 	@Test
-	public void testBuild_Name() {
+    public void build_Name() {
 
 		JobMetadata j = JobMetadata.builder("nn").build();
 		assertNotNull(j);
@@ -50,7 +50,7 @@ public class JobMetadataBuilderTest {
 	}
 
 	@Test
-	public void testBuild_LockName() {
+    public void build_LockName() {
 
 		JobMetadata j = JobMetadata.builder("nn").lockName("ll").build();
 		assertNotNull(j);
@@ -60,7 +60,7 @@ public class JobMetadataBuilderTest {
 	}
 
 	@Test
-	public void testBuild_Params() {
+    public void build_Params() {
 
 		JobMetadata j = JobMetadata.builder("nn")
 				.dateParam("dd", "2015-02-04")
