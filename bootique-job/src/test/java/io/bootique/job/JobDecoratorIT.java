@@ -43,7 +43,7 @@ public class JobDecoratorIT {
     }
 
     @Test
-    public void testAddDecorator_AlterParams() {
+    public void addDecorator_AlterParams() {
         String val = "12345_abcde";
         Job_ParamsChange job = new Job_ParamsChange();
         Listener_ParamsChange listener = new Listener_ParamsChange(val);
@@ -57,7 +57,7 @@ public class JobDecoratorIT {
     }
 
     @Test
-    public void testAddMappedDecorator_Ordering1() {
+    public void addMappedDecorator_Ordering1() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
@@ -74,7 +74,7 @@ public class JobDecoratorIT {
     }
 
     @Test
-    public void testAddMappedDecorator_Ordering2() {
+    public void addMappedDecorator_Ordering2() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
@@ -91,7 +91,7 @@ public class JobDecoratorIT {
     }
 
     @Test
-    public void testAddMappedDecorator_AddListener_Ordering() {
+    public void addMappedDecorator_AddListener_Ordering() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
@@ -107,7 +107,7 @@ public class JobDecoratorIT {
     }
 
     @Test
-    public void testAddDecorator_JobGroup_Ordering() {
+    public void addDecorator_JobGroup_Ordering() {
         XJob x = new XJob();
         YJob y = new YJob();
 
@@ -132,7 +132,7 @@ public class JobDecoratorIT {
     }
 
     @Test
-    public void testAddDecorator_SlowParallelJob() {
+    public void addDecorator_SlowParallelJob() {
         XJob x = new XJob();
         YJob y = new YJob();
         ZJob z = new ZJob();

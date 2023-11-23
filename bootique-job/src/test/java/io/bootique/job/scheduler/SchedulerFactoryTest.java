@@ -26,14 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SchedulerFactoryTest {
 
     @Test
-    public void testCreateGraphExecutorThreadPoolSize() {
+    public void createGraphExecutorThreadPoolSize() {
         SchedulerFactory factory = new SchedulerFactory();
         factory.setGraphExecutorThreadPoolSize(10);
         assertEquals(10, factory.createGraphExecutorThreadPoolSize());
     }
 
     @Test
-    public void testCreateGraphExecutorThreadPoolSize_Implicit() {
+    public void createGraphExecutorThreadPoolSize_Implicit() {
         SchedulerFactory factory = new SchedulerFactory();
         int size = factory.createGraphExecutorThreadPoolSize();
         assertTrue(size > 0, () -> "Executor thread pool size must be equal to the number of CPU cores: " + size);

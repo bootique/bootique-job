@@ -39,7 +39,7 @@ public class SchedulerParamsIT {
     final BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
 
     @Test
-    public void testJobParams() {
+    public void jobParams() {
         new ParamsTester(testFactory)
                 .param("a", "b")
                 .run("classpath:io/bootique/job/scheduler/config-job-params.yml")
@@ -47,7 +47,7 @@ public class SchedulerParamsIT {
     }
 
     @Test
-    public void testJobGroupParamsOverrideJobParams() {
+    public void jobGroupParamsOverrideJobParams() {
         new ParamsTester(testFactory)
                 .param("a", "b")
                 .param("b", "d")
@@ -56,7 +56,7 @@ public class SchedulerParamsIT {
     }
 
     @Test
-    public void testJobTriggerParamsOverrideGroupAndJobParams() {
+    public void jobTriggerParamsOverrideGroupAndJobParams() {
         new ParamsTester(testFactory)
                 .param("a", "b")
                 .param("b", "e")

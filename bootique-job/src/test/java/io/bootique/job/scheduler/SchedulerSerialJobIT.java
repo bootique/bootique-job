@@ -62,7 +62,7 @@ public class SchedulerSerialJobIT {
     }
 
     @Test
-    public void testSerialJob() throws InterruptedException {
+    public void serialJob() throws InterruptedException {
         Scheduler scheduler = app.getInstance(Scheduler.class);
         final int count = 5;
 

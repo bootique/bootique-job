@@ -24,7 +24,7 @@ public class ConsulJobLockIT extends AbstractConsulTest {
     }
 
     @Test
-    public void testConsulClusterJobLocking() throws InterruptedException {
+    public void consulClusterJobLocking() throws InterruptedException {
         Scheduler scheduler_1 = getSchedulerFromRuntime();
         Scheduler scheduler_2 = getSchedulerFromRuntime();
         scheduler_1.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
@@ -34,7 +34,7 @@ public class ConsulJobLockIT extends AbstractConsulTest {
     }
 
     @Test
-    public void testConsulLocalJobLocking() throws InterruptedException {
+    public void consulLocalJobLocking() throws InterruptedException {
         Scheduler scheduler = getSchedulerFromRuntime();
         scheduler.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
         scheduler.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();

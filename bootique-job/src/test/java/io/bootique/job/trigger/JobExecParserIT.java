@@ -47,38 +47,38 @@ public class JobExecParserIT {
     final JobExecParser parser = app.getInstance(JobExecParser.class);
 
     @Test
-    public void testNull() {
+    public void parseNull() {
         assertThrows(NullPointerException.class, () -> parser.parse(null));
     }
 
     @Test
-    public void testEmpty() {
+    public void parsEmpty() {
         assertThrows(IllegalArgumentException.class, () -> parser.parse(""));
     }
 
     @Test
-    public void testJobNameOnly() {
+    public void parseJobNameOnly() {
         JobExec exec = parser.parse("j1");
         assertEquals("j1", exec.getJobName());
         assertEquals(Map.of(), exec.getParams());
     }
 
     @Test
-    public void testJobNameOnly_TrailingColon() {
+    public void parseJobNameOnly_TrailingColon() {
         JobExec exec = parser.parse("j1{");
         assertEquals("j1", exec.getJobName());
         assertEquals(Map.of(), exec.getParams());
     }
 
     @Test
-    public void testJobWithParams() {
+    public void parseJobWithParams() {
         JobExec exec = parser.parse("j1{\"p1\":\"a1\",\"p2\":3}");
         assertEquals("j1", exec.getJobName());
         assertEquals(Map.of("p1", "a1", "p2", 3), exec.getParams());
     }
 
     @Test
-    public void testJobWithParams_Conversion() {
+    public void parseJobWithParams_Conversion() {
         JobExec exec = parser.parse("j2{\"date\":\"2023-02-15\",\"time\":\"16:00:01\",\"int\":4}");
         assertEquals("j2", exec.getJobName());
         assertEquals(Map.of(

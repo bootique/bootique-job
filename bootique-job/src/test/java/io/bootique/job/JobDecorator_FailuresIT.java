@@ -38,7 +38,7 @@ public class JobDecorator_FailuresIT {
     final BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testJobFailure() {
+    public void jobFailure() {
         FailureJob job = new FailureJob();
         JobResultCapture listener = new JobResultCapture();
 
@@ -56,7 +56,7 @@ public class JobDecorator_FailuresIT {
     }
 
     @Test
-    public void testListenerException_OnStart() {
+    public void listenerException_OnStart() {
         XJob job = new XJob();
 
         BQRuntime runtime = testFactory
@@ -73,7 +73,7 @@ public class JobDecorator_FailuresIT {
     }
 
     @Test
-    public void testListenerException_OnFinish() {
+    public void listenerException_OnFinish() {
         XJob job = new XJob();
 
         BQRuntime runtime = testFactory

@@ -60,7 +60,7 @@ public class InstrumentedJobMDCIT {
     }
 
     @Test
-    public void testTwoJobs() throws InterruptedException {
+    public void twoJobs() throws InterruptedException {
         BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT.yml", "--schedule")
                 .autoLoadModules()
                 .module(binder -> JobModule.extend(binder)
@@ -90,7 +90,7 @@ public class InstrumentedJobMDCIT {
     }
 
     @Test
-    public void testJobGroupAndJob() throws InterruptedException {
+    public void jobGroupAndJob() throws InterruptedException {
         BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT-groups.yml", "--schedule")
                 .autoLoadModules()
                 .module(binder -> JobModule.extend(binder).addJob(Job1.class).addJob(Job2.class).addJob(Job3.class).addJob(Job4.class))

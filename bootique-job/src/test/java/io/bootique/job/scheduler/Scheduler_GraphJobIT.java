@@ -45,7 +45,7 @@ public class Scheduler_GraphJobIT {
             .createRuntime();
 
     @Test
-    public void testRunOnce_JobGroup() {
+    public void runOnce_JobGroup() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("param1", "value1");
@@ -57,7 +57,7 @@ public class Scheduler_GraphJobIT {
     }
 
     @Test
-    public void testRunOnce_EmptyGroup() {
+    public void runOnce_EmptyGroup() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         JobFuture future = scheduler.runBuilder().jobName("group2").runNonBlocking();

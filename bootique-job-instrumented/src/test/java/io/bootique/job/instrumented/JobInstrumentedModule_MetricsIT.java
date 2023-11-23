@@ -44,7 +44,7 @@ public class JobInstrumentedModule_MetricsIT {
     final BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testMetrics() {
+    public void metrics() {
         BQRuntime runtime = testFactory
                 .app("--exec", "--job", "J1")
                 .autoLoadModules()

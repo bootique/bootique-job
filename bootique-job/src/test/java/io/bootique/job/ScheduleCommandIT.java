@@ -36,7 +36,7 @@ public class ScheduleCommandIT {
     final BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testScheduleCommand_AllJobs() {
+    public void scheduleCommand_AllJobs() {
         BQRuntime runtime = testFactory.app()
                 .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command.yml")
                 .module(JobModule.class)
@@ -53,7 +53,7 @@ public class ScheduleCommandIT {
     }
 
     @Test
-    public void testScheduleCommand_SelectedJobs() {
+    public void scheduleCommand_SelectedJobs() {
         BQRuntime runtime = testFactory.app()
                 .args("--schedule", "--job=scheduledjob1", "-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
                 .module(JobModule.class)

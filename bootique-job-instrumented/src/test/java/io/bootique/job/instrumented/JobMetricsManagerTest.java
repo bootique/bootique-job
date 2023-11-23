@@ -39,7 +39,7 @@ public class JobMetricsManagerTest {
     }
 
     @Test
-    public void testJobsInstrumentation_ActiveCount_SuccessAndFailureResults() {
+    public void jobsInstrumentation_ActiveCount_SuccessAndFailureResults() {
         JobMetricsManager manager = new JobMetricsManager(metricRegistry);
 
         JobMeter m1 = manager.onJobStarted("j1");
@@ -56,7 +56,7 @@ public class JobMetricsManagerTest {
     }
 
     @Test
-    public void testJobsInstrumentation_UnknownResult() {
+    public void jobsInstrumentation_UnknownResult() {
         JobMetricsManager manager = new JobMetricsManager(metricRegistry);
 
         JobMeter m1 = manager.onJobStarted("j1");
@@ -67,7 +67,7 @@ public class JobMetricsManagerTest {
     }
 
     @Test
-    public void testJobsInstrumentation_SuccessResult() {
+    public void jobsInstrumentation_SuccessResult() {
 
         JobMetricsManager manager = new JobMetricsManager(metricRegistry);
         JobMeter m1 =  manager.onJobStarted("j1");

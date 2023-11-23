@@ -67,7 +67,7 @@ public class ExecCommand_DeepGroups {
     }
 
     @Test
-    public void testExec() {
+    public void exec() {
         CommandOutcome result = app.run();
         assertTrue(result.isSuccess());
 

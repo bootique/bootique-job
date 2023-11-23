@@ -45,7 +45,7 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddListener_AlterParams() {
+    public void addListener_AlterParams() {
         String val = "12345_abcde";
         Job_ParamsChange job = new Job_ParamsChange();
         Listener_ParamsChange listener = new Listener_ParamsChange(val);
@@ -61,7 +61,7 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_Ordering1() {
+    public void addMappedListener_Ordering1() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
@@ -78,7 +78,7 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_Ordering2() {
+    public void addMappedListener_Ordering2() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
@@ -95,7 +95,7 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_AddListener_Ordering() {
+    public void addMappedListener_AddListener_Ordering() {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
@@ -111,7 +111,7 @@ public class ListenerIT {
     }
 
     @Test
-    public void testAddMappedListener_JobGroup_Ordering() {
+    public void addMappedListener_JobGroup_Ordering() {
         XJob x = new XJob();
         YJob y = new YJob();
 

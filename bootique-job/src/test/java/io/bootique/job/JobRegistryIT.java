@@ -38,7 +38,7 @@ public class JobRegistryIT {
     final static BQTestFactory testFactory = new BQTestFactory().autoLoadModules();
 
     @Test
-    public void testAddJob() {
+    public void addJob() {
 
         BQRuntime runtime = testFactory.app()
                 .module(b -> JobModule.extend(b).addJob(J1.class).addJob(J2.class))
@@ -51,7 +51,7 @@ public class JobRegistryIT {
     }
 
     @Test
-    public void testAddJob_Duplicate() {
+    public void addJob_Duplicate() {
 
         BQRuntime runtime = testFactory.app()
                 .module(b -> JobModule.extend(b)

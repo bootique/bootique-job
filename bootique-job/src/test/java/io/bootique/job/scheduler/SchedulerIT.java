@@ -62,13 +62,13 @@ public class SchedulerIT {
     }
 
     @Test
-    public void testScheduler_StartWithNoJobs() {
+    public void scheduler_StartWithNoJobs() {
         Scheduler scheduler = getScheduler();
         assertEquals(0, scheduler.start(Collections.emptyList()));
     }
 
     @Test
-    public void testScheduler_StartWithUnknownJob_Exception() {
+    public void scheduler_StartWithUnknownJob_Exception() {
         Scheduler scheduler = getScheduler();
 
         try {
@@ -80,7 +80,7 @@ public class SchedulerIT {
     }
 
     @Test
-    public void testScheduler_StartAfterPreviousCallToStartFailed() {
+    public void scheduler_StartAfterPreviousCallToStartFailed() {
         Scheduler scheduler = getScheduler();
         scheduler.start(Collections.emptyList());
         scheduler.start(Collections.singletonList("scheduledjob1"));
@@ -88,7 +88,7 @@ public class SchedulerIT {
     }
 
     @Test
-    public void testScheduler_Reschedule() throws InterruptedException {
+    public void scheduler_Reschedule() throws InterruptedException {
         Scheduler scheduler = getScheduler();
 
         int jobCount = scheduler.start();

@@ -39,7 +39,7 @@ public class Listener_FailuresIT {
     final BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testJobException() {
+    public void jobException() {
         ExceptionJob job = new ExceptionJob();
         Listener_JobResultCapture listener = new Listener_JobResultCapture();
 
@@ -57,7 +57,7 @@ public class Listener_FailuresIT {
     }
 
     @Test
-    public void testJobFailure() {
+    public void jobFailure() {
         FailureJob job = new FailureJob();
         Listener_JobResultCapture listener = new Listener_JobResultCapture();
 
@@ -75,7 +75,7 @@ public class Listener_FailuresIT {
     }
 
     @Test
-    public void testListenerException_OnStart() {
+    public void listenerException_OnStart() {
         XJob job = new XJob();
 
         BQRuntime runtime = testFactory
@@ -92,7 +92,7 @@ public class Listener_FailuresIT {
     }
 
     @Test
-    public void testListenerException_OnFinish() {
+    public void listenerException_OnFinish() {
         XJob job = new XJob();
 
         BQRuntime runtime = testFactory

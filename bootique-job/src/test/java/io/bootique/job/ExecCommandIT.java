@@ -36,14 +36,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ExecCommandIT extends BaseJobExecIT {
 
     @Test
-    public void testSingleJob() {
+    public void singleJob() {
         Job1 job1 = new Job1(0);
         executeJobs(Collections.singleton(job1), "--exec", "--job=job1");
         assertTrue(job1.isExecuted());
     }
 
     @Test
-    public void testSingleJob_Failure() {
+    public void singleJob_Failure() {
         Job1 job1 = new Job1(0, true);
         CommandOutcome outcome = executeJobs(Collections.singleton(job1), "--exec", "--job=job1");
         assertTrue(job1.isExecuted());
@@ -51,22 +51,22 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testMultipleJobs_Parallel() {
+    public void multipleJobs_Parallel() {
         testMultipleJobs(false, false);
     }
 
     @Test
-    public void testMultipleJobs_Parallel_Failure() {
+    public void multipleJobs_Parallel_Failure() {
         testMultipleJobs(false, true);
     }
 
     @Test
-    public void testMultipleJobs_Serial() {
+    public void multipleJobs_Serial() {
         testMultipleJobs(true, false);
     }
 
     @Test
-    public void testMultipleJobs_Serial_Failure() {
+    public void multipleJobs_Serial_Failure() {
         testMultipleJobs(true, true);
     }
 
@@ -171,7 +171,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testSingleJob_DefaultParams() {
+    public void singleJob_DefaultParams() {
         Job1 j1 = new Job1();
         Job2 j2 = new Job2();
         Job3 j3 = new Job3(10000);
@@ -181,7 +181,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup1_SingleJob_DefaultParams() {
+    public void group1_SingleJob_DefaultParams() {
         Job1 j1 = new Job1();
         Job2 j2 = new Job2();
         Job3 j3 = new Job3(10000);
@@ -191,7 +191,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup6_SingleJob_OverriddenParams() {
+    public void group6_SingleJob_OverriddenParams() {
         Job1 j1 = new Job1();
         Job2 j2 = new Job2();
         Job3 j3 = new Job3(10000);
@@ -201,7 +201,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup2_MultipleJobs_Parallel_DefaultParams() {
+    public void group2_MultipleJobs_Parallel_DefaultParams() {
         Job1 j1 = new Job1();
         Job2 j2 = new Job2();
         Job3 j3 = new Job3(10000);
@@ -211,7 +211,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup3_MultipleJobs_Parallel_OverriddenParams() {
+    public void group3_MultipleJobs_Parallel_OverriddenParams() {
         Job1 j1 = new Job1();
         Job2 j2 = new Job2();
         Job3 j3 = new Job3(10000);
@@ -222,7 +222,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup4_MultipleJobs_Dependent_OverriddenParams() {
+    public void group4_MultipleJobs_Dependent_OverriddenParams() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(1000);
@@ -233,7 +233,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup5_MultipleJobs_Dependent_OverriddenParams() {
+    public void group5_MultipleJobs_Dependent_OverriddenParams() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(100000);
@@ -247,7 +247,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testJobWithDependencies_1() {
+    public void jobWithDependencies_1() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(100000);
@@ -266,7 +266,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup_SlowParallelJob() {
+    public void group_SlowParallelJob() {
         XJob x = new XJob();
         YJob y = new YJob();
         ZJob z = new ZJob();
@@ -290,7 +290,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testJobWithDependencies_2() {
+    public void jobWithDependencies_2() {
         Job2 job2 = new Job2();
         Job3 job3 = new Job3(1000);
 
@@ -306,7 +306,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup1_DefaultDependencies() {
+    public void group1_DefaultDependencies() {
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
         Job3 job3 = new Job3(100000);
@@ -327,7 +327,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup2_DefaultDependencies() {
+    public void group2_DefaultDependencies() {
 
         List<ExecutableAtMostOnceJob> jobs = List.of(new Job3(100000), new Job2(1000), new Job1());
 
@@ -346,7 +346,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup3_OverriddenDependencies() {
+    public void group3_OverriddenDependencies() {
 
         Job1 job1 = new Job1();
         Job2 job2 = new Job2(1000);
@@ -367,14 +367,14 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup4_OverriddenDependencies() {
+    public void group4_OverriddenDependencies() {
         List<ExecutableAtMostOnceJob> jobs = List.of(new Job2(), new Job1(), new Job3(1000));
         executeJobs(jobs, "--config=classpath:io/bootique/job/config_overriding_dependencies.yml", "--exec", "--job=g1");
         assertExecutedInOrder(jobs);
     }
 
     @Test
-    public void testDefaultParameterValue() {
+    public void defaultParameterValue() {
         ParameterizedJob1 p1 = new ParameterizedJob1();
         ParameterizedJob2 p2 = new ParameterizedJob2();
 
@@ -389,7 +389,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testCliParameters() {
+    public void cliParameters() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
         testFactory.app("--exec", "--job=parameterizedjob2{\"longp\":15,\"xp\":3}")
@@ -401,7 +401,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testParametersOverriddenWithProps() {
+    public void parametersOverriddenWithProps() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
         testFactory.app("--exec", "--job=parameterizedjob2")
@@ -414,7 +414,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testParametersOverriddenWithVars() {
+    public void parametersOverriddenWithVars() {
         ParameterizedJob2 job = new ParameterizedJob2();
 
         testFactory.app("--exec", "--job=parameterizedjob2")
@@ -428,7 +428,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testParam_Default() {
+    public void param_Default() {
         ParameterizedJob4 job = new ParameterizedJob4();
 
         testFactory.app("--exec", "--job=parameterizedjob4")
@@ -440,7 +440,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testParam_Default_Null() {
+    public void param_Default_Null() {
         ParameterizedJob5 job = new ParameterizedJob5();
 
         testFactory.app("--exec", "--job=parameterizedjob5")
@@ -452,7 +452,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testUnregisteredJob() {
+    public void unregisteredJob() {
         BQRuntime app = testFactory.app("--exec", "--job=dummy", "--config=classpath:io/bootique/job/config_dummy.yml")
                 .autoLoadModules()
                 .createRuntime();
@@ -466,7 +466,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup1_ParametersConversion() {
+    public void group1_ParametersConversion() {
         ParameterizedJob1 p1 = new ParameterizedJob1();
         ParameterizedJob2 p2 = new ParameterizedJob2();
 
@@ -481,7 +481,7 @@ public class ExecCommandIT extends BaseJobExecIT {
     }
 
     @Test
-    public void testGroup2_ParametersConversion() {
+    public void group2_ParametersConversion() {
         ParameterizedJob1 job1 = new ParameterizedJob1();
         ParameterizedJob2 job2 = new ParameterizedJob2();
 

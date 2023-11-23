@@ -38,7 +38,7 @@ public class GraphJobIT {
     static final BQTestFactory testFactory = new BQTestFactory();
 
     @Test
-    public void testDependency() {
+    public void dependency() {
 
         JobRegistry registry = testFactory.app()
                 .autoLoadModules()
@@ -65,7 +65,7 @@ public class GraphJobIT {
     }
 
     @Test
-    public void testDependency_RootHasParams() {
+    public void dependency_RootHasParams() {
 
         JobRegistry registry = testFactory.app()
                 .autoLoadModules()
@@ -83,7 +83,7 @@ public class GraphJobIT {
     }
 
     @Test
-    public void testDependencyCycle() {
+    public void dependencyCycle() {
 
         JobRegistry registry = testFactory.app()
                 .autoLoadModules()
