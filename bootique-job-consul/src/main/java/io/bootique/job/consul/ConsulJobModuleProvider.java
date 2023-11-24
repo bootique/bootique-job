@@ -19,13 +19,15 @@
 package io.bootique.job.consul;
 
 import io.bootique.BQModuleProvider;
-import io.bootique.di.BQModule;
-
+import io.bootique.bootstrap.BuiltModule;
 
 public class ConsulJobModuleProvider implements BQModuleProvider {
 
     @Override
-    public BQModule module() {
-        return new ConsulJobModule();
+    public BuiltModule buildModule() {
+        return BuiltModule.of(new ConsulJobModule())
+                .provider(this)
+                .description("Integrates Consul-based Bootique job locks")
+                .build();
     }
 }

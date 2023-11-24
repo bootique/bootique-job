@@ -20,30 +20,24 @@
 package io.bootique.job;
 
 import io.bootique.BQModuleProvider;
-import io.bootique.di.BQModule;
+import io.bootique.bootstrap.BuiltModule;
 import io.bootique.job.graph.JobGraphNodeFactory;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.type.TypeRef;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
 
 public class JobModuleProvider implements BQModuleProvider {
 
     @Override
-    public BQModule module() {
-        return new JobModule();
-    }
-
-    @Override
-    public Map<String, Type> configs() {
-
+    public BuiltModule buildModule() {
         TypeRef<Map<String, JobGraphNodeFactory>> jobs = new TypeRef<>() {};
 
-        Map<String, Type> configs = new HashMap<>();
-        configs.put("scheduler", SchedulerFactory.class);
-        configs.put("jobs", jobs.getType());
-        return configs;
+        return BuiltModule.of(new JobModule())
+                .provider(this)
+                .description("Provides Bootique's own job execution engine")
+                .config("scheduler", SchedulerFactory.class)
+                .config("jobs", jobs.getType())
+                .build();
     }
 }

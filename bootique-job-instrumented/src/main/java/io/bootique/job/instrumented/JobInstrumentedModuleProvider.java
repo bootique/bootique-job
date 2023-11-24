@@ -20,26 +20,24 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.BQModuleProvider;
-import io.bootique.di.BQModule;
+import io.bootique.bootstrap.BuiltModule;
 import io.bootique.job.JobModule;
 import io.bootique.job.JobModuleProvider;
 import io.bootique.metrics.MetricsModuleProvider;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import static java.util.Arrays.asList;
 
 public class JobInstrumentedModuleProvider implements BQModuleProvider {
 
     @Override
-    public BQModule module() {
-        return new JobInstrumentedModule();
-    }
-
-    @Override
-    public Collection<Class<? extends BQModule>> overrides() {
-        return Collections.singleton(JobModule.class);
+    public BuiltModule buildModule() {
+        return BuiltModule.of(new JobInstrumentedModule())
+                .provider(this)
+                .description("Integrates metrics and extra logging in Bootique job engine")
+                .overrides(JobModule.class)
+                .build();
     }
 
     @Override
