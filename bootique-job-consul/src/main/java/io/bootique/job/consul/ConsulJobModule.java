@@ -38,8 +38,7 @@ public class ConsulJobModule implements BQModule, BQModuleProvider {
 
     @Override
     public BuiltModule buildModule() {
-        return BuiltModule.of(new ConsulJobModule())
-                .provider(this)
+        return BuiltModule.of(this)
                 .description("Integrates Consul-based Bootique job locks")
                 .config(CONFIG_PREFIX, ConsulLockHandlerFactory.class)
                 .build();
