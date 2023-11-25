@@ -294,7 +294,7 @@ public class JobMetadata {
         }
 
         /**
-         * @since 3.0.M1
+         * @since 3.0
          */
         public Builder dateTimeParam(String name, String defaultValue) {
             return dateTimeParam(name, parseDateTime(defaultValue));

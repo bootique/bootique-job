@@ -29,7 +29,7 @@ import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
 /**
- * @since 3.0.M1
+ * @since 3.0
  */
 @BQConfig("Consul jobs configuration")
 public class ConsulLockHandlerFactory {
