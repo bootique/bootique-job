@@ -23,7 +23,7 @@ import io.bootique.BQModuleProvider;
 import io.bootique.bootstrap.BuiltModule;
 import io.bootique.job.JobModule;
 import io.bootique.job.JobModuleProvider;
-import io.bootique.metrics.MetricsModuleProvider;
+import io.bootique.metrics.MetricsModule;
 
 import java.util.Collection;
 
@@ -45,7 +45,7 @@ public class JobInstrumentedModuleProvider implements BQModuleProvider {
     public Collection<BQModuleProvider> dependencies() {
         return asList(
                 new JobModuleProvider(),
-                new MetricsModuleProvider()
+                new MetricsModule()
         );
     }
 }
