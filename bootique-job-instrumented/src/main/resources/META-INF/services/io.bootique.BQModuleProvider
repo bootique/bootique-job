@@ -1,1 +1,1 @@
-io.bootique.job.instrumented.JobInstrumentedModuleProvider
+io.bootique.job.instrumented.JobInstrumentedModule

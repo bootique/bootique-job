@@ -22,10 +22,10 @@ package io.bootique.job;
 import io.bootique.junit5.BQModuleProviderChecker;
 import org.junit.jupiter.api.Test;
 
-public class JobModuleProviderTest {
+public class JobModuleTest {
 	
 	@Test
     public void autoLoadable() {
-		BQModuleProviderChecker.testAutoLoadable(JobModuleProvider.class);
+		BQModuleProviderChecker.testAutoLoadable(JobModule.class);
 	}
 }

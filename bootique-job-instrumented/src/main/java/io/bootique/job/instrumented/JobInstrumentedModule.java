@@ -20,18 +20,47 @@
 package io.bootique.job.instrumented;
 
 import com.codahale.metrics.MetricRegistry;
-import io.bootique.ConfigModule;
+import io.bootique.BQModuleProvider;
+import io.bootique.bootstrap.BuiltModule;
 import io.bootique.config.ConfigurationFactory;
+import io.bootique.di.BQModule;
+import io.bootique.di.Binder;
 import io.bootique.di.Injector;
 import io.bootique.di.Provides;
+import io.bootique.job.JobModule;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobLogger;
+import io.bootique.metrics.MetricsModule;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
 import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;
+import java.util.Collection;
 
-public class JobInstrumentedModule extends ConfigModule {
+import static java.util.Arrays.asList;
+
+public class JobInstrumentedModule implements BQModule, BQModuleProvider {
+
+    // same prefix as the module we instrument
+    private static final String SCHEDULER_CONFIG_PREFIX = "scheduler";
+
+    @Override
+    public BuiltModule buildModule() {
+        return BuiltModule.of(this)
+                .description("Integrates metrics and extra logging in the Bootique job engine")
+                .overrides(JobModule.class)
+                .build();
+    }
+
+    @Override
+    @Deprecated(since = "3.0", forRemoval = true)
+    public Collection<BQModuleProvider> dependencies() {
+        return asList(new JobModule(), new MetricsModule());
+    }
+
+    @Override
+    public void configure(Binder binder) {
+    }
 
     @Provides
     @Singleton
@@ -39,7 +68,7 @@ public class JobInstrumentedModule extends ConfigModule {
             ConfigurationFactory configFactory,
             Injector injector,
             ShutdownManager shutdownManager) {
-        return config(InstrumentedSchedulerFactory.class, configFactory)
+        return configFactory.config(InstrumentedSchedulerFactory.class, SCHEDULER_CONFIG_PREFIX)
                 .createGraphExecutor(injector, shutdownManager);
     }
 

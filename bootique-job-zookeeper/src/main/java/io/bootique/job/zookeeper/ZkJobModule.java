@@ -1,6 +1,8 @@
 package io.bootique.job.zookeeper;
 
-import io.bootique.ConfigModule;
+import io.bootique.BQModuleProvider;
+import io.bootique.bootstrap.BuiltModule;
+import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.JobModule;
@@ -10,11 +12,13 @@ import org.apache.curator.framework.CuratorFramework;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-public class ZkJobModule extends ConfigModule {
+public class ZkJobModule implements BQModule, BQModuleProvider {
 
     @Override
-    protected String defaultConfigPrefix() {
-        return "job-zookeeper";
+    public BuiltModule buildModule() {
+        return BuiltModule.of(this)
+                .description("Integrates Zookeeper-based Bootique job locks")
+                .build();
     }
 
     @Override

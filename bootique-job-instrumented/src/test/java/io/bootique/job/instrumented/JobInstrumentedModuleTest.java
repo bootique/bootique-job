@@ -17,27 +17,28 @@
  * under the License.
  */
 
-package io.bootique.job;
+package io.bootique.job.instrumented;
 
-import io.bootique.BQModuleProvider;
-import io.bootique.bootstrap.BuiltModule;
-import io.bootique.job.graph.JobGraphNodeFactory;
-import io.bootique.job.scheduler.SchedulerFactory;
-import io.bootique.type.TypeRef;
+import io.bootique.BQRuntime;
+import io.bootique.job.JobModule;
+import io.bootique.junit5.*;
+import io.bootique.metrics.MetricsModule;
+import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+@BQTest
+public class JobInstrumentedModuleTest {
 
-public class JobModuleProvider implements BQModuleProvider {
+    @BQTestTool
+    final BQTestFactory testFactory = new BQTestFactory();
 
-    @Override
-    public BuiltModule buildModule() {
-        TypeRef<Map<String, JobGraphNodeFactory>> jobs = new TypeRef<>() {};
+    @Test
+    public void autoLoadable() {
+        BQModuleProviderChecker.testAutoLoadable(JobInstrumentedModule.class);
+    }
 
-        return BuiltModule.of(new JobModule())
-                .provider(this)
-                .description("Provides Bootique's own job execution engine")
-                .config("scheduler", SchedulerFactory.class)
-                .config("jobs", jobs.getType())
-                .build();
+    @Test
+    public void moduleDeclaresDependencies() {
+        BQRuntime bqRuntime = testFactory.app().moduleProvider(new JobInstrumentedModule()).createRuntime();
+        BQRuntimeChecker.testModulesLoaded(bqRuntime, JobModule.class, MetricsModule.class);
     }
 }

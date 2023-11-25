@@ -25,6 +25,6 @@ public class ConsulJobModuleProviderTest {
 	
 	@Test
     public void autoLoadable() {
-		BQModuleProviderChecker.testAutoLoadable(ConsulJobModuleProvider.class);
+		BQModuleProviderChecker.testAutoLoadable(ConsulJobModule.class);
 	}
 }

@@ -16,29 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.bootique.job.zookeeper;
 
-package io.bootique.job.instrumented;
-
-import io.bootique.BQRuntime;
-import io.bootique.job.JobModule;
-import io.bootique.junit5.*;
-import io.bootique.metrics.MetricsModule;
+import io.bootique.junit5.BQModuleProviderChecker;
 import org.junit.jupiter.api.Test;
 
-@BQTest
-public class JobInstrumentedModuleProviderIT {
-
-    @BQTestTool
-    final BQTestFactory testFactory = new BQTestFactory();
-
-    @Test
+public class ZkJobModuleTest {
+	
+	@Test
     public void autoLoadable() {
-        BQModuleProviderChecker.testAutoLoadable(JobInstrumentedModuleProvider.class);
-    }
-
-    @Test
-    public void moduleDeclaresDependencies() {
-        BQRuntime bqRuntime = testFactory.app().moduleProvider(new JobInstrumentedModuleProvider()).createRuntime();
-        BQRuntimeChecker.testModulesLoaded(bqRuntime, JobModule.class, MetricsModule.class);
-    }
+		BQModuleProviderChecker.testAutoLoadable(ZkJobModule.class);
+	}
 }

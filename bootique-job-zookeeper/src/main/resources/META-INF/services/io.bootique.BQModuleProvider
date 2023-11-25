@@ -1,1 +1,1 @@
-io.bootique.job.zookeeper.ZkJobModuleProvider
+io.bootique.job.zookeeper.ZkJobModule

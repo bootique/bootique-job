@@ -20,8 +20,10 @@
 package io.bootique.job;
 
 import io.bootique.BQCoreModule;
-import io.bootique.ConfigModule;
+import io.bootique.BQModuleProvider;
+import io.bootique.bootstrap.BuiltModule;
 import io.bootique.config.ConfigurationFactory;
+import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Injector;
 import io.bootique.di.Provides;
@@ -30,6 +32,7 @@ import io.bootique.jackson.JacksonService;
 import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
+import io.bootique.job.graph.JobGraphNodeFactory;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runtime.*;
@@ -38,16 +41,14 @@ import io.bootique.job.trigger.JobExecParser;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 import io.bootique.shutdown.ShutdownManager;
+import io.bootique.type.TypeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class JobModule extends ConfigModule {
+public class JobModule implements BQModule, BQModuleProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobModule.class);
 
@@ -68,9 +69,14 @@ public class JobModule extends ConfigModule {
     }
 
     @Override
-    protected String defaultConfigPrefix() {
-        // main config sets up Scheduler, so renaming default config prefix
-        return SCHEDULER_CONFIG_PREFIX;
+    public BuiltModule buildModule() {
+        TypeRef<Map<String, JobGraphNodeFactory>> jobs = new TypeRef<>() {};
+
+        return BuiltModule.of(this)
+                .description("Provides Bootique's own job execution engine")
+                .config("scheduler", SchedulerFactory.class)
+                .config("jobs", jobs.getType())
+                .build();
     }
 
     @Override
@@ -107,7 +113,7 @@ public class JobModule extends ConfigModule {
             ConfigurationFactory configFactory,
             ShutdownManager shutdownManager) {
 
-        return config(SchedulerFactory.class, configFactory).createScheduler(jobRegistry, decorators, shutdownManager);
+        return configFactory.config(SchedulerFactory.class, SCHEDULER_CONFIG_PREFIX).createScheduler(jobRegistry, decorators, shutdownManager);
     }
 
     // this is a secondary thread pool used for graph execution
@@ -117,7 +123,7 @@ public class JobModule extends ConfigModule {
             ConfigurationFactory configFactory,
             Injector injector,
             ShutdownManager shutdownManager) {
-        return config(SchedulerFactory.class, configFactory).createGraphExecutor(injector, shutdownManager);
+        return configFactory.config(SchedulerFactory.class, SCHEDULER_CONFIG_PREFIX).createGraphExecutor(injector, shutdownManager);
     }
 
     @Provides

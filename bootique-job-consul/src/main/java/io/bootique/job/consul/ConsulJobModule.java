@@ -18,22 +18,31 @@
  */
 package io.bootique.job.consul;
 
-import io.bootique.ConfigModule;
+import io.bootique.BQModuleProvider;
+import io.bootique.bootstrap.BuiltModule;
 import io.bootique.config.ConfigurationFactory;
+import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
-import io.bootique.job.consul.lock.CompositeConsulLockHandler;
 import io.bootique.job.JobModule;
+import io.bootique.job.consul.lock.CompositeConsulLockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;
 
 
-public class ConsulJobModule extends ConfigModule {
+public class ConsulJobModule implements BQModule, BQModuleProvider {
+
+    // TODO: "-" is not following BQ naming convention
+    private static final String CONFIG_PREFIX = "job-consul";
 
     @Override
-    protected String defaultConfigPrefix() {
-        return "job-consul";
+    public BuiltModule buildModule() {
+        return BuiltModule.of(new ConsulJobModule())
+                .provider(this)
+                .description("Integrates Consul-based Bootique job locks")
+                .config(CONFIG_PREFIX, ConsulLockHandlerFactory.class)
+                .build();
     }
 
     @Override
@@ -46,6 +55,8 @@ public class ConsulJobModule extends ConfigModule {
     public CompositeConsulLockHandler provideConsulLockHandler(
             ConfigurationFactory configFactory,
             ShutdownManager shutdownManager) {
-        return config(ConsulLockHandlerFactory.class, configFactory).createLockHandler(shutdownManager);
+        return configFactory
+                .config(ConsulLockHandlerFactory.class, CONFIG_PREFIX)
+                .createLockHandler(shutdownManager);
     }
 }
