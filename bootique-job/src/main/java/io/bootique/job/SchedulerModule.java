@@ -60,6 +60,12 @@ public class SchedulerModule implements BQModule, BQModuleProvider {
                 .build();
     }
 
+    @Deprecated(since = "3.0", forRemoval = true)
+    @Override
+    public Collection<BQModuleProvider> dependencies() {
+        return List.of(new JobsModule());
+    }
+
     @Override
     public ModuleCrate moduleCrate() {
         return ModuleCrate.of(this)
