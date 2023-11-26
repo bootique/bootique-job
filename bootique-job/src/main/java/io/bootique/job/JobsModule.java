@@ -49,8 +49,8 @@ public class JobsModule implements BQModule, BQModuleProvider {
     static final String CONFIG_PREFIX = "jobs";
 
     /**
-     * Returns an instance of {@link JobsModuleExtender} used by downstream modules to load custom extensions to the
-     * JobModule. Should be invoked from a downstream Module's "configure" method.
+     * Returns an instance of {@link JobsModuleExtender} used by downstream modules to load custom job-related extensions,
+     * specifically to load job classes. Should be invoked from a custom module {@link BQModule#configure(Binder)} method.
      *
      * @param binder DI binder passed to the Module that invokes this method.
      * @return an instance of {@link JobsModuleExtender} that can be used to load custom extensions to the JobModule.
