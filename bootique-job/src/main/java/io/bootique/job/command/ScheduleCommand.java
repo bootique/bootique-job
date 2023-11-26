@@ -41,7 +41,7 @@ public class ScheduleCommand extends CommandWithMetadata {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleCommand.class);
 
     private final Provider<JobExecParser> jobExecParser;
-    private Provider<Scheduler> schedulerProvider;
+    private final Provider<Scheduler> schedulerProvider;
 
     @Inject
     public ScheduleCommand(Provider<JobExecParser> jobExecParser, Provider<Scheduler> schedulerProvider) {
@@ -75,7 +75,7 @@ public class ScheduleCommand extends CommandWithMetadata {
                     //  executions
                     .peek(e -> {
                         if (!e.getParams().isEmpty()) {
-                            LOGGER.warn("Ignoring CLI parameters of job {} for scheduling: ", e.getJobName(), e.getParams());
+                            LOGGER.warn("Ignoring CLI parameters of job {} for scheduling: {}", e.getJobName(), e.getParams());
                         }
                     })
                     .map(JobExec::getJobName)

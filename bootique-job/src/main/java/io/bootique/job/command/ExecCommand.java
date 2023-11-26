@@ -55,7 +55,6 @@ public class ExecCommand extends CommandWithMetadata {
                 .addOption(createSerialOption()).build();
     }
 
-    // using Provider for lazy init
     @Inject
     public ExecCommand(Provider<JobExecParser> jobExecParser, Provider<Scheduler> schedulerProvider) {
         super(createMetadata());

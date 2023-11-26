@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
 
 public class ListCommand extends CommandWithMetadata {
 
-    private Provider<JobRegistry> jobRegistryProvider;
-    private BootLogger bootLogger;
+    private final Provider<JobRegistry> jobRegistryProvider;
+    private final BootLogger bootLogger;
 
     private static CommandMetadata createMetadata() {
         return CommandMetadata.builder(ListCommand.class).description("Lists all jobs available in the app").build();
@@ -60,7 +60,7 @@ public class ListCommand extends CommandWithMetadata {
                 .stream()
                 .map(jobRegistry::getJob)
                 .map(Job::getMetadata)
-                .sorted(Comparator.comparing(md -> md.getName(), String.CASE_INSENSITIVE_ORDER))
+                .sorted(Comparator.comparing(JobMetadata::getName, String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
 
         if (jobsInfo.isEmpty()) {
