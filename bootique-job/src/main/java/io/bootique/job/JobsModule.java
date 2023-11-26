@@ -42,11 +42,10 @@ import java.util.*;
 public class JobsModule implements BQModule, BQModuleProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobsModule.class);
+    private static final String CONFIG_PREFIX = "jobs";
 
     private static final TypeRef<Map<String, JobGraphNodeFactory>> CONFIG_PROTO = new TypeRef<>() {
     };
-
-    static final String CONFIG_PREFIX = "jobs";
 
     /**
      * Returns an instance of {@link JobsModuleExtender} used by downstream modules to load custom job-related extensions,
