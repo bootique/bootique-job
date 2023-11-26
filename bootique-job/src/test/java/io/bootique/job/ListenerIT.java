@@ -52,7 +52,7 @@ public class ListenerIT {
 
         testFactory.app("--exec", "--job=job_paramschange")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b)
+                .module(b -> JobsModule.extend(b)
                         .addJob(job)
                         .addListener(listener))
                 .run();
@@ -65,8 +65,8 @@ public class ListenerIT {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
-                .module(new JobModule())
-                .module(binder -> JobModule.extend(binder)
+                .modules(new JobsModule(), new SchedulerModule())
+                .module(binder -> JobsModule.extend(binder)
                         .addJob(job)
                         .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
                         .addMappedListener(new MappedJobListener<>(new Listener2(), 2))
@@ -82,8 +82,8 @@ public class ListenerIT {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
-                .module(new JobModule())
-                .module(binder -> JobModule.extend(binder)
+                .modules(new JobsModule(), new SchedulerModule())
+                .module(binder -> JobsModule.extend(binder)
                         .addJob(job)
                         .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
                         .addMappedListener(new MappedJobListener<>(new Listener3(), 3))
@@ -99,8 +99,8 @@ public class ListenerIT {
         XJob job = new XJob();
 
         testFactory.app("--exec", "--job=x")
-                .module(new JobModule())
-                .module(binder -> JobModule.extend(binder).addJob(job)
+                .modules(new JobsModule(), new SchedulerModule())
+                .module(binder -> JobsModule.extend(binder).addJob(job)
                         .addMappedListener(new MappedJobListener<>(new Listener1(), 1))
                         .addListener(new Listener2())
                         .addMappedListener(new MappedJobListener<>(new Listener3(), 2)))
@@ -120,7 +120,7 @@ public class ListenerIT {
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.g1.type", "group")
                         .setProperty("bq.jobs.g1.jobs.x.type", "job")
                         .setProperty("bq.jobs.g1.jobs.y.type", "job"))
-                .module(b -> JobModule.extend(b)
+                .module(b -> JobsModule.extend(b)
                         .addJob(x)
                         .addJob(y)
                         .addMappedListener(new MappedJobListener<>(new Listener1(), 1))

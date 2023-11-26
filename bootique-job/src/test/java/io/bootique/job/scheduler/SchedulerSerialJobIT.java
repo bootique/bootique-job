@@ -21,10 +21,7 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
-import io.bootique.job.JobModule;
-import io.bootique.job.JobOutcome;
-import io.bootique.job.JobResult;
-import io.bootique.job.Scheduler;
+import io.bootique.job.*;
 import io.bootique.job.fixture.SerialJob2;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
@@ -47,8 +44,8 @@ public class SchedulerSerialJobIT {
 
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app()
-            .module(JobModule.class)
-            .module(b -> JobModule.extend(b).addJob(SerialJob2.class))
+            .modules(new JobsModule(), new SchedulerModule())
+            .module(b -> JobsModule.extend(b).addJob(SerialJob2.class))
             .createRuntime();
 
     @BeforeEach

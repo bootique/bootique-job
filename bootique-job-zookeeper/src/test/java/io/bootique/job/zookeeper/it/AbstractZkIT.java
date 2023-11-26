@@ -20,10 +20,8 @@ package io.bootique.job.zookeeper.it;
 
 import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
-import io.bootique.curator.CuratorModule;
-import io.bootique.job.JobModule;
+import io.bootique.job.JobsModule;
 import io.bootique.job.Scheduler;
-import io.bootique.job.zookeeper.ZkJobModule;
 import io.bootique.job.zookeeper.it.job.LockJob;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
@@ -37,7 +35,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public abstract class AbstractZkIT {
 
     @Container
-    static final GenericContainer zk = new GenericContainer("zookeeper:latest").withExposedPorts(2181);
+    static final GenericContainer zk = new GenericContainer("zookeeper:3.9.1").withExposedPorts(2181);
 
     @BQTestTool
     final BQTestFactory testFactory = new BQTestFactory();
@@ -45,11 +43,9 @@ public abstract class AbstractZkIT {
     protected Scheduler getSchedulerFromRuntime() {
         BQRuntime bqRuntime = testFactory
                 .app("--config=classpath:io/bootique/job/zookeeper/it/job-lock.yml")
+                .autoLoadModules()
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.curator.connectString", "localhost:" + zk.getMappedPort(2181)))
-                .override(JobModule.class).with(ZkJobModule.class)
-                .module(new JobModule())
-                .module(new CuratorModule())
-                .module(b -> JobModule.extend(b).addJob(LockJob.class))
+                .module(b -> JobsModule.extend(b).addJob(LockJob.class))
                 .createRuntime();
         return bqRuntime.getInstance(Scheduler.class);
     }

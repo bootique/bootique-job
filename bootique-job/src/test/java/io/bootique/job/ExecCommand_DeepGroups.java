@@ -55,7 +55,7 @@ public class ExecCommand_DeepGroups {
                     .setProperty("bq.jobs.group.jobs.j1.dependsOn[2]", "j4")
                     .setProperty("bq.jobs.j4.dependsOn[0]", "j5")
                     .setProperty("bq.jobs.j4.dependsOn[1]", "j6"))
-            .module(b -> JobModule.extend(b)
+            .module(b -> JobsModule.extend(b)
                     .addJob(J1.class).addJob(J2.class)
                     .addJob(J3.class).addJob(J4.class)
                     .addJob(J5.class).addJob(J6.class))

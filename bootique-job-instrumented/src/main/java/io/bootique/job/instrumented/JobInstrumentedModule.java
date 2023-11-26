@@ -27,7 +27,8 @@ import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Injector;
 import io.bootique.di.Provides;
-import io.bootique.job.JobModule;
+import io.bootique.job.JobsModule;
+import io.bootique.job.SchedulerModule;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobLogger;
 import io.bootique.metrics.MetricsModule;
@@ -48,14 +49,14 @@ public class JobInstrumentedModule implements BQModule, BQModuleProvider {
     public ModuleCrate moduleCrate() {
         return ModuleCrate.of(this)
                 .description("Integrates metrics and extra logging in the Bootique job engine")
-                .overrides(JobModule.class)
+                .overrides(JobsModule.class, SchedulerModule.class)
                 .build();
     }
 
     @Override
     @Deprecated(since = "3.0", forRemoval = true)
     public Collection<BQModuleProvider> dependencies() {
-        return asList(new JobModule(), new MetricsModule());
+        return asList(new JobsModule(), new SchedulerModule(), new MetricsModule());
     }
 
     @Override

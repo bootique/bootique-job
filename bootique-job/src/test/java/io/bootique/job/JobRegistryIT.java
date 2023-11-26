@@ -41,7 +41,7 @@ public class JobRegistryIT {
     public void addJob() {
 
         BQRuntime runtime = testFactory.app()
-                .module(b -> JobModule.extend(b).addJob(J1.class).addJob(J2.class))
+                .module(b -> JobsModule.extend(b).addJob(J1.class).addJob(J2.class))
                 .createRuntime();
 
         JobRegistry registry = runtime.getInstance(JobRegistry.class);
@@ -54,7 +54,7 @@ public class JobRegistryIT {
     public void addJob_Duplicate() {
 
         BQRuntime runtime = testFactory.app()
-                .module(b -> JobModule.extend(b)
+                .module(b -> JobsModule.extend(b)
                         .addJob(J1.class)
                         .addJob(J2.class)
                         .addJob(J1.class)

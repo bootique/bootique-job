@@ -22,8 +22,8 @@ import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobModule;
 import io.bootique.job.JobResult;
+import io.bootique.job.JobsModule;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ public class JobExecParserIT {
     @BQApp(skipRun = true)
     static final BQRuntime app = Bootique.app()
             .autoLoadModules()
-            .module(b -> JobModule.extend(b).addJob(J1.class).addJob(J2.class))
+            .module(b -> JobsModule.extend(b).addJob(J1.class).addJob(J2.class))
             .createRuntime();
 
     final JobExecParser parser = app.getInstance(JobExecParser.class);

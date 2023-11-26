@@ -36,12 +36,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @BQTest
 public class Scheduler_GraphJobIT {
-    
+
     @BQApp(skipRun = true)
     final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/config_jobgroup.yml")
-            .module(JobModule.class)
-            .module(b -> JobModule.extend(b).addJob(new SerialJob1(10000L)))
-            .module(b -> JobModule.extend(b).addJob(ParameterizedJob3.class))
+            .modules(new JobsModule(), new SchedulerModule())
+            .module(b -> JobsModule.extend(b)
+                    .addJob(new SerialJob1(10000L))
+                    .addJob(ParameterizedJob3.class))
             .createRuntime();
 
     @Test

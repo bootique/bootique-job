@@ -1,3 +1,7 @@
+## 3.0-M3
+
+* #118 Refactor JobModule into two module classes within the same jar
+
 ## 3.0.M2
 
 * #99 Support passing parameters to jobs via CLI

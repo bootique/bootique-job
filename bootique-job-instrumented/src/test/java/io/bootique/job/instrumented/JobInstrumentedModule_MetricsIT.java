@@ -24,7 +24,7 @@ import io.bootique.BQRuntime;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobResult;
-import io.bootique.job.JobModule;
+import io.bootique.job.JobsModule;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -48,7 +48,7 @@ public class JobInstrumentedModule_MetricsIT {
         BQRuntime runtime = testFactory
                 .app("--exec", "--job", "J1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(J1.class))
+                .module(b -> JobsModule.extend(b).addJob(J1.class))
                 .createRuntime();
 
         runtime.run();

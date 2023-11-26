@@ -24,7 +24,7 @@ import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
-import io.bootique.job.JobModule;
+import io.bootique.job.JobsModule;
 import io.bootique.job.consul.lock.CompositeConsulLockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
@@ -46,7 +46,7 @@ public class ConsulJobModule implements BQModule, BQModuleProvider {
 
     @Override
     public void configure(Binder binder) {
-        JobModule.extend(binder).setLockHandler(CompositeConsulLockHandler.class);
+        JobsModule.extend(binder).setLockHandler(CompositeConsulLockHandler.class);
     }
 
     @Provides

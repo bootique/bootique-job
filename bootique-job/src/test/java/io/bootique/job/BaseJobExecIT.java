@@ -40,7 +40,7 @@ public abstract class BaseJobExecIT {
     protected CommandOutcome executeJobs(Collection<? extends Job> jobs, String... args) {
         return testFactory.app(args)
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> JobsModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .run();
     }
 

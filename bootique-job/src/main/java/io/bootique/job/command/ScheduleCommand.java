@@ -22,8 +22,8 @@ package io.bootique.job.command;
 import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
-import io.bootique.job.JobModule;
 import io.bootique.job.Scheduler;
+import io.bootique.job.SchedulerModule;
 import io.bootique.job.trigger.JobExec;
 import io.bootique.job.trigger.JobExecParser;
 import io.bootique.meta.application.CommandMetadata;
@@ -62,7 +62,7 @@ public class ScheduleCommand extends CommandWithMetadata {
         int jobCount;
         Scheduler scheduler = schedulerProvider.get();
 
-        List<String> jobStrings = cli.optionStrings(JobModule.JOB_OPTION);
+        List<String> jobStrings = cli.optionStrings(SchedulerModule.JOB_OPTION);
         if (jobStrings == null || jobStrings.isEmpty()) {
             LOGGER.info("Starting scheduler");
             jobCount = scheduler.start();

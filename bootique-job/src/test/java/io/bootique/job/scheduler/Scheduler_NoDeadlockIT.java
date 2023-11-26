@@ -52,7 +52,7 @@ public class Scheduler_NoDeadlockIT {
                     .setProperty("bq.jobs.j1.dependsOn[2]", "j4")
                     .setProperty("bq.jobs.j1.dependsOn[3]", "j5")
             )
-            .module(b -> JobModule.extend(b)
+            .module(b -> JobsModule.extend(b)
                     .addJob(J1.class)
                     .addJob(J2.class)
                     .addJob(J3.class)

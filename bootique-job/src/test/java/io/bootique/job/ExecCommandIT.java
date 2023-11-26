@@ -256,7 +256,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=job1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> JobsModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.job1.dependsOn[0]", "job2")
                         .setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
@@ -278,7 +278,7 @@ public class ExecCommandIT extends BaseJobExecIT {
                         .setProperty("bq.jobs.g1.jobs.x.type", "job")
                         .setProperty("bq.jobs.g1.jobs.y.type", "job")
                         .setProperty("bq.jobs.g1.jobs.z.type", "job"))
-                .module(b -> JobModule.extend(b)
+                .module(b -> JobsModule.extend(b)
                         .addJob(x)
                         .addJob(y)
                         .addJob(z))
@@ -298,7 +298,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=job2")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> JobsModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.job2.dependsOn[0]", "job3"))
                 .run();
 
@@ -315,7 +315,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=g1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> JobsModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.g1.type", "group")
                         .setProperty("bq.jobs.g1.jobs.job1.type", "job")
@@ -333,7 +333,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=g1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> JobsModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.g1.type", "group")
                         .setProperty("bq.jobs.g1.jobs.job1.type", "job")
@@ -355,7 +355,7 @@ public class ExecCommandIT extends BaseJobExecIT {
         List<ExecutableAtMostOnceJob> jobs = List.of(job1, job2, job3);
         testFactory.app("--exec", "--job=g1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).config(e -> jobs.forEach(e::addJob)))
+                .module(b -> JobsModule.extend(b).config(e -> jobs.forEach(e::addJob)))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.g1.type", "group")
                         .setProperty("bq.jobs.g1.jobs.job1.dependsOn[0]", "job3")
@@ -382,7 +382,7 @@ public class ExecCommandIT extends BaseJobExecIT {
                         "--exec",
                         "--job=parameterizedjob1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(p1).addJob(p2))
+                .module(b -> JobsModule.extend(b).addJob(p1).addJob(p2))
                 .run();
 
         p1.assertExecuted(Map.of("longp", 777L));
@@ -394,7 +394,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=parameterizedjob2{\"longp\":15,\"xp\":3}")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> JobsModule.extend(b).addJob(job))
                 .run();
 
         job.assertExecuted(Map.of("longp", 15L, "xp", 3));
@@ -406,7 +406,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=parameterizedjob2")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> JobsModule.extend(b).addJob(job))
                 .module(b -> BQCoreModule.extend(b).setProperty("bq.jobs.parameterizedjob2.params.longp", "35"))
                 .run();
 
@@ -419,7 +419,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=parameterizedjob2")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> JobsModule.extend(b).addJob(job))
                 .module(b -> BQCoreModule.extend(b).declareVar("jobs.parameterizedjob2.params.longp", "TEST_PARAM"))
                 .module(b -> BQCoreModule.extend(b).setVar("TEST_PARAM", "35"))
                 .run();
@@ -433,7 +433,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=parameterizedjob4")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> JobsModule.extend(b).addJob(job))
                 .run();
 
         assertEquals(Map.of("xp", "_default_"), job.getParams());
@@ -445,7 +445,7 @@ public class ExecCommandIT extends BaseJobExecIT {
 
         testFactory.app("--exec", "--job=parameterizedjob5")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job))
+                .module(b -> JobsModule.extend(b).addJob(job))
                 .run();
 
         assertEquals(Collections.singletonMap("xp", null), job.getParams());
@@ -474,7 +474,7 @@ public class ExecCommandIT extends BaseJobExecIT {
                         "--exec",
                         "--job=group1")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(p1).addJob(p2))
+                .module(b -> JobsModule.extend(b).addJob(p1).addJob(p2))
                 .run();
 
         p1.assertExecuted(Map.of("longp", 1L));
@@ -489,7 +489,7 @@ public class ExecCommandIT extends BaseJobExecIT {
                         "--exec",
                         "--job=group2")
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job1).addJob(job2))
+                .module(b -> JobsModule.extend(b).addJob(job1).addJob(job2))
                 .run();
 
         job1.assertExecuted(Map.of("longp", 777L));

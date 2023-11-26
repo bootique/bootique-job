@@ -1,1 +1,2 @@
-io.bootique.job.JobModule
+io.bootique.job.JobsModule
+io.bootique.job.SchedulerModule

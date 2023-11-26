@@ -20,10 +20,7 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.BQRuntime;
-import io.bootique.job.BaseJob;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
-import io.bootique.job.JobModule;
+import io.bootique.job.*;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -63,7 +60,7 @@ public class InstrumentedJobMDCIT {
     public void twoJobs() throws InterruptedException {
         BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT.yml", "--schedule")
                 .autoLoadModules()
-                .module(binder -> JobModule.extend(binder)
+                .module(binder -> JobsModule.extend(binder)
                         .addJob(Job1.class)
                         .addJob(Job2.class))
                 .createRuntime();
@@ -93,7 +90,7 @@ public class InstrumentedJobMDCIT {
     public void jobGroupAndJob() throws InterruptedException {
         BQRuntime app = factory.app("-c", "classpath:io/bootique/job/instrumented/InstrumentedJobMDCIT-groups.yml", "--schedule")
                 .autoLoadModules()
-                .module(binder -> JobModule.extend(binder).addJob(Job1.class).addJob(Job2.class).addJob(Job3.class).addJob(Job4.class))
+                .module(binder -> JobsModule.extend(binder).addJob(Job1.class).addJob(Job2.class).addJob(Job3.class).addJob(Job4.class))
                 .createRuntime();
 
         // Running one job directly, and another - in a group. MDC is available to the direct job and must not be

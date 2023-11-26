@@ -105,7 +105,7 @@ public class SchedulerParamsIT {
 
         public ParamsTester run(String config) {
             CommandOutcome outcome = testFactory.app("--schedule", "-c", config)
-                    .module(b -> JobModule.extend(b)
+                    .module(b -> JobsModule.extend(b)
                             .addJob(J1.class)
                             .addDecorator(this, JobDecorators.PARAMS_BINDER_ORDER + 1))
                     .run();

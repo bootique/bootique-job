@@ -19,22 +19,13 @@
 
 package io.bootique.job;
 
-import io.bootique.di.Binder;
+import io.bootique.junit5.BQModuleProviderChecker;
+import org.junit.jupiter.api.Test;
 
-/**
- * @deprecated split into two modules {@link JobsModule} and {@link SchedulerModule} with their own configuration
- * prefixes instead of managing both prefixes in one module.
- */
-@Deprecated(since = "3.0", forRemoval = true)
-public class JobModule {
-
-    public static final String JOB_OPTION = SchedulerModule.JOB_OPTION;
-
-    /**
-     * @deprecated use {@link JobsModule#extend(Binder)}
-     */
-    @Deprecated(since = "3.0", forRemoval = true)
-    public static JobsModuleExtender extend(Binder binder) {
-        return JobsModule.extend(binder);
-    }
+public class JobsModuleTest {
+	
+	@Test
+    public void autoLoadable() {
+		BQModuleProviderChecker.testAutoLoadable(JobsModule.class);
+	}
 }

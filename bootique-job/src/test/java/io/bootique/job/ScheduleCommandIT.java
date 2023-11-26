@@ -39,8 +39,8 @@ public class ScheduleCommandIT {
     public void scheduleCommand_AllJobs() {
         BQRuntime runtime = testFactory.app()
                 .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command.yml")
-                .module(JobModule.class)
-                .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
+                .modules(new JobsModule(), new SchedulerModule())
+                .module(b -> JobsModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
                 .createRuntime();
 
         Scheduler scheduler = runtime.getInstance(Scheduler.class);
@@ -56,8 +56,8 @@ public class ScheduleCommandIT {
     public void scheduleCommand_SelectedJobs() {
         BQRuntime runtime = testFactory.app()
                 .args("--schedule", "--job=scheduledjob1", "-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
-                .module(JobModule.class)
-                .module(b -> JobModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
+                .modules(new JobsModule(), new SchedulerModule())
+                .module(b -> JobsModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
                 .createRuntime();
 
         Scheduler scheduler = runtime.getInstance(Scheduler.class);

@@ -22,10 +22,7 @@ package io.bootique.job.command;
 import io.bootique.cli.Cli;
 import io.bootique.command.CommandOutcome;
 import io.bootique.command.CommandWithMetadata;
-import io.bootique.job.JobFuture;
-import io.bootique.job.JobResult;
-import io.bootique.job.JobModule;
-import io.bootique.job.Scheduler;
+import io.bootique.job.*;
 import io.bootique.job.trigger.JobExec;
 import io.bootique.job.trigger.JobExecParser;
 import io.bootique.meta.application.CommandMetadata;
@@ -69,10 +66,10 @@ public class ExecCommand extends CommandWithMetadata {
     @Override
     public CommandOutcome run(Cli cli) {
 
-        List<String> jobStrings = cli.optionStrings(JobModule.JOB_OPTION);
+        List<String> jobStrings = cli.optionStrings(SchedulerModule.JOB_OPTION);
         if (jobStrings == null || jobStrings.isEmpty()) {
             return CommandOutcome.failed(1,
-                    String.format("No jobs specified. Use '--%s' option to provide job names", JobModule.JOB_OPTION));
+                    String.format("No jobs specified. Use '--%s' option to provide job names", SchedulerModule.JOB_OPTION));
         }
 
         LOGGER.info("Will run job(s): {}", jobStrings);

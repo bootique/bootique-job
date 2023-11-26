@@ -42,7 +42,7 @@ public class GraphJobIT {
 
         JobRegistry registry = testFactory.app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(J1.class).addJob(J2.class).addJob(J3.class))
+                .module(b -> JobsModule.extend(b).addJob(J1.class).addJob(J2.class).addJob(J3.class))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.j1.dependsOn[0]", "j2")
                         .setProperty("bq.jobs.j2.dependsOn[0]", "j3"))
@@ -69,7 +69,7 @@ public class GraphJobIT {
 
         JobRegistry registry = testFactory.app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(J2.class).addJob(J3.class).addJob(J4.class))
+                .module(b -> JobsModule.extend(b).addJob(J2.class).addJob(J3.class).addJob(J4.class))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.j4.dependsOn[0]", "j2")
                         .setProperty("bq.jobs.j4.dependsOn[1]", "j3"))
@@ -87,7 +87,7 @@ public class GraphJobIT {
 
         JobRegistry registry = testFactory.app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(J1.class).addJob(J2.class).addJob(J3.class))
+                .module(b -> JobsModule.extend(b).addJob(J1.class).addJob(J2.class).addJob(J3.class))
                 .module(b -> BQCoreModule.extend(b)
                         .setProperty("bq.jobs.j1.dependsOn[0]", "j2")
                         .setProperty("bq.jobs.j2.dependsOn[0]", "j3")

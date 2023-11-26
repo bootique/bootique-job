@@ -46,7 +46,7 @@ public class Listener_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
+                .module(b -> JobsModule.extend(b).addJob(job).addListener(listener))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("exception").runNonBlocking().get();
@@ -64,7 +64,7 @@ public class Listener_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(listener))
+                .module(b -> JobsModule.extend(b).addJob(job).addListener(listener))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
@@ -81,7 +81,7 @@ public class Listener_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(Listener_StartException.class))
+                .module(b -> JobsModule.extend(b).addJob(job).addListener(Listener_StartException.class))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
@@ -98,7 +98,7 @@ public class Listener_FailuresIT {
         BQRuntime runtime = testFactory
                 .app()
                 .autoLoadModules()
-                .module(b -> JobModule.extend(b).addJob(job).addListener(Listener_EndException.class))
+                .module(b -> JobsModule.extend(b).addJob(job).addListener(Listener_EndException.class))
                 .createRuntime();
 
         JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();

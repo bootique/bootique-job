@@ -25,21 +25,25 @@ import io.bootique.job.lock.LockHandler;
 
 import java.util.function.Consumer;
 
-public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
+/**
+ * @since 3.0
+ */
+public class JobsModuleExtender extends ModuleExtender<JobsModuleExtender> {
 
     private SetBuilder<Job> jobs;
+    @Deprecated
     private SetBuilder<JobListener> listeners;
     private SetBuilder<MappedJobListener> mappedListeners;
     private SetBuilder<JobDecorator> decorators;
     private SetBuilder<MappedJobDecorator<?>> mappedDecorators;
     private SetBuilder<LockHandler> lockHandlers;
 
-    public JobModuleExtender(Binder binder) {
+    public JobsModuleExtender(Binder binder) {
         super(binder);
     }
 
     @Override
-    public JobModuleExtender initAllExtensions() {
+    public JobsModuleExtender initAllExtensions() {
         contributeListeners();
         contributeMappedListeners();
         contributeDecorators();
@@ -56,17 +60,17 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
      *
      * @since 3.0
      */
-    public JobModuleExtender config(Consumer<JobModuleExtender> configurator) {
+    public JobsModuleExtender config(Consumer<JobsModuleExtender> configurator) {
         configurator.accept(this);
         return this;
     }
 
-    public JobModuleExtender addJob(Job job) {
+    public JobsModuleExtender addJob(Job job) {
         contributeJobs().addInstance(job);
         return this;
     }
 
-    public JobModuleExtender addJob(Class<? extends Job> jobType) {
+    public JobsModuleExtender addJob(Class<? extends Job> jobType) {
         // TODO: what does singleton scope means when adding to collection?
         contributeJobs().add(jobType);
         return this;
@@ -75,7 +79,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0
      */
-    public JobModuleExtender setLockHandler(LockHandler handler) {
+    public JobsModuleExtender setLockHandler(LockHandler handler) {
         contributeLockHandlers().addInstance(handler);
         return this;
     }
@@ -83,7 +87,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0
      */
-    public JobModuleExtender setLockHandler(Class<? extends LockHandler> handlerType) {
+    public JobsModuleExtender setLockHandler(Class<? extends LockHandler> handlerType) {
         contributeLockHandlers().add(handlerType);
         return this;
     }
@@ -93,7 +97,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
      * {@link #addMappedDecorator(MappedJobDecorator)}
      */
     @Deprecated
-    public <T extends JobListener> JobModuleExtender addMappedListener(MappedJobListener<T> mappedJobListener) {
+    public <T extends JobListener> JobsModuleExtender addMappedListener(MappedJobListener<T> mappedJobListener) {
         contributeMappedListeners().addInstance(mappedJobListener);
         return this;
     }
@@ -103,7 +107,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
      * {@link #addMappedDecorator(Key)}
      */
     @Deprecated
-    public <T extends JobListener> JobModuleExtender addMappedListener(Key<MappedJobListener<T>> mappedJobListenerKey) {
+    public <T extends JobListener> JobsModuleExtender addMappedListener(Key<MappedJobListener<T>> mappedJobListenerKey) {
         contributeMappedListeners().add(mappedJobListenerKey);
         return this;
     }
@@ -113,7 +117,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
      * {@link #addMappedDecorator(TypeLiteral)}
      */
     @Deprecated
-    public <T extends JobListener> JobModuleExtender addMappedListener(TypeLiteral<MappedJobListener<T>> mappedJobListenerType) {
+    public <T extends JobListener> JobsModuleExtender addMappedListener(TypeLiteral<MappedJobListener<T>> mappedJobListenerType) {
         contributeMappedListeners().add(Key.get(mappedJobListenerType));
         return this;
     }
@@ -123,7 +127,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
      * {@link #addDecorator(Class)}
      */
     @Deprecated
-    public JobModuleExtender addListener(Class<? extends JobListener> listenerType) {
+    public JobsModuleExtender addListener(Class<? extends JobListener> listenerType) {
         // TODO: what does singleton scope means when adding to collection?
         contributeListeners().add(listenerType);
         return this;
@@ -134,7 +138,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
      * {@link #addDecorator(JobDecorator)}.
      */
     @Deprecated
-    public JobModuleExtender addListener(JobListener listener) {
+    public JobsModuleExtender addListener(JobListener listener) {
         contributeListeners().addInstance(listener);
         return this;
     }
@@ -142,7 +146,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0
      */
-    public <T extends JobDecorator> JobModuleExtender addMappedDecorator(MappedJobDecorator<T> mappedJobDecorator) {
+    public <T extends JobDecorator> JobsModuleExtender addMappedDecorator(MappedJobDecorator<T> mappedJobDecorator) {
         contributeMappedDecorators().addInstance(mappedJobDecorator);
         return this;
     }
@@ -150,7 +154,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0
      */
-    public <T extends JobDecorator> JobModuleExtender addMappedDecorator(Key<MappedJobDecorator<T>> mappedJobDecoratorKey) {
+    public <T extends JobDecorator> JobsModuleExtender addMappedDecorator(Key<MappedJobDecorator<T>> mappedJobDecoratorKey) {
         contributeMappedDecorators().add(mappedJobDecoratorKey);
         return this;
     }
@@ -158,14 +162,14 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0
      */
-    public <T extends JobDecorator> JobModuleExtender addMappedDecorator(TypeLiteral<MappedJobDecorator<T>> mappedJobDecoratorType) {
+    public <T extends JobDecorator> JobsModuleExtender addMappedDecorator(TypeLiteral<MappedJobDecorator<T>> mappedJobDecoratorType) {
         return addMappedDecorator(Key.get(mappedJobDecoratorType));
     }
 
     /**
      * @since 3.0
      */
-    public JobModuleExtender addDecorator(JobDecorator decorator) {
+    public JobsModuleExtender addDecorator(JobDecorator decorator) {
         contributeDecorators().addInstance(decorator);
         return this;
     }
@@ -173,7 +177,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0
      */
-    public JobModuleExtender addDecorator(Class<? extends JobDecorator> type) {
+    public JobsModuleExtender addDecorator(Class<? extends JobDecorator> type) {
         contributeDecorators().add(type);
         return this;
     }
@@ -181,7 +185,7 @@ public class JobModuleExtender extends ModuleExtender<JobModuleExtender> {
     /**
      * @since 3.0
      */
-    public JobModuleExtender addDecorator(JobDecorator decorator, int order) {
+    public JobsModuleExtender addDecorator(JobDecorator decorator, int order) {
         return addMappedDecorator(new MappedJobDecorator<>(decorator, order));
     }
 
