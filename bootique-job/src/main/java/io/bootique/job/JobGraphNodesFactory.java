@@ -18,6 +18,8 @@
  */
 package io.bootique.job;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import io.bootique.annotation.BQConfig;
 import io.bootique.job.graph.JobGraphNode;
 import io.bootique.job.graph.JobGraphNodeFactory;
 import io.bootique.job.graph.JobNode;
@@ -26,12 +28,18 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-class JobGraphNodesFactory {
+/**
+ * @since 3.0
+ */
+@BQConfig
+public class JobGraphNodesFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobGraphNodesFactory.class);
 
     private final Map<String, JobGraphNodeFactory> jobs;
 
+    @BQConfig("A map of jobs by name")
+    @JsonCreator
     public JobGraphNodesFactory(Map<String, JobGraphNodeFactory> jobs) {
         this.jobs = jobs;
     }

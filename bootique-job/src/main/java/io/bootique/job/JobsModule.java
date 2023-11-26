@@ -25,11 +25,9 @@ import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.graph.JobGraphNode;
-import io.bootique.job.graph.JobGraphNodeFactory;
 import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.job.runtime.*;
-import io.bootique.type.TypeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,9 +41,6 @@ public class JobsModule implements BQModule, BQModuleProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobsModule.class);
     private static final String CONFIG_PREFIX = "jobs";
-
-    private static final TypeRef<Map<String, JobGraphNodeFactory>> CONFIG_PROTO = new TypeRef<>() {
-    };
 
     /**
      * Returns an instance of {@link JobsModuleExtender} used by downstream modules to load custom job-related extensions,
@@ -63,7 +58,7 @@ public class JobsModule implements BQModule, BQModuleProvider {
 
         return ModuleCrate.of(this)
                 .description("Loads jobs for Bootique job execution engine")
-                .config(CONFIG_PREFIX, CONFIG_PROTO.getType())
+                .config(CONFIG_PREFIX, JobGraphNodesFactory.class)
                 .build();
     }
 
@@ -75,8 +70,7 @@ public class JobsModule implements BQModule, BQModuleProvider {
     @Provides
     @Singleton
     Map<String, JobGraphNode> provideJobs(ConfigurationFactory configFactory, Set<Job> standaloneJobs) {
-        // TODO: deserialize directly from YAML, bypassing TypeRef ?
-        return new JobGraphNodesFactory(configFactory.config(CONFIG_PROTO, CONFIG_PREFIX)).create(standaloneJobs);
+        return configFactory.config(JobGraphNodesFactory.class, CONFIG_PREFIX).create(standaloneJobs);
     }
 
     // TODO: due to the way our configuration suffixes are setup ("jobs" vs "scheduler"), service per-module allocation
