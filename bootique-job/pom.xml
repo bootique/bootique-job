@@ -54,14 +54,6 @@
             <artifactId>jcl-over-slf4j</artifactId>
         </dependency>
 
-        <!-- Optional compile dependencies -->
-        <dependency>
-            <groupId>io.bootique.curator</groupId>
-            <artifactId>bootique-curator</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Unit test dependencies -->
         <dependency>
             <groupId>org.mockito</groupId>

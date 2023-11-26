@@ -38,13 +38,11 @@
         <dependency>
             <groupId>io.bootique.job</groupId>
             <artifactId>bootique-job</artifactId>
-            <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.bootique.metrics</groupId>
             <artifactId>bootique-metrics</artifactId>
-            <scope>compile</scope>
         </dependency>
 
         <!-- Unit test dependencies -->

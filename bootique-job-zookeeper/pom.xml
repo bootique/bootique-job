@@ -39,7 +39,6 @@
         <dependency>
             <groupId>io.bootique.curator</groupId>
             <artifactId>bootique-curator</artifactId>
-            <scope>compile</scope>
         </dependency>
 
         <!-- Unit test dependencies -->
