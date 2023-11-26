@@ -21,7 +21,7 @@ package io.bootique.job;
 
 import io.bootique.BQCoreModule;
 import io.bootique.BQModuleProvider;
-import io.bootique.bootstrap.BuiltModule;
+import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
@@ -69,10 +69,10 @@ public class JobModule implements BQModule, BQModuleProvider {
     }
 
     @Override
-    public BuiltModule buildModule() {
+    public ModuleCrate moduleCrate() {
         TypeRef<Map<String, JobGraphNodeFactory>> jobs = new TypeRef<>() {};
 
-        return BuiltModule.of(this)
+        return ModuleCrate.of(this)
                 .description("Provides Bootique's own job execution engine")
                 .config("scheduler", SchedulerFactory.class)
                 .config("jobs", jobs.getType())
