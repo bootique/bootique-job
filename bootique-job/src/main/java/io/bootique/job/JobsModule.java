@@ -58,7 +58,7 @@ public class JobsModule implements BQModule, BQModuleProvider {
 
         return ModuleCrate.of(this)
                 .description("Loads jobs for Bootique job execution engine")
-                .config(CONFIG_PREFIX, JobGraphNodesFactory.class)
+                .config(CONFIG_PREFIX, JobsFactory.class)
                 .build();
     }
 
@@ -70,7 +70,7 @@ public class JobsModule implements BQModule, BQModuleProvider {
     @Provides
     @Singleton
     Map<String, JobGraphNode> provideJobs(ConfigurationFactory configFactory, Set<Job> standaloneJobs) {
-        return configFactory.config(JobGraphNodesFactory.class, CONFIG_PREFIX).create(standaloneJobs);
+        return configFactory.config(JobsFactory.class, CONFIG_PREFIX).create(standaloneJobs);
     }
 
     // TODO: due to the way our configuration suffixes are setup ("jobs" vs "scheduler"), service per-module allocation

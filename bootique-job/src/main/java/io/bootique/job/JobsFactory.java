@@ -31,16 +31,15 @@ import java.util.*;
 /**
  * @since 3.0
  */
-@BQConfig
-public class JobGraphNodesFactory {
+public class JobsFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobGraphNodesFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobsFactory.class);
 
     private final Map<String, JobGraphNodeFactory> jobs;
 
     @BQConfig("A map of jobs by name")
     @JsonCreator
-    public JobGraphNodesFactory(Map<String, JobGraphNodeFactory> jobs) {
+    public JobsFactory(Map<String, JobGraphNodeFactory> jobs) {
         this.jobs = jobs;
     }
 
