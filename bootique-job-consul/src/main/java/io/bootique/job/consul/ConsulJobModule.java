@@ -18,10 +18,9 @@
  */
 package io.bootique.job.consul;
 
-import io.bootique.BQModuleProvider;
+import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.JobsModule;
@@ -31,13 +30,13 @@ import io.bootique.shutdown.ShutdownManager;
 import javax.inject.Singleton;
 
 
-public class ConsulJobModule implements BQModule, BQModuleProvider {
+public class ConsulJobModule implements BQModule {
 
     // TODO: "-" is not following BQ naming convention
     private static final String CONFIG_PREFIX = "job-consul";
 
     @Override
-    public ModuleCrate moduleCrate() {
+    public ModuleCrate crate() {
         return ModuleCrate.of(this)
                 .description("Integrates Consul-based Bootique job locks")
                 .config(CONFIG_PREFIX, ConsulLockHandlerFactory.class)

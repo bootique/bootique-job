@@ -18,13 +18,13 @@
  */
 package io.bootique.job.zookeeper;
 
-import io.bootique.junit5.BQModuleProviderChecker;
+import io.bootique.junit5.BQModuleTester;
 import org.junit.jupiter.api.Test;
 
 public class ZkJobModuleTest {
 	
 	@Test
-    public void autoLoadable() {
-		BQModuleProviderChecker.testAutoLoadable(ZkJobModule.class);
+    public void checks() {
+		BQModuleTester.of(ZkJobModule.class).testAutoLoadable().testConfig();
 	}
 }

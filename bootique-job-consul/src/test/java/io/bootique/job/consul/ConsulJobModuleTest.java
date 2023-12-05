@@ -18,13 +18,13 @@
  */
 package io.bootique.job.consul;
 
-import io.bootique.junit5.BQModuleProviderChecker;
+import io.bootique.junit5.BQModuleTester;
 import org.junit.jupiter.api.Test;
 
-public class ConsulJobModuleProviderTest {
+public class ConsulJobModuleTest {
 	
 	@Test
-    public void autoLoadable() {
-		BQModuleProviderChecker.testAutoLoadable(ConsulJobModule.class);
+    public void check() {
+		BQModuleTester.of(ConsulJobModule.class).testAutoLoadable().testConfig();
 	}
 }

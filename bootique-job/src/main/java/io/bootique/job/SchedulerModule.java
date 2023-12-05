@@ -19,10 +19,9 @@
 package io.bootique.job;
 
 import io.bootique.BQCoreModule;
-import io.bootique.BQModuleProvider;
+import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Injector;
 import io.bootique.di.Provides;
@@ -32,7 +31,9 @@ import io.bootique.job.command.ExecCommand;
 import io.bootique.job.command.ListCommand;
 import io.bootique.job.command.ScheduleCommand;
 import io.bootique.job.graph.JobGraphNode;
-import io.bootique.job.runtime.*;
+import io.bootique.job.runtime.DefaultJobRegistry;
+import io.bootique.job.runtime.GraphExecutor;
+import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.trigger.JobExecParser;
 import io.bootique.job.value.Cron;
@@ -41,12 +42,12 @@ import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.Map;
 
 /**
  * @since 3.0
  */
-public class SchedulerModule implements BQModule, BQModuleProvider {
+public class SchedulerModule implements BQModule {
 
     private static final String CONFIG_PREFIX = "scheduler";
     public static final String JOB_OPTION = "job";
@@ -60,14 +61,8 @@ public class SchedulerModule implements BQModule, BQModuleProvider {
                 .build();
     }
 
-    @Deprecated(since = "3.0", forRemoval = true)
     @Override
-    public Collection<BQModuleProvider> dependencies() {
-        return List.of(new JobsModule());
-    }
-
-    @Override
-    public ModuleCrate moduleCrate() {
+    public ModuleCrate crate() {
         return ModuleCrate.of(this)
                 .description("Provides Bootique's own job execution engine")
                 .config(CONFIG_PREFIX, SchedulerFactory.class)

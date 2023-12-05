@@ -19,27 +19,15 @@
 
 package io.bootique.job.instrumented;
 
-import io.bootique.BQRuntime;
-import io.bootique.job.JobsModule;
-import io.bootique.job.SchedulerModule;
-import io.bootique.junit5.*;
-import io.bootique.metrics.MetricsModule;
+import io.bootique.junit5.BQModuleTester;
+import io.bootique.junit5.BQTest;
 import org.junit.jupiter.api.Test;
 
 @BQTest
 public class JobInstrumentedModuleTest {
 
-    @BQTestTool
-    final BQTestFactory testFactory = new BQTestFactory();
-
     @Test
     public void autoLoadable() {
-        BQModuleProviderChecker.testAutoLoadable(JobInstrumentedModule.class);
-    }
-
-    @Test
-    public void moduleDeclaresDependencies() {
-        BQRuntime bqRuntime = testFactory.app().moduleProvider(new JobInstrumentedModule()).createRuntime();
-        BQRuntimeChecker.testModulesLoaded(bqRuntime, JobsModule.class, SchedulerModule.class, MetricsModule.class);
+        BQModuleTester.of(JobInstrumentedModule.class).testAutoLoadable().testConfig();
     }
 }

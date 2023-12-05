@@ -19,13 +19,13 @@
 
 package io.bootique.job;
 
-import io.bootique.junit5.BQModuleProviderChecker;
+import io.bootique.junit5.BQModuleTester;
 import org.junit.jupiter.api.Test;
 
 public class JobsModuleTest {
 	
 	@Test
-    public void autoLoadable() {
-		BQModuleProviderChecker.testAutoLoadable(JobsModule.class);
+    public void check() {
+		BQModuleTester.of(JobsModule.class).testAutoLoadable().testConfig();
 	}
 }

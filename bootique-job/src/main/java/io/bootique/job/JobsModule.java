@@ -18,10 +18,9 @@
  */
 package io.bootique.job;
 
-import io.bootique.BQModuleProvider;
+import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.graph.JobGraphNode;
@@ -37,7 +36,7 @@ import java.util.*;
 /**
  * @since 3.0
  */
-public class JobsModule implements BQModule, BQModuleProvider {
+public class JobsModule implements BQModule {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobsModule.class);
     private static final String CONFIG_PREFIX = "jobs";
@@ -54,8 +53,7 @@ public class JobsModule implements BQModule, BQModuleProvider {
     }
 
     @Override
-    public ModuleCrate moduleCrate() {
-
+    public ModuleCrate crate() {
         return ModuleCrate.of(this)
                 .description("Loads jobs for Bootique job execution engine")
                 .config(CONFIG_PREFIX, JobsFactory.class)

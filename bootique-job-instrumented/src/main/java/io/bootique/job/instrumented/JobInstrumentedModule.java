@@ -20,10 +20,9 @@
 package io.bootique.job.instrumented;
 
 import com.codahale.metrics.MetricRegistry;
-import io.bootique.BQModuleProvider;
+import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
-import io.bootique.di.BQModule;
 import io.bootique.di.Binder;
 import io.bootique.di.Injector;
 import io.bootique.di.Provides;
@@ -31,32 +30,22 @@ import io.bootique.job.JobsModule;
 import io.bootique.job.SchedulerModule;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobLogger;
-import io.bootique.metrics.MetricsModule;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
 import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;
-import java.util.Collection;
 
-import static java.util.Arrays.asList;
-
-public class JobInstrumentedModule implements BQModule, BQModuleProvider {
+public class JobInstrumentedModule implements BQModule {
 
     // same prefix as the module we instrument
     private static final String SCHEDULER_CONFIG_PREFIX = "scheduler";
 
     @Override
-    public ModuleCrate moduleCrate() {
+    public ModuleCrate crate() {
         return ModuleCrate.of(this)
                 .description("Integrates metrics and extra logging in the Bootique job engine")
                 .overrides(JobsModule.class, SchedulerModule.class)
                 .build();
-    }
-
-    @Override
-    @Deprecated(since = "3.0", forRemoval = true)
-    public Collection<BQModuleProvider> dependencies() {
-        return asList(new JobsModule(), new SchedulerModule(), new MetricsModule());
     }
 
     @Override
