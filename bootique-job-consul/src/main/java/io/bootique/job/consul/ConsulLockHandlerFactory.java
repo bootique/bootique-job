@@ -51,8 +51,10 @@ public class ConsulLockHandlerFactory {
 
         HostAndPort hostAndPort = HostAndPort.fromParts(host, port);
         Consul consul = Consul.builder().withHostAndPort(hostAndPort).build();
-        ConsulSession session = new ConsulSession(consul.sessionClient(), dataCenter);
-        shutdownManager.addShutdownHook(session::destroySessionIfPresent);
+        ConsulSession session = shutdownManager.onShutdown(
+                new ConsulSession(consul.sessionClient(), dataCenter),
+                ConsulSession::destroySessionIfPresent);
+
         LockHandler localLockHandler = new LocalLockHandler();
         LockHandler consulLockHandler = new ConsulLockHandler(
                 consul.keyValueClient(),

@@ -34,8 +34,10 @@ public class InstrumentedSchedulerFactory extends SchedulerFactory {
 
     @Override
     public GraphExecutor createGraphExecutor(Injector injector, ShutdownManager shutdownManager) {
-        ExecutorService pool = createGraphExecutorService();
-        shutdownManager.addShutdownHook(() -> pool.shutdownNow());
+        ExecutorService pool = shutdownManager.onShutdown(
+                createGraphExecutorService(),
+                ExecutorService::shutdownNow);
+        
         return new InstrumentedGraphExecutor(pool);
     }
 }

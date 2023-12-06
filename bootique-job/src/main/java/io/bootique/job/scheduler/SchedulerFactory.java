@@ -30,6 +30,7 @@ import io.bootique.job.trigger.Trigger;
 import io.bootique.job.trigger.TriggerFactory;
 import io.bootique.shutdown.ShutdownManager;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ExecutorConfigurationSupport;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class SchedulerFactory {
     //  threads in the main Scheduler pool
     public GraphExecutor createGraphExecutor(Injector injector, ShutdownManager shutdownManager) {
         ExecutorService pool = createGraphExecutorService();
-        shutdownManager.addShutdownHook(() -> pool.shutdownNow());
+        shutdownManager.onShutdown(pool, ExecutorService::shutdownNow);
         return new GraphExecutor(pool);
     }
 
@@ -84,8 +85,7 @@ public class SchedulerFactory {
         taskScheduler.setThreadNamePrefix("bootique-job-");
         taskScheduler.initialize();
 
-        shutdownManager.addShutdownHook(taskScheduler::shutdown);
-        return taskScheduler;
+        return shutdownManager.onShutdown(taskScheduler, ExecutorConfigurationSupport::shutdown);
     }
 
     protected int createThreadPoolSize() {
