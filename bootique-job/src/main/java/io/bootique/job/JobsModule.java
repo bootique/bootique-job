@@ -67,8 +67,8 @@ public class JobsModule implements BQModule {
 
     @Provides
     @Singleton
-    Map<String, JobGraphNode> provideJobs(ConfigurationFactory configFactory, Set<Job> standaloneJobs) {
-        return configFactory.config(JobsFactory.class, CONFIG_PREFIX).create(standaloneJobs);
+    Map<String, JobGraphNode> provideJobs(ConfigurationFactory configFactory) {
+        return configFactory.config(JobsFactory.class, CONFIG_PREFIX).create();
     }
 
     // TODO: due to the way our configuration suffixes are setup ("jobs" vs "scheduler"), service per-module allocation

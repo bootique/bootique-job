@@ -28,23 +28,29 @@ import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
+import javax.inject.Inject;
+
 /**
  * @since 3.0
  */
 @BQConfig("Consul jobs configuration")
 public class ConsulLockHandlerFactory {
 
+    private final ShutdownManager shutdownManager;
+
     private String consulHost;
     private Integer consulPort;
     private String dataCenter;
     private String serviceGroup;
 
-    public ConsulLockHandlerFactory() {
+    @Inject
+    public ConsulLockHandlerFactory(ShutdownManager shutdownManager) {
+        this.shutdownManager = shutdownManager;
         this.consulHost = "localhost";
         this.consulPort = 8500;
     }
 
-    public CompositeConsulLockHandler createLockHandler(ShutdownManager shutdownManager) {
+    public CompositeConsulLockHandler create() {
 
         String host = this.consulHost != null ? this.consulHost : "localhost";
         int port = this.consulPort != null ? this.consulPort : 8500;

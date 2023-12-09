@@ -21,7 +21,6 @@ package io.bootique.job.scheduler;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
-import io.bootique.di.Injector;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.Scheduler;
 import io.bootique.job.runtime.GraphExecutor;
@@ -33,11 +32,13 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ExecutorConfigurationSupport;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A configuration object that is used to setup jobs runtime.
@@ -45,26 +46,30 @@ import java.util.concurrent.*;
 @BQConfig("Job scheduler/executor.")
 public class SchedulerFactory {
 
+    private final JobRegistry jobRegistry;
+    private final JobDecorators decorators;
+    private final ShutdownManager shutdownManager;
+
     private Collection<TriggerFactory> triggers;
     private Integer threadPoolSize;
     private Integer graphExecutorThreadPoolSize;
 
+    @Inject
+    public SchedulerFactory(JobRegistry jobRegistry, JobDecorators decorators, ShutdownManager shutdownManager) {
+        this.jobRegistry = jobRegistry;
+        this.decorators = decorators;
+        this.shutdownManager = shutdownManager;
+    }
+
     // TODO: GraphExecutor kinda exists outside of the Scheduler, so probably warrants its own factory
     // TODO: GraphExecutor will become obsolete once project Loom becomes mainstream, and we can use virtual
     //  threads in the main Scheduler pool
-    public GraphExecutor createGraphExecutor(Injector injector, ShutdownManager shutdownManager) {
-        ExecutorService pool = createGraphExecutorService();
-        shutdownManager.onShutdown(pool, ExecutorService::shutdownNow);
-        return new GraphExecutor(pool);
+    public GraphExecutor createGraphExecutor() {
+        return new GraphExecutor(createGraphExecutorService());
     }
 
-    public Scheduler createScheduler(
-            JobRegistry jobRegistry,
-            JobDecorators decorators,
-            ShutdownManager shutdownManager) {
-
-        TaskScheduler taskScheduler = createTaskScheduler(shutdownManager);
-
+    public Scheduler createScheduler() {
+        TaskScheduler taskScheduler = createTaskScheduler();
         return new DefaultScheduler(createTriggers(), taskScheduler, jobRegistry, decorators);
     }
 
@@ -79,7 +84,7 @@ public class SchedulerFactory {
         return triggers;
     }
 
-    protected TaskScheduler createTaskScheduler(ShutdownManager shutdownManager) {
+    protected TaskScheduler createTaskScheduler() {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         taskScheduler.setPoolSize(createThreadPoolSize());
         taskScheduler.setThreadNamePrefix("bootique-job-");
@@ -94,7 +99,9 @@ public class SchedulerFactory {
     }
 
     protected ExecutorService createGraphExecutorService() {
-        return Executors.newFixedThreadPool(createGraphExecutorThreadPoolSize(), new GraphExecutorThreadFactory());
+        return shutdownManager.onShutdown(
+                Executors.newFixedThreadPool(createGraphExecutorThreadPoolSize(), new GraphExecutorThreadFactory()),
+                ExecutorService::shutdownNow);
     }
 
     protected int createGraphExecutorThreadPoolSize() {

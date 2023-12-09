@@ -23,7 +23,6 @@ import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
-import io.bootique.di.Injector;
 import io.bootique.di.Provides;
 import io.bootique.help.ValueObjectDescriptor;
 import io.bootique.jackson.JacksonService;
@@ -38,7 +37,6 @@ import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.job.trigger.JobExecParser;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
-import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -81,25 +79,6 @@ public class SchedulerModule implements BQModule {
 
     @Provides
     @Singleton
-    JobExecParser provideExecParser(JobRegistry registry, JacksonService jackson) {
-        return new JobExecParser(registry, jackson.newObjectMapper());
-    }
-
-    @Provides
-    @Singleton
-    Scheduler provideScheduler(
-            JobRegistry jobRegistry,
-            JobDecorators decorators,
-            ConfigurationFactory configFactory,
-            ShutdownManager shutdownManager) {
-
-        return configFactory
-                .config(SchedulerFactory.class, CONFIG_PREFIX)
-                .createScheduler(jobRegistry, decorators, shutdownManager);
-    }
-
-    @Provides
-    @Singleton
     JobRegistry provideJobRegistry(
             Map<String, JobGraphNode> jobNodes,
             JobDecorators decorators,
@@ -111,13 +90,22 @@ public class SchedulerModule implements BQModule {
                 graphExecutor);
     }
 
+    @Provides
+    @Singleton
+    JobExecParser provideExecParser(JobRegistry registry, JacksonService jackson) {
+        return new JobExecParser(registry, jackson.newObjectMapper());
+    }
+
+    @Provides
+    @Singleton
+    Scheduler provideScheduler(ConfigurationFactory configFactory) {
+        return configFactory.config(SchedulerFactory.class, CONFIG_PREFIX).createScheduler();
+    }
+
     // this is a secondary thread pool used for graph execution
     @Provides
     @Singleton
-    GraphExecutor provideGraphExecutor(
-            ConfigurationFactory configFactory,
-            Injector injector,
-            ShutdownManager shutdownManager) {
-        return configFactory.config(SchedulerFactory.class, CONFIG_PREFIX).createGraphExecutor(injector, shutdownManager);
+    GraphExecutor provideGraphExecutor(ConfigurationFactory configFactory) {
+        return configFactory.config(SchedulerFactory.class, CONFIG_PREFIX).createGraphExecutor();
     }
 }

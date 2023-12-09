@@ -24,14 +24,12 @@ import io.bootique.BQModule;
 import io.bootique.ModuleCrate;
 import io.bootique.config.ConfigurationFactory;
 import io.bootique.di.Binder;
-import io.bootique.di.Injector;
 import io.bootique.di.Provides;
 import io.bootique.job.JobsModule;
 import io.bootique.job.SchedulerModule;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobLogger;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
-import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;
 
@@ -54,12 +52,8 @@ public class JobInstrumentedModule implements BQModule {
 
     @Provides
     @Singleton
-    GraphExecutor createGraphExecutor(
-            ConfigurationFactory configFactory,
-            Injector injector,
-            ShutdownManager shutdownManager) {
-        return configFactory.config(InstrumentedSchedulerFactory.class, SCHEDULER_CONFIG_PREFIX)
-                .createGraphExecutor(injector, shutdownManager);
+    GraphExecutor createGraphExecutor(ConfigurationFactory configFactory) {
+        return configFactory.config(InstrumentedSchedulerFactory.class, SCHEDULER_CONFIG_PREFIX).createGraphExecutor();
     }
 
     @Provides

@@ -26,6 +26,7 @@ import io.bootique.job.graph.JobNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.*;
 
 /**
@@ -35,6 +36,10 @@ public class JobsFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobsFactory.class);
 
+    // TODO: constructor injection is taken over by Jackson; how do we mix @JsonCreator with BQ services?
+    @Inject
+    protected Set<Job> standaloneJobs;
+
     private final Map<String, JobGraphNodeFactory> jobs;
 
     @BQConfig("A map of jobs by name")
@@ -43,7 +48,9 @@ public class JobsFactory {
         this.jobs = jobs;
     }
 
-    public Map<String, JobGraphNode> create(Set<Job> standaloneJobs) {
+    public Map<String, JobGraphNode> create() {
+
+        Objects.requireNonNull(standaloneJobs, "'standaloneJobs' was not injected");
 
         Map<String, Job> jobsByName = jobsByName(standaloneJobs);
         Map<String, JobGraphNode> nodes = new HashMap<>();

@@ -25,7 +25,6 @@ import io.bootique.di.Binder;
 import io.bootique.di.Provides;
 import io.bootique.job.JobsModule;
 import io.bootique.job.consul.lock.CompositeConsulLockHandler;
-import io.bootique.shutdown.ShutdownManager;
 
 import javax.inject.Singleton;
 
@@ -50,11 +49,9 @@ public class ConsulJobModule implements BQModule {
 
     @Provides
     @Singleton
-    public CompositeConsulLockHandler provideConsulLockHandler(
-            ConfigurationFactory configFactory,
-            ShutdownManager shutdownManager) {
+    public CompositeConsulLockHandler provideConsulLockHandler(ConfigurationFactory configFactory) {
         return configFactory
                 .config(ConsulLockHandlerFactory.class, CONFIG_PREFIX)
-                .createLockHandler(shutdownManager);
+                .create();
     }
 }

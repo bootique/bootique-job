@@ -19,12 +19,13 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.annotation.BQConfig;
-import io.bootique.di.Injector;
+import io.bootique.job.JobRegistry;
 import io.bootique.job.runtime.GraphExecutor;
+import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.shutdown.ShutdownManager;
 
-import java.util.concurrent.ExecutorService;
+import javax.inject.Inject;
 
 /**
  * @since 3.0
@@ -32,12 +33,16 @@ import java.util.concurrent.ExecutorService;
 @BQConfig
 public class InstrumentedSchedulerFactory extends SchedulerFactory {
 
+    @Inject
+    public InstrumentedSchedulerFactory(
+            JobRegistry jobRegistry,
+            JobDecorators decorators,
+            ShutdownManager shutdownManager) {
+        super(jobRegistry, decorators, shutdownManager);
+    }
+
     @Override
-    public GraphExecutor createGraphExecutor(Injector injector, ShutdownManager shutdownManager) {
-        ExecutorService pool = shutdownManager.onShutdown(
-                createGraphExecutorService(),
-                ExecutorService::shutdownNow);
-        
-        return new InstrumentedGraphExecutor(pool);
+    public GraphExecutor createGraphExecutor() {
+        return new InstrumentedGraphExecutor(createGraphExecutorService());
     }
 }
