@@ -2,6 +2,7 @@
 
 * #118 Refactor JobModule into two module classes within the same jar
 * #119 bootique-job: remove optional dependency on curator ZK client
+* #120 TriggerFactory should create a mutable parameters map
 
 ## 3.0.M2
 

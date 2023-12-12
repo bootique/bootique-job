@@ -65,6 +65,13 @@ public class SchedulerParamsIT {
                 .waitAndAssertParameters();
     }
 
+    @Test
+    public void jobParamsOverriddenWithDecorator() {
+        new DecoratorParamsTester(testFactory)
+                .run("classpath:io/bootique/job/scheduler/config-job-trigger-no-params.yml")
+                .waitAndAssertParameters();
+    }
+
     public static class J1 implements Job {
 
         @Override
@@ -78,10 +85,24 @@ public class SchedulerParamsIT {
         }
     }
 
+    public static class DecoratorParamsTester extends ParamsTester {
+        public DecoratorParamsTester(BQTestFactory testFactory) {
+            super(testFactory);
+            expectedParams.put("added", "A");
+        }
+
+        @Override
+        public JobResult run(Job delegate, Map<String, Object> params) {
+            // testing params map mutability
+            params.put("added", "A");
+            return super.run(delegate, params);
+        }
+    }
+
     public static class ParamsTester implements JobDecorator {
 
         private BQTestFactory testFactory;
-        private Map<String, Object> expectedParams;
+        protected Map<String, Object> expectedParams;
         private Map<String, Object> params;
         private JobResult result;
 

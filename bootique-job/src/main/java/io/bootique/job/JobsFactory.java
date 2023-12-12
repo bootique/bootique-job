@@ -97,7 +97,7 @@ public class JobsFactory {
     private Map<String, Object> createDefaultParams(JobMetadata metadata) {
 
         if (metadata.getParameters().isEmpty()) {
-            return Collections.emptyMap();
+            return Map.of();
         }
 
         Map<String, Object> map = new HashMap<>();

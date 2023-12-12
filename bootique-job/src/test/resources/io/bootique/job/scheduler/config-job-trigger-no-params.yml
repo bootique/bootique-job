@@ -1,0 +1,7 @@
+scheduler:
+  threadPoolSize: 2
+  triggers:
+    - job: j1
+      trigger: t1
+      fixedDelay: 10s
+      initialDelay: 0s

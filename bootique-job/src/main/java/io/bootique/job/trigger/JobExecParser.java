@@ -49,7 +49,6 @@ public class JobExecParser {
 
         int paramsIndex = jobWithParams.indexOf(JOB_PARAMS_SEPARATOR);
         if (paramsIndex < 0) {
-            // use a mutable
             return new JobExec(jobWithParams);
         } else if (paramsIndex == 0) {
             throw new IllegalArgumentException("Job name can't start with '" + JOB_PARAMS_SEPARATOR + "': " + jobWithParams);

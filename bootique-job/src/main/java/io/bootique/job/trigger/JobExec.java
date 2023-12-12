@@ -33,13 +33,14 @@ public class JobExec {
     private final Map<String, Object> params;
 
     public JobExec(String jobName) {
-        // use a mutable map for params. Downstream code may alter them
-        this(jobName, new HashMap<>());
+        this(jobName, Map.of());
     }
 
     public JobExec(String jobName, Map<String, Object> params) {
         this.jobName = Objects.requireNonNull(jobName);
-        this.params = Objects.requireNonNull(params);
+
+        // clone params passed to us, as we expect this map to be mutated when passed through a chain of decorators
+        this.params = new HashMap<>(Objects.requireNonNull(params));
     }
 
     public String getJobName() {

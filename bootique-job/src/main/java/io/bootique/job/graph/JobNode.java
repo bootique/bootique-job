@@ -41,8 +41,7 @@ public class JobNode implements JobGraphNode {
         this.params = Objects.requireNonNull(params);
         this.dependsOn = Objects.requireNonNull(dependsOn);
 
-        // Helps to distinguish between empty dependencies and no dependencies.
-        // Used in the node merge logic
+        // Helps to distinguish between empty dependencies and no dependencies. Used in the node merge logic
         this.forceNoDependencies = forceNoDependencies;
 
         if (forceNoDependencies && !dependsOn.isEmpty()) {
@@ -70,6 +69,7 @@ public class JobNode implements JobGraphNode {
         return false;
     }
 
+    @Override
     public Map<String, Object> getParams() {
         return params;
     }
