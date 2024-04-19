@@ -45,7 +45,7 @@
         <bootique.version>${project.version}</bootique.version>
         <!-- TODO: we are bringing the entire huge Spring framework to just use
             a few scheduling classes, and no injection -->
-        <spring.version>5.3.27</spring.version>
+        <spring.version>6.0.15</spring.version>
         <consul.client.version>1.5.3</consul.client.version>
     </properties>
 
