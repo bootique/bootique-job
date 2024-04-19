@@ -1,6 +1,6 @@
 ## 3.0-M4
 
-* #122 Upgrade Spring to 6.1.6
+* #122 Upgrade Spring to 5.3.34
 
 ## 3.0-M3
 
