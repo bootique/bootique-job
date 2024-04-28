@@ -44,9 +44,10 @@ public class ExecCommand extends CommandWithMetadata {
     private final Provider<JobExecParser> jobExecParser;
     private final Provider<Scheduler> schedulerProvider;
 
-    private static OptionMetadata.Builder createSerialOption() {
+    private static OptionMetadata createSerialOption() {
         return OptionMetadata.builder(SERIAL_OPTION).description("Enforces sequential execution of the jobs, " +
-                "specified with '--job' options.");
+                "specified with '--job' options.")
+                .build();
     }
 
     private static CommandMetadata createMetadata() {
