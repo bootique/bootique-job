@@ -51,6 +51,6 @@ public class GraphJob extends BaseJob {
             }
         }
 
-        return JobResult.success(getMetadata());
+        return JobResult.succeeded();
     }
 }

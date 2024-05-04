@@ -38,7 +38,7 @@ public class SingleJobStep extends GraphJobStep {
     @Override
     public JobResult run(Map<String, Object> params) {
         JobResult result = job.run(params);
-        logResult(result);
+        logResult(job.getMetadata().getName(), result);
         return result;
     }
 }

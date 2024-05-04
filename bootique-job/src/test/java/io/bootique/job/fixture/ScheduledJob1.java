@@ -33,6 +33,6 @@ public class ScheduledJob1 extends BaseJob {
 
     @Override
     public JobResult run(Map<String, Object> params) {
-        return JobResult.success(getMetadata());
+        return JobResult.succeeded();
     }
 }

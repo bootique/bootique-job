@@ -132,7 +132,7 @@ public class InstrumentedJobMDCIT {
             int next = counter.getAndIncrement();
             String id = MDC.get(TransactionIdMDC.MDC_KEY);
             tx.put(next, id != null ? id : NULL_PLACEHOLDER);
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -152,7 +152,7 @@ public class InstrumentedJobMDCIT {
             int next = counter.getAndIncrement();
             String id = MDC.get(TransactionIdMDC.MDC_KEY);
             tx.put(next, id != null ? id : NULL_PLACEHOLDER);
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -164,7 +164,7 @@ public class InstrumentedJobMDCIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -176,7 +176,7 @@ public class InstrumentedJobMDCIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 }

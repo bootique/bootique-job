@@ -112,7 +112,7 @@ public class GraphJobIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -125,7 +125,7 @@ public class GraphJobIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -138,7 +138,7 @@ public class GraphJobIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -153,7 +153,7 @@ public class GraphJobIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 }

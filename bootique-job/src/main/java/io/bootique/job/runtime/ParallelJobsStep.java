@@ -48,17 +48,17 @@ public class ParallelJobsStep extends GraphJobStep {
     @Override
     public JobResult run(Map<String, Object> params) {
 
-        List<Future<JobResult>> submitted = jobs
+        List<Map.Entry<String, Future<JobResult>>> submitted = jobs
                 .stream()
                 .skip(1)
-                .map(j -> executor.submit(j, params))
+                .map(j -> Map.entry(j.getMetadata().getName(), executor.submit(j, params)))
                 .collect(Collectors.toList());
 
         JobResult r0 = jobs.get(0).run(params);
-        logResult(r0);
+        logResult(jobs.get(0).getMetadata().getName(), r0);
 
         if (!r0.isSuccess()) {
-            LOGGER.debug("First job '{}' failed, canceling the remaining ones", r0.getMetadata().getName());
+            LOGGER.debug("First job '{}' failed, canceling the remaining ones", jobs.get(0).getMetadata().getName());
             cancelAll(submitted);
             return r0;
         }
@@ -67,16 +67,16 @@ public class ParallelJobsStep extends GraphJobStep {
 
             JobResult r;
             try {
-                r = submitted.get(i).get();
+                r = submitted.get(i).getValue().get();
             } catch (ExecutionException | InterruptedException e) {
                 r = JobResult.failure(jobs.get(i).getMetadata(), e);
             }
 
-            logResult(r);
+            logResult(submitted.get(i).getKey(), r);
 
             if (!r.isSuccess()) {
                 if (i + 1 < submitted.size()) {
-                    LOGGER.debug("Job '{}' failed, canceling the remaining ones", r.getMetadata().getName());
+                    LOGGER.debug("Job '{}' failed, canceling the remaining ones", submitted.get(i).getKey());
                     cancelAll(submitted.subList(i + 1, submitted.size()));
                 }
 
@@ -87,7 +87,7 @@ public class ParallelJobsStep extends GraphJobStep {
         return r0;
     }
 
-    private void cancelAll(List<Future<JobResult>> tasks) {
-        tasks.forEach(t -> t.cancel(true));
+    private void cancelAll(List<Map.Entry<String, Future<JobResult>>> tasks) {
+        tasks.forEach(t -> t.getValue().cancel(true));
     }
 }

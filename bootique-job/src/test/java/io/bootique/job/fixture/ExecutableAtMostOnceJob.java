@@ -85,7 +85,7 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
         busyWait(runIterations);
         finishedAt = System.nanoTime();
         executed = true;
-        return shouldFail ? JobResult.failure(getMetadata()) : JobResult.success(getMetadata());
+        return shouldFail ? JobResult.failed() : JobResult.succeeded();
     }
 
     private void busyWait(long iterations) {

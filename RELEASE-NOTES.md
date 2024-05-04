@@ -1,3 +1,7 @@
+## 3.0-M5
+
+* #123 Jobs as lambdas
+
 ## 3.0-M4
 
 * #122 Upgrade Spring to 5.3.34

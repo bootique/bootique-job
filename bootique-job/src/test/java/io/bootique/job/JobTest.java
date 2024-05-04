@@ -16,23 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.bootique.job;
 
-package io.bootique.job.fixture;
-
-import io.bootique.job.BaseJob;
-import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-public class ScheduledJob2 extends BaseJob {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    public ScheduledJob2() {
-        super(JobMetadata.build(ScheduledJob2.class));
+public class JobTest {
+
+    @Test
+    void getMetadata() {
+        assertEquals("my", new MyJob().getMetadata().getName());
     }
 
-    @Override
-    public JobResult run(Map<String, Object> params) {
-        return JobResult.succeeded();
+    @Test
+    void getMetadataLambda() {
+        Job j = p -> JobResult.succeeded();
+        assertTrue(j.getMetadata().getName().startsWith("jobtest$$lambda$"), j.getMetadata().getName());
+    }
+
+    static class MyJob implements Job {
+
+        @Override
+        public JobResult run(Map<String, Object> params) {
+            return JobResult.succeeded();
+        }
     }
 }

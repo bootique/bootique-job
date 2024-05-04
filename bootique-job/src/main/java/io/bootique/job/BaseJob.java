@@ -21,6 +21,9 @@ package io.bootique.job;
 
 import java.util.Map;
 
+/**
+ * An abstract superclass of Jobs that provide their own metadata.
+ */
 public abstract class BaseJob implements Job {
 
 	private final JobMetadata metadata;

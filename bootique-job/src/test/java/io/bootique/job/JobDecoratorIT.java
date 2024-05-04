@@ -231,7 +231,7 @@ public class JobDecoratorIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             this.actualParam = (String) params.get("LP");
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 

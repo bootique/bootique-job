@@ -44,7 +44,7 @@ public abstract class BaseTestJob<T extends BaseTestJob<T>> extends BaseJob {
     public JobResult run(Map<String, Object> params) {
         this.executedAtNanos = System.nanoTime();
         this.params = params;
-        return JobResult.success(getMetadata());
+        return JobResult.succeeded();
     }
 
     public T assertNotExecuted() {

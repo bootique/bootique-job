@@ -154,7 +154,7 @@ public class Listener_FailuresIT {
 
         @Override
         public JobResult run(Map<String, Object> params) {
-            return JobResult.failure(getMetadata(), FAILURE_MESSAGE);
+            return JobResult.failed(FAILURE_MESSAGE);
         }
     }
 

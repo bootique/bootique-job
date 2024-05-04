@@ -24,8 +24,8 @@ public class LockJob extends BaseJob {
         try {
             Thread.sleep(DELAY);
         } catch (InterruptedException e) {
-            return JobResult.failure(getMetadata());
+            return JobResult.failed();
         }
-        return JobResult.success(getMetadata());
+        return JobResult.succeeded();
     }
 }

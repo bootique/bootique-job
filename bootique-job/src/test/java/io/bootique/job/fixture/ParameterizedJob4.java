@@ -38,7 +38,7 @@ public class ParameterizedJob4 extends BaseJob {
     @Override
     public JobResult run(Map<String, Object> params) {
         this.params = params;
-        return JobResult.success(getMetadata());
+        return JobResult.succeeded();
     }
 
     public Map<String, Object> getParams() {

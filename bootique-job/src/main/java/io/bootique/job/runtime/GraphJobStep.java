@@ -36,18 +36,18 @@ public abstract class GraphJobStep {
 
     public abstract JobResult run(Map<String, Object> params);
 
-    protected void logResult(JobResult result) {
+    protected void logResult(String jobName, JobResult result) {
 
         if (!LOGGER.isDebugEnabled()) {
             return;
         }
 
         if (result.isSuccess()) {
-            LOGGER.debug("graph member '{}' finished", result.getMetadata().getName());
+            LOGGER.debug("graph member '{}' finished", jobName);
         } else {
 
             LOGGER.debug("graph member '{}' finished: {} - {}",
-                    result.getMetadata().getName(),
+                    jobName,
                     result.getOutcome(),
                     result.getMessage());
 

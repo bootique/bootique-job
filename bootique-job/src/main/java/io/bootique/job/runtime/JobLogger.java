@@ -43,9 +43,9 @@ public class JobLogger implements JobDecorator {
 
         try {
             JobResult result = delegate.run(params);
-            return onJobFinished(result);
+            return onJobFinished(metadata, result);
         } catch (Throwable th) {
-            return onJobFinished(JobResult.failure(metadata, th));
+            return onJobFinished(metadata, JobResult.failure(metadata, th));
         }
     }
 
@@ -54,9 +54,9 @@ public class JobLogger implements JobDecorator {
         LOGGER.info("{} '{}' started with params {}", label, metadata.getName(), params);
     }
 
-    private JobResult onJobFinished(JobResult result) {
-        String label = result.getMetadata().isGroup() ? "group" : "job";
-        String name = result.getMetadata().getName();
+    private JobResult onJobFinished(JobMetadata metadata, JobResult result) {
+        String label = metadata.isGroup() ? "group" : "job";
+        String name = metadata.getName();
 
         switch (result.getOutcome()) {
             case SUCCESS:

@@ -101,7 +101,7 @@ public class Scheduler_NoDeadlockIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             LOGGER.info("1 in progress");
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -114,7 +114,7 @@ public class Scheduler_NoDeadlockIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             LOGGER.info("2 in progress");
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -127,7 +127,7 @@ public class Scheduler_NoDeadlockIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             LOGGER.info("3 in progress");
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -140,7 +140,7 @@ public class Scheduler_NoDeadlockIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             LOGGER.info("4 in progress");
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 
@@ -153,7 +153,7 @@ public class Scheduler_NoDeadlockIT {
         @Override
         public JobResult run(Map<String, Object> params) {
             LOGGER.info("5 in progress");
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 }

@@ -42,6 +42,6 @@ public class ParameterizedJob3 extends BaseJob {
 		assertEquals(3L, params.get("longp"));
 		assertEquals("value1", params.get("param1"));
 		assertEquals(2, params.get("param2"));
-		return JobResult.success(getMetadata());
+		return JobResult.succeeded();
 	}
 }

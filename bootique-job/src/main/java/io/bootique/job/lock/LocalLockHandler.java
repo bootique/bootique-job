@@ -53,7 +53,7 @@ public class LocalLockHandler implements LockHandler {
 
         if (!lock.tryLock()) {
             LOGGER.info("Skipping execution of '{}', another job instance owns the lock.", metadata.getName());
-            return JobResult.skipped(metadata, "Skipping execution, another job instance owns the lock");
+            return JobResult.skipped("Skipping execution, another job instance owns the lock");
         }
 
         LOGGER.info("Locked '{}'", metadata.getName());

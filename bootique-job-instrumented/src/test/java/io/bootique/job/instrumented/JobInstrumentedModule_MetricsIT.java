@@ -78,7 +78,7 @@ public class JobInstrumentedModule_MetricsIT {
 
         @Override
         public JobResult run(Map<String, Object> parameters) {
-            return JobResult.success(metadata);
+            return JobResult.succeeded();
         }
     }
 }

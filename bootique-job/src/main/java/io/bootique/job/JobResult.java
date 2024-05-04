@@ -27,6 +27,17 @@ public class JobResult {
     private final String message;
     private final JobFuture yieldedTo;
 
+    /**
+     * @since 3.0
+     */
+    public static JobResult succeeded() {
+        return new JobResult(JobOutcome.SUCCESS, null, null, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #succeeded()}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult success(JobMetadata metadata) {
         return new JobResult(metadata, JobOutcome.SUCCESS, null, null, null);
     }
@@ -34,18 +45,60 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult succeeded(String message) {
+        return new JobResult(JobOutcome.SUCCESS, null, message, null);
+    }
+
+    /**
+     * @since 3.0
+     * @deprecated in favor of {@link #succeeded(String)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult success(JobMetadata metadata, String message) {
         return new JobResult(metadata, JobOutcome.SUCCESS, null, message, null);
     }
 
+    /**
+     * @since 3.0
+     */
+    public static JobResult failed() {
+        return new JobResult(JobOutcome.FAILURE, null, null, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #failed()}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult failure(JobMetadata metadata) {
         return new JobResult(metadata, JobOutcome.FAILURE, null, null, null);
     }
 
+    /**
+     * @since 3.0
+     */
+    public static JobResult failed(String message) {
+        return new JobResult(JobOutcome.FAILURE, null, message, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #failed(String)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult failure(JobMetadata metadata, String message) {
         return new JobResult(metadata, JobOutcome.FAILURE, null, message, null);
     }
 
+    /**
+     * @since 3.0
+     */
+    public static JobResult failed(Throwable th) {
+        return new JobResult(JobOutcome.FAILURE, th, null, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #failed(Throwable)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult failure(JobMetadata metadata, Throwable th) {
         return new JobResult(metadata, JobOutcome.FAILURE, th, null, null);
     }
@@ -53,6 +106,14 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult failed(String message, Throwable th) {
+        return new JobResult(JobOutcome.FAILURE, th, message, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #failed(String, Throwable)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult failure(JobMetadata metadata, String message, Throwable th) {
         return new JobResult(metadata, JobOutcome.FAILURE, th, message, null);
     }
@@ -60,6 +121,14 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult succeededPartially() {
+        return new JobResult(JobOutcome.PARTIAL_SUCCESS, null, null, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #succeededPartially()}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult partialSuccess(JobMetadata metadata) {
         return new JobResult(metadata, JobOutcome.PARTIAL_SUCCESS, null, null, null);
     }
@@ -67,14 +136,45 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult succeededPartially(String message) {
+        return new JobResult(JobOutcome.PARTIAL_SUCCESS, null, message, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #succeededPartially(String)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult partialSuccess(JobMetadata metadata, String message) {
         return new JobResult(metadata, JobOutcome.PARTIAL_SUCCESS, null, message, null);
     }
 
+    /**
+     * @since 3.0
+     */
+    public static JobResult unknown() {
+        return new JobResult(JobOutcome.UNKNOWN, null, null, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #unknown()}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult unknown(JobMetadata metadata) {
         return new JobResult(metadata, JobOutcome.UNKNOWN, null, null, null);
     }
 
+    /**
+     * @since 3.0
+     */
+    public static JobResult unknown(Throwable th) {
+        return new JobResult(JobOutcome.UNKNOWN, th, null, null);
+    }
+
+
+    /**
+     * @deprecated in favor of {@link #unknown(Throwable)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult unknown(JobMetadata metadata, Throwable th) {
         return new JobResult(metadata, JobOutcome.UNKNOWN, th, null, null);
     }
@@ -82,6 +182,14 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult unknown(String message) {
+        return new JobResult(JobOutcome.UNKNOWN, null, message, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #unknown(String)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult unknown(JobMetadata metadata, String message) {
         return new JobResult(metadata, JobOutcome.UNKNOWN, null, message, null);
     }
@@ -89,6 +197,14 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult skipped() {
+        return new JobResult(JobOutcome.SKIPPED, null, null, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #skipped()}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult skipped(JobMetadata metadata) {
         return new JobResult(metadata, JobOutcome.SKIPPED, null, null, null);
     }
@@ -96,13 +212,23 @@ public class JobResult {
     /**
      * @since 3.0
      */
+    public static JobResult skipped(String message) {
+        return new JobResult(JobOutcome.SKIPPED, null, message, null);
+    }
+
+    /**
+     * @deprecated in favor of {@link #skipped(String)}
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public static JobResult skipped(JobMetadata metadata, String message) {
         return new JobResult(metadata, JobOutcome.SKIPPED, null, message, null);
     }
 
     /**
      * @since 3.0
+     * @deprecated as JobMetadata is no longer a part of JobResult
      */
+    @Deprecated(since = "3.0", forRemoval = true)
     protected JobResult(JobMetadata metadata, JobOutcome outcome, Throwable throwable, String message, JobFuture yieldedTo) {
         this.metadata = metadata;
         this.outcome = outcome;
@@ -111,6 +237,21 @@ public class JobResult {
         this.yieldedTo = yieldedTo;
     }
 
+    /**
+     * @since 3.0
+     */
+    protected JobResult(JobOutcome outcome, Throwable throwable, String message, JobFuture yieldedTo) {
+        this.outcome = outcome;
+        this.throwable = throwable;
+        this.message = message;
+        this.yieldedTo = yieldedTo;
+        this.metadata = null;
+    }
+
+    /**
+     * @deprecatedto make possible job lambdas. Current callers must use {@link Job#getMetadata()} instead.
+     */
+    @Deprecated(since = "3.0", forRemoval = true)
     public JobMetadata getMetadata() {
         return metadata;
     }

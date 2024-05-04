@@ -24,9 +24,12 @@ import java.util.Map;
 /**
  * Represents a runnable job with metadata.
  */
+@FunctionalInterface
 public interface Job {
 
-	JobMetadata getMetadata();
+    JobResult run(Map<String, Object> params);
 
-	JobResult run(Map<String, Object> params);
+    default JobMetadata getMetadata() {
+        return JobMetadata.build(getClass());
+    }
 }

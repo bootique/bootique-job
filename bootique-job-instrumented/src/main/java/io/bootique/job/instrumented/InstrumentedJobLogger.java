@@ -46,9 +46,9 @@ class InstrumentedJobLogger extends JobLogger {
 
         try {
             JobResult result = delegate.run(params);
-            return onMeteredJobFinished(result, meter);
+            return onMeteredJobFinished(metadata, result, meter);
         } catch (Throwable th) {
-            return onMeteredJobFinished(JobResult.failure(metadata, th), meter);
+            return onMeteredJobFinished(metadata, JobResult.failure(metadata, th), meter);
         }
     }
 
@@ -62,17 +62,17 @@ class InstrumentedJobLogger extends JobLogger {
         return meter;
     }
 
-    private JobResult onMeteredJobFinished(JobResult result, JobMeter meter) {
+    private JobResult onMeteredJobFinished(JobMetadata metadata, JobResult result, JobMeter meter) {
         long timeMs = meter.stop(result);
-        logJobFinished(result, timeMs);
+        logJobFinished(metadata, result, timeMs);
         mdcManager.onJobFinished();
         return result;
     }
 
-    private void logJobFinished(JobResult result, long timeMs) {
+    private void logJobFinished(JobMetadata metadata, JobResult result, long timeMs) {
 
-        String label = result.getMetadata().isGroup() ? "group" : "job";
-        String name = result.getMetadata().getName();
+        String label = metadata.isGroup() ? "group" : "job";
+        String name = metadata.getName();
 
         switch (result.getOutcome()) {
             case SUCCESS:

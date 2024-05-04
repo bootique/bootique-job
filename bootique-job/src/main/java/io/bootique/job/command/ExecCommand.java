@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExecCommand extends CommandWithMetadata {
@@ -46,7 +47,7 @@ public class ExecCommand extends CommandWithMetadata {
 
     private static OptionMetadata createSerialOption() {
         return OptionMetadata.builder(SERIAL_OPTION).description("Enforces sequential execution of the jobs, " +
-                "specified with '--job' options.")
+                        "specified with '--job' options.")
                 .build();
     }
 
@@ -93,10 +94,10 @@ public class ExecCommand extends CommandWithMetadata {
                 .collect(Collectors.toList());
 
         String failed = futures.stream()
-                .map(JobFuture::get)
-                .peek(this::processResult)
-                .filter(result -> !result.isSuccess())
-                .map(r -> r.getMetadata().getName())
+                .map(f -> Map.entry(f.getJobName(), f.get()))
+                .peek(t -> processResult(t.getKey(), t.getValue()))
+                .filter(t -> !t.getValue().isSuccess())
+                .map(t -> t.getKey())
                 .collect(Collectors.joining(", "));
 
         return failed.isEmpty() ? CommandOutcome.succeeded() : CommandOutcome.failed(1, "Some of the jobs failed: " + failed);
@@ -105,7 +106,7 @@ public class ExecCommand extends CommandWithMetadata {
     private CommandOutcome runSerial(List<JobExec> execs, Scheduler scheduler) {
         for (JobExec e : execs) {
             JobResult result = scheduler.runBuilder().jobName(e.getJobName()).params(e.getParams()).runBlocking();
-            processResult(result);
+            processResult(e.getJobName(), result);
             if (!result.isSuccess()) {
                 return CommandOutcome.failed(1, "One of the jobs failed: " + e.getJobName());
             }
@@ -113,16 +114,16 @@ public class ExecCommand extends CommandWithMetadata {
         return CommandOutcome.succeeded();
     }
 
-    private void processResult(JobResult result) {
+    private void processResult(String jobName, JobResult result) {
         String message = result.getMessage() != null
 
                 ? String.format("Finished job '%s', result: %s, message: %s",
-                result.getMetadata().getName(),
+                jobName,
                 result.getOutcome(),
                 result.getMessage())
 
                 : String.format("Finished job '%s', result: %s",
-                result.getMetadata().getName(),
+                jobName,
                 result.getOutcome());
 
         if (result.getThrowable() == null) {

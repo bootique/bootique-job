@@ -81,7 +81,7 @@ public class SchedulerParamsIT {
 
         @Override
         public JobResult run(Map<String, Object> parameters) {
-            return JobResult.success(getMetadata());
+            return JobResult.succeeded();
         }
     }
 

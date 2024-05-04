@@ -42,9 +42,9 @@ public class LockJob extends BaseJob {
         try {
             Thread.sleep(DELAY);
         } catch (InterruptedException e) {
-            return JobResult.failure(JobMetadata.build(LockJob.class));
+            return JobResult.failed();
         }
-        return JobResult.success(JobMetadata.build(LockJob.class));
+        return JobResult.succeeded();
     }
 }
 

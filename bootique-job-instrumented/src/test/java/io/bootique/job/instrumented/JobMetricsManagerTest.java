@@ -48,10 +48,10 @@ public class JobMetricsManagerTest {
         JobMeter m2 = manager.onJobStarted("j1");
         assertHasMetrics("j1", metricRegistry, 2, 0, 0, 0);
 
-        m1.stop(JobResult.success(null));
+        m1.stop(JobResult.succeeded());
         assertHasMetrics("j1", metricRegistry, 1, 1, 1, 0);
 
-        m2.stop(JobResult.failure(null));
+        m2.stop(JobResult.failed());
         assertHasMetrics("j1", metricRegistry, 0, 2, 1, 1);
     }
 
@@ -62,7 +62,7 @@ public class JobMetricsManagerTest {
         JobMeter m1 = manager.onJobStarted("j1");
         assertHasMetrics("j1", metricRegistry, 1, 0, 0, 0);
 
-        m1.stop(JobResult.unknown(null));
+        m1.stop(JobResult.unknown());
         assertHasMetrics("j1", metricRegistry, 0, 1, 0, 0);
     }
 
@@ -71,7 +71,7 @@ public class JobMetricsManagerTest {
 
         JobMetricsManager manager = new JobMetricsManager(metricRegistry);
         JobMeter m1 =  manager.onJobStarted("j1");
-        m1.stop(JobResult.unknown(null));
+        m1.stop(JobResult.unknown());
 
         assertHasMetrics("j1", metricRegistry, 0, 1, 0, 0);
     }

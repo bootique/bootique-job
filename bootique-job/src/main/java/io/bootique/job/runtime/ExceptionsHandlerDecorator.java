@@ -40,7 +40,7 @@ public class ExceptionsHandlerDecorator implements JobDecorator {
     static JobResult runWithExceptionHandling(JobMetadata metadata, Job delegate, Map<String, Object> params) {
         try {
             JobResult result = delegate.run(params);
-            return result != null ? result : JobResult.unknown(metadata, "Job returned null result");
+            return result != null ? result : JobResult.unknown("Job returned null result");
         } catch (Exception e) {
             // not logging the failure here.. JobLogDecorator will do the logging
             return JobResult.failure(metadata, e);

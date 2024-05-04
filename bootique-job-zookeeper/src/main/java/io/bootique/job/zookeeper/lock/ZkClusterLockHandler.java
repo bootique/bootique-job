@@ -56,7 +56,7 @@ public class ZkClusterLockHandler implements LockHandler {
         ZkMutex lock = ZkMutex.acquire(curator.get(), lockName);
         if (lock == null) {
             LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-            return JobResult.skipped(metadata, "Another job instance owns the lock. Skipping execution");
+            return JobResult.skipped("Another job instance owns the lock. Skipping execution");
         }
 
         try {
