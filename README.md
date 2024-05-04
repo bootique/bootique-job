@@ -42,7 +42,7 @@ List all configured jobs and their parameters and default parameter values.
 
 Executes one or more jobs, possibly in parallel. The options have the following meaning:
 
-* **--job=_name_**: _name_ is either a job name or a job [group](#job-groups) name. Can optionally contain a JSON map 
+* **--job=_name_**: _name_ is either a job name or a job "group" name. Can optionally contain a JSON map 
 of job parameters. E.g. `myjob{"p":1}`. Multiple `--job` arguments can be specified in order to run several jobs with a 
 single command.
 * **--serial**: enforces sequential execution of jobs, in the same order that they are specified in the program arguments. 
