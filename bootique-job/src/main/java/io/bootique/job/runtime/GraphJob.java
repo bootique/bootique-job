@@ -21,7 +21,7 @@ package io.bootique.job.runtime;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.List;
 import java.util.Map;
@@ -42,15 +42,15 @@ public class GraphJob extends BaseJob {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
         for (GraphJobStep step : steps) {
-            JobResult result = step.run(params);
+            JobOutcome result = step.run(params);
 
             if (!result.isSuccess()) {
                 return result;
             }
         }
 
-        return JobResult.succeeded();
+        return JobOutcome.succeeded();
     }
 }

@@ -19,7 +19,7 @@
 package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 import java.util.Objects;
@@ -36,8 +36,8 @@ public class SingleJobStep extends GraphJobStep {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
-        JobResult result = job.run(params);
+    public JobOutcome run(Map<String, Object> params) {
+        JobOutcome result = job.run(params);
         logResult(job.getMetadata().getName(), result);
         return result;
     }

@@ -19,7 +19,7 @@
 package io.bootique.job.instrumented;
 
 import com.codahale.metrics.Timer;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Objects;
 
@@ -40,14 +40,14 @@ class JobMeter {
         this.runTimer = metrics.getTimer().time();
     }
 
-    public long stop(JobResult result) {
+    public long stop(JobOutcome result) {
         metrics.getActiveCounter().dec();
         metrics.getCompletedCounter().inc();
 
         // Timer.Context#stop also updates aggregate running time of all instances of <jobName>
         long timeNanos = runTimer.stop();
 
-        switch (result.getOutcome()) {
+        switch (result.getStatus()) {
             case SUCCESS: {
                 metrics.getSuccessCounter().inc();
                 break;

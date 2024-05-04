@@ -53,8 +53,8 @@ public class Scheduler_GraphJobIT {
         parameters.put("param2", 2);
 
         JobFuture future = scheduler.runBuilder().jobName("group1").params(parameters).runNonBlocking();
-        JobResult result = future.get(5L, TimeUnit.SECONDS);
-        assertEquals(JobOutcome.SUCCESS, result.getOutcome());
+        JobOutcome result = future.get(5L, TimeUnit.SECONDS);
+        assertEquals(JobStatus.SUCCESS, result.getStatus());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class Scheduler_GraphJobIT {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         JobFuture future = scheduler.runBuilder().jobName("group2").runNonBlocking();
-        JobResult result = future.get(5L, TimeUnit.SECONDS);
-        assertEquals(JobOutcome.SUCCESS, result.getOutcome());
+        JobOutcome result = future.get(5L, TimeUnit.SECONDS);
+        assertEquals(JobStatus.SUCCESS, result.getStatus());
     }
 }

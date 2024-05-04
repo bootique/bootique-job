@@ -63,13 +63,13 @@ public class SchedulerSerialJobIT {
         Scheduler scheduler = app.getInstance(Scheduler.class);
         final int count = 5;
 
-        ConcurrentMap<Integer, JobResult> results = new ConcurrentHashMap<>();
+        ConcurrentMap<Integer, JobOutcome> results = new ConcurrentHashMap<>();
         CountDownLatch latch = new CountDownLatch(count);
         for (int i = 0; i < count; i++) {
             Integer id = i;
             executor.submit(() -> {
                 try {
-                    JobResult r = scheduler.runBuilder().jobName("serialjob2").runNonBlocking().get();
+                    JobOutcome r = scheduler.runBuilder().jobName("serialjob2").runNonBlocking().get();
                     results.put(id, r);
                 } finally {
                     latch.countDown();
@@ -87,10 +87,10 @@ public class SchedulerSerialJobIT {
         List<Long[]> successRanges = results.values().stream()
 
                 // can either be non-overlapping successes or skipped
-                .peek(r -> assertTrue(r.getOutcome() == JobOutcome.SUCCESS || r.getOutcome() == JobOutcome.SKIPPED))
+                .peek(r -> assertTrue(r.getStatus() == JobStatus.SUCCESS || r.getStatus() == JobStatus.SKIPPED))
 
                 // check for success overlaps
-                .filter(r -> r.getOutcome() == JobOutcome.SUCCESS)
+                .filter(r -> r.getStatus() == JobStatus.SUCCESS)
                 .map(r -> r.getMessage().split(":"))
                 .map(ss -> new Long[]{Long.parseLong(ss[0]), Long.parseLong(ss[1])})
                 .sorted(Comparator.comparing(ll -> ll[0]))

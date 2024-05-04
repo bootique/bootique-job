@@ -21,7 +21,7 @@ package io.bootique.job.lock;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class LocalLockHandler implements LockHandler {
     }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
 
         JobMetadata metadata = delegate.getMetadata();
         String lockName = toLockName(metadata);
@@ -53,7 +53,7 @@ public class LocalLockHandler implements LockHandler {
 
         if (!lock.tryLock()) {
             LOGGER.info("Skipping execution of '{}', another job instance owns the lock.", metadata.getName());
-            return JobResult.skipped("Skipping execution, another job instance owns the lock");
+            return JobOutcome.skipped("Skipping execution, another job instance owns the lock");
         }
 
         LOGGER.info("Locked '{}'", metadata.getName());

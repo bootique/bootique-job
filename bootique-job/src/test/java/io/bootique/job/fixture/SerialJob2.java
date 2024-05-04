@@ -21,7 +21,7 @@ package io.bootique.job.fixture;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import io.bootique.job.SerialJob;
 
 import java.util.Map;
@@ -34,7 +34,7 @@ public class SerialJob2 extends BaseJob {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
 
         long startTime = System.nanoTime();
 
@@ -45,6 +45,6 @@ public class SerialJob2 extends BaseJob {
         }
 
         long endTime = System.nanoTime();
-        return JobResult.success(getMetadata(), startTime + ":" + endTime);
+        return JobOutcome.succeeded(startTime + ":" + endTime);
     }
 }

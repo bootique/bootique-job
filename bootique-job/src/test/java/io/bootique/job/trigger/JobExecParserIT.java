@@ -22,7 +22,7 @@ import io.bootique.BQRuntime;
 import io.bootique.Bootique;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import io.bootique.job.JobsModule;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
@@ -95,8 +95,8 @@ public class JobExecParserIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.succeeded();
         }
     }
 
@@ -112,8 +112,8 @@ public class JobExecParserIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.succeeded();
         }
     }
 }

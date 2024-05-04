@@ -21,7 +21,7 @@ package io.bootique.job.fixture;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 
@@ -36,9 +36,9 @@ public class ParameterizedJob5 extends BaseJob {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
         this.params = params;
-        return JobResult.succeeded();
+        return JobOutcome.succeeded();
     }
 
     public Map<String, Object> getParams() {

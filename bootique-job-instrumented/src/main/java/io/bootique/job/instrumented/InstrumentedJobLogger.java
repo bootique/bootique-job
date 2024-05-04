@@ -21,7 +21,7 @@ package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import io.bootique.job.runtime.JobLogger;
 
 import java.util.Map;
@@ -40,15 +40,15 @@ class InstrumentedJobLogger extends JobLogger {
     }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
         JobMetadata metadata = delegate.getMetadata();
         JobMeter meter = onMeteredJobStarted(metadata, params);
 
         try {
-            JobResult result = delegate.run(params);
+            JobOutcome result = delegate.run(params);
             return onMeteredJobFinished(metadata, result, meter);
         } catch (Throwable th) {
-            return onMeteredJobFinished(metadata, JobResult.failure(metadata, th), meter);
+            return onMeteredJobFinished(metadata, JobOutcome.failed(th), meter);
         }
     }
 
@@ -62,38 +62,38 @@ class InstrumentedJobLogger extends JobLogger {
         return meter;
     }
 
-    private JobResult onMeteredJobFinished(JobMetadata metadata, JobResult result, JobMeter meter) {
+    private JobOutcome onMeteredJobFinished(JobMetadata metadata, JobOutcome result, JobMeter meter) {
         long timeMs = meter.stop(result);
         logJobFinished(metadata, result, timeMs);
         mdcManager.onJobFinished();
         return result;
     }
 
-    private void logJobFinished(JobMetadata metadata, JobResult result, long timeMs) {
+    private void logJobFinished(JobMetadata metadata, JobOutcome result, long timeMs) {
 
         String label = metadata.isGroup() ? "group" : "job";
         String name = metadata.getName();
 
-        switch (result.getOutcome()) {
+        switch (result.getStatus()) {
             case SUCCESS:
                 LOGGER.info("{} '{}' finished in {} ms", label, name, timeMs);
                 return;
 
             default:
                 String message = result.getMessage();
-                if (message == null && result.getThrowable() != null) {
-                    message = result.getThrowable().getMessage();
+                if (message == null && result.getException() != null) {
+                    message = result.getException().getMessage();
                 }
 
                 if (message == null) {
                     message = "";
                 }
 
-                if (result.getThrowable() != null) {
-                    LOGGER.info("job exception", result.getThrowable());
+                if (result.getException() != null) {
+                    LOGGER.info("job exception", result.getException());
                 }
 
-                LOGGER.warn("{} '{}' finished in {} ms: {} - {} ", label, name, timeMs, result.getOutcome(), message);
+                LOGGER.warn("{} '{}' finished in {} ms: {} - {} ", label, name, timeMs, result.getStatus(), message);
         }
     }
 }

@@ -19,7 +19,7 @@
 package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,15 +46,15 @@ public class ParallelJobsStep extends GraphJobStep {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
 
-        List<Map.Entry<String, Future<JobResult>>> submitted = jobs
+        List<Map.Entry<String, Future<JobOutcome>>> submitted = jobs
                 .stream()
                 .skip(1)
                 .map(j -> Map.entry(j.getMetadata().getName(), executor.submit(j, params)))
                 .collect(Collectors.toList());
 
-        JobResult r0 = jobs.get(0).run(params);
+        JobOutcome r0 = jobs.get(0).run(params);
         logResult(jobs.get(0).getMetadata().getName(), r0);
 
         if (!r0.isSuccess()) {
@@ -65,11 +65,11 @@ public class ParallelJobsStep extends GraphJobStep {
 
         for (int i = 0; i < submitted.size(); i++) {
 
-            JobResult r;
+            JobOutcome r;
             try {
                 r = submitted.get(i).getValue().get();
             } catch (ExecutionException | InterruptedException e) {
-                r = JobResult.failure(jobs.get(i).getMetadata(), e);
+                r = JobOutcome.failed(e);
             }
 
             logResult(submitted.get(i).getKey(), r);
@@ -87,7 +87,7 @@ public class ParallelJobsStep extends GraphJobStep {
         return r0;
     }
 
-    private void cancelAll(List<Map.Entry<String, Future<JobResult>>> tasks) {
+    private void cancelAll(List<Map.Entry<String, Future<JobOutcome>>> tasks) {
         tasks.forEach(t -> t.getValue().cancel(true));
     }
 }

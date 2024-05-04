@@ -22,7 +22,7 @@ import com.orbitz.consul.KeyValueClient;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ public class ConsulLockHandler implements LockHandler {
     }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
 
         JobMetadata metadata = delegate.getMetadata();
 
@@ -57,7 +57,7 @@ public class ConsulLockHandler implements LockHandler {
         boolean acquired = kvClient.acquireLock(lockName, sessionId);
         if (!acquired) {
             LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-            return JobResult.skipped("Another job instance owns the lock. Skipping execution");
+            return JobOutcome.skipped("Another job instance owns the lock. Skipping execution");
         }
 
         try {

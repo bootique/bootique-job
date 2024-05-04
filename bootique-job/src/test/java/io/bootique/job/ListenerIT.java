@@ -155,7 +155,7 @@ public class ListenerIT {
 
     public static class Listener1 implements JobListener {
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry) {
             onFinishedCallbackRegistry.accept(result -> SharedState.append("_L1_finished"));
 
             SharedState.append("_L1_started");
@@ -165,7 +165,7 @@ public class ListenerIT {
     public static class Listener2 implements JobListener {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry) {
             onFinishedCallbackRegistry.accept(result -> SharedState.append("_L2_finished"));
             SharedState.append("_L2_started");
         }
@@ -174,7 +174,7 @@ public class ListenerIT {
     public static class Listener3 implements JobListener {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry) {
             onFinishedCallbackRegistry.accept(result -> SharedState.append("_L3_finished"));
             SharedState.append("_L3_started");
         }
@@ -194,9 +194,9 @@ public class ListenerIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             this.actualParam = (String) params.get("LP");
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -208,7 +208,7 @@ public class ListenerIT {
         }
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry) {
             parameters.put("LP", setParam);
         }
     }
@@ -231,7 +231,7 @@ public class ListenerIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             try {
                 Thread.sleep(1000L);
             } catch (InterruptedException e) {

@@ -151,7 +151,7 @@ public class SchedulerIT {
         }
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             ExecutionRateListener.Execution previousExecution = executions.peekLast();
             long startedAt = System.currentTimeMillis();
 

@@ -21,7 +21,7 @@ package io.bootique.job.fixture;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ public class ParameterizedJob3 extends BaseJob {
 	}
 
 	@Override
-	public JobResult run(Map<String, Object> params) {
+	public JobOutcome run(Map<String, Object> params) {
 		assertEquals(3, params.size());
 		assertTrue(params.containsKey("longp"));
 		assertTrue(params.containsKey("param1"));
@@ -42,6 +42,6 @@ public class ParameterizedJob3 extends BaseJob {
 		assertEquals(3L, params.get("longp"));
 		assertEquals("value1", params.get("param1"));
 		assertEquals(2, params.get("param2"));
-		return JobResult.succeeded();
+		return JobOutcome.succeeded();
 	}
 }

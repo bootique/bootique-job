@@ -75,7 +75,7 @@ public class JobRunBuilder {
         return this;
     }
 
-    public JobResult runBlocking() {
+    public JobOutcome runBlocking() {
         return resolveJob().run(resolveParams());
     }
 
@@ -84,7 +84,7 @@ public class JobRunBuilder {
         Job job = resolveJob();
         Map<String, Object> params = resolveParams();
 
-        JobResult[] result = new JobResult[1];
+        JobOutcome[] result = new JobOutcome[1];
         Future<?> future = taskScheduler.schedule(
                 () -> result[0] = job.run(params),
                 new Date());
@@ -92,7 +92,7 @@ public class JobRunBuilder {
         return new SimpleJobFuture(
                 job.getMetadata().getName(),
                 future,
-                () -> result[0] != null ? result[0] : JobResult.unknown());
+                () -> result[0] != null ? result[0] : JobOutcome.unknown());
     }
 
     protected Job resolveJob() {

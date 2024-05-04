@@ -22,7 +22,7 @@ package io.bootique.job.zookeeper.lock;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.apache.curator.framework.CuratorFramework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class ZkClusterLockHandler implements LockHandler {
     }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
 
         JobMetadata metadata = delegate.getMetadata();
         String lockName = getLockName(metadata);
@@ -56,7 +56,7 @@ public class ZkClusterLockHandler implements LockHandler {
         ZkMutex lock = ZkMutex.acquire(curator.get(), lockName);
         if (lock == null) {
             LOGGER.info("** Another job instance owns the lock. Skipping execution of '{}'", lockName);
-            return JobResult.skipped("Another job instance owns the lock. Skipping execution");
+            return JobOutcome.skipped("Another job instance owns the lock. Skipping execution");
         }
 
         try {

@@ -80,8 +80,8 @@ public class SchedulerParamsIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> parameters) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> parameters) {
+            return JobOutcome.succeeded();
         }
     }
 
@@ -92,7 +92,7 @@ public class SchedulerParamsIT {
         }
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             // testing params map mutability
             params.put("added", "A");
             return super.run(delegate, params);
@@ -104,7 +104,7 @@ public class SchedulerParamsIT {
         private BQTestFactory testFactory;
         protected Map<String, Object> expectedParams;
         private Map<String, Object> params;
-        private JobResult result;
+        private JobOutcome result;
 
         ParamsTester(BQTestFactory testFactory) {
             this.testFactory = testFactory;
@@ -118,7 +118,7 @@ public class SchedulerParamsIT {
         }
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             this.params = new HashMap<>(params);
             this.result = delegate.run(params);
             return this.result;

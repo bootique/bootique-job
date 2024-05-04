@@ -48,10 +48,10 @@ public class JobDecorator_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addDecorator(listener, JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
         assertSame(result, listener.result);
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertNull(result.getThrowable());
+        assertEquals(JobStatus.FAILURE, result.getStatus());
+        assertNull(result.getException());
         assertEquals(FailureJob.FAILURE_MESSAGE, result.getMessage());
     }
 
@@ -65,11 +65,11 @@ public class JobDecorator_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addDecorator(new StartException(), JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertNotExecuted();
 
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This decorator always throws on start", result.getThrowable().getMessage());
+        assertEquals(JobStatus.FAILURE, result.getStatus());
+        assertEquals("This decorator always throws on start", result.getException().getMessage());
     }
 
     @Test
@@ -82,17 +82,17 @@ public class JobDecorator_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addDecorator(new EndException(), JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertExecuted();
 
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This decorator always throws on finish", result.getThrowable().getMessage());
+        assertEquals(JobStatus.FAILURE, result.getStatus());
+        assertEquals("This decorator always throws on finish", result.getException().getMessage());
     }
 
     public static class StartException implements JobDecorator {
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             throw new RuntimeException("This decorator always throws on start");
         }
     }
@@ -100,7 +100,7 @@ public class JobDecorator_FailuresIT {
     public static class EndException implements JobDecorator {
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             try {
                 return delegate.run(params);
             } finally {
@@ -111,10 +111,10 @@ public class JobDecorator_FailuresIT {
 
     public static class JobResultCapture implements JobDecorator {
 
-        private JobResult result;
+        private JobOutcome result;
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
 
             this.result = delegate.run(params);
             return this.result;
@@ -136,8 +136,8 @@ public class JobDecorator_FailuresIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.failed(FAILURE_MESSAGE);
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.failed(FAILURE_MESSAGE);
         }
     }
 }

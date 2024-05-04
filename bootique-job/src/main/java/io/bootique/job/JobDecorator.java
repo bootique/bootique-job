@@ -41,5 +41,5 @@ public interface JobDecorator {
         return true;
     }
 
-    JobResult run(Job delegate, Map<String, Object> params);
+    JobOutcome run(Job delegate, Map<String, Object> params);
 }

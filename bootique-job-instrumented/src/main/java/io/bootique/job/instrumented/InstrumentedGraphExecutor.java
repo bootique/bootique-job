@@ -19,7 +19,7 @@
 package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import io.bootique.job.runtime.GraphExecutor;
 
 import java.util.Map;
@@ -36,7 +36,7 @@ public class InstrumentedGraphExecutor extends GraphExecutor {
     }
 
     @Override
-    public Future<JobResult> submit(Job job, Map<String, Object> params) {
+    public Future<JobOutcome> submit(Job job, Map<String, Object> params) {
         Job decorated = decorateWithGroupTxId(job);
         return super.submit(decorated, params);
     }

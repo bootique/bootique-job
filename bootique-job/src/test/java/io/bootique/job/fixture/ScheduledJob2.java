@@ -21,7 +21,7 @@ package io.bootique.job.fixture;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 
@@ -32,7 +32,7 @@ public class ScheduledJob2 extends BaseJob {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
-        return JobResult.succeeded();
+    public JobOutcome run(Map<String, Object> params) {
+        return JobOutcome.succeeded();
     }
 }

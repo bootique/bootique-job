@@ -49,11 +49,11 @@ public class Listener_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addListener(listener))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("exception").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("exception").runNonBlocking().get();
         assertSame(result, listener.result);
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertTrue(result.getThrowable() instanceof RuntimeException);
-        assertEquals(ExceptionJob.EXCEPTION_MESSAGE, result.getThrowable().getMessage());
+        assertEquals(JobStatus.FAILURE, result.getStatus());
+        assertTrue(result.getException() instanceof RuntimeException);
+        assertEquals(ExceptionJob.EXCEPTION_MESSAGE, result.getException().getMessage());
     }
 
     @Test
@@ -67,10 +67,10 @@ public class Listener_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addListener(listener))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
         assertSame(result, listener.result);
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertNull(result.getThrowable());
+        assertEquals(JobStatus.FAILURE, result.getStatus());
+        assertNull(result.getException());
         assertEquals(FailureJob.FAILURE_MESSAGE, result.getMessage());
     }
 
@@ -84,11 +84,11 @@ public class Listener_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addListener(Listener_StartException.class))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertNotExecuted();
 
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This listener always throws on start", result.getThrowable().getMessage());
+        assertEquals(JobStatus.FAILURE, result.getStatus());
+        assertEquals("This listener always throws on start", result.getException().getMessage());
     }
 
     @Test
@@ -101,17 +101,17 @@ public class Listener_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addListener(Listener_EndException.class))
                 .createRuntime();
 
-        JobResult result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
         job.assertExecuted();
 
-        assertEquals(JobOutcome.FAILURE, result.getOutcome());
-        assertEquals("This listener always throws on finish", result.getThrowable().getMessage());
+        assertEquals(JobStatus.FAILURE, result.getStatus());
+        assertEquals("This listener always throws on finish", result.getException().getMessage());
     }
 
     public static class Listener_StartException implements JobListener {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry) {
             throw new RuntimeException("This listener always throws on start");
         }
     }
@@ -119,7 +119,7 @@ public class Listener_FailuresIT {
     public static class Listener_EndException implements JobListener {
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry) {
             onFinishedCallbackRegistry.accept(r -> {
                 throw new RuntimeException("This listener always throws on finish");
             });
@@ -128,10 +128,10 @@ public class Listener_FailuresIT {
 
     public static class Listener_JobResultCapture implements JobListener {
 
-        private JobResult result;
+        private JobOutcome result;
 
         @Override
-        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry) {
+        public void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry) {
             onFinishedCallbackRegistry.accept(r -> {
                 this.result = r;
             });
@@ -153,8 +153,8 @@ public class Listener_FailuresIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.failed(FAILURE_MESSAGE);
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.failed(FAILURE_MESSAGE);
         }
     }
 
@@ -167,7 +167,7 @@ public class Listener_FailuresIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             throw new RuntimeException(EXCEPTION_MESSAGE);
         }
     }

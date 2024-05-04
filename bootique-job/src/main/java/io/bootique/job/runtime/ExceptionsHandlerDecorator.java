@@ -22,7 +22,7 @@ package io.bootique.job.runtime;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobDecorator;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 
@@ -32,18 +32,18 @@ import java.util.Map;
 public class ExceptionsHandlerDecorator implements JobDecorator {
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
         return runWithExceptionHandling(delegate.getMetadata(), delegate, params);
     }
 
     // reusable method that can be used by this and other decorators for consistent error handling
-    static JobResult runWithExceptionHandling(JobMetadata metadata, Job delegate, Map<String, Object> params) {
+    static JobOutcome runWithExceptionHandling(JobMetadata metadata, Job delegate, Map<String, Object> params) {
         try {
-            JobResult result = delegate.run(params);
-            return result != null ? result : JobResult.unknown("Job returned null result");
+            JobOutcome result = delegate.run(params);
+            return result != null ? result : JobOutcome.unknown("Job returned null result");
         } catch (Exception e) {
-            // not logging the failure here.. JobLogDecorator will do the logging
-            return JobResult.failure(metadata, e);
+            // not logging the failure here... JobLogDecorator will do the logging
+            return JobOutcome.failed(e);
         }
     }
 

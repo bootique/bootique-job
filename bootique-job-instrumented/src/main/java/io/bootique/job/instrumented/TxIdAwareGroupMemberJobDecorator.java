@@ -20,7 +20,7 @@ package io.bootique.job.instrumented;
 
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import io.bootique.metrics.mdc.TransactionIdMDC;
 
 import java.util.Map;
@@ -48,7 +48,7 @@ class TxIdAwareGroupMemberJobDecorator implements Job {
     }
 
     @Override
-    public JobResult run(Map<String, Object> parameters) {
+    public JobOutcome run(Map<String, Object> parameters) {
 
         TransactionIdMDC.setId(groupMDC);
         try {

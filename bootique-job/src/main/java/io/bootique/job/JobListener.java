@@ -40,5 +40,5 @@ public interface JobListener {
      * @param onFinishedCallbackRegistry an object that will notify registered consumers when the job that generated this start
      *                                   event is finished.
      */
-    void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobResult>> onFinishedCallbackRegistry);
+    void onJobStarted(String jobName, Map<String, Object> parameters, Consumer<Consumer<JobOutcome>> onFinishedCallbackRegistry);
 }

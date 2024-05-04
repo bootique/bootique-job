@@ -21,7 +21,7 @@ package io.bootique.job.fixture;
 
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,7 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
         try {
             boolean acquired = executionLock.tryLock();
             if (!acquired) {
@@ -76,7 +76,7 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
         }
     }
 
-    private JobResult doExecute(Map<String, Object> params) {
+    private JobOutcome doExecute(Map<String, Object> params) {
         if (executed) {
             throw new RuntimeException("Already executed: " + getMetadata().getName());
         }
@@ -85,7 +85,7 @@ public abstract class ExecutableAtMostOnceJob extends BaseJob {
         busyWait(runIterations);
         finishedAt = System.nanoTime();
         executed = true;
-        return shouldFail ? JobResult.failed() : JobResult.succeeded();
+        return shouldFail ? JobOutcome.failed() : JobOutcome.succeeded();
     }
 
     private void busyWait(long iterations) {

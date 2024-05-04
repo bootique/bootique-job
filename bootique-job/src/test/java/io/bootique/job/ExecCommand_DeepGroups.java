@@ -88,10 +88,10 @@ public class ExecCommand_DeepGroups {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("running 1");
             results.put("j1", 1);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -103,10 +103,10 @@ public class ExecCommand_DeepGroups {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("running 2");
             results.put("j2", 1);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -118,10 +118,10 @@ public class ExecCommand_DeepGroups {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("running 3");
             results.put("j3", 1);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -133,10 +133,10 @@ public class ExecCommand_DeepGroups {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("running 4");
             results.put("j4", 1);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -148,10 +148,10 @@ public class ExecCommand_DeepGroups {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("running 5");
             results.put("j5", 1);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -163,10 +163,10 @@ public class ExecCommand_DeepGroups {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("running 6");
             results.put("j6", 1);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 }

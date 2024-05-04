@@ -4,7 +4,7 @@ import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.SerialJob;
 import io.bootique.job.consul.it.ConsulJobLockIT;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 
@@ -18,14 +18,14 @@ public class LockJob extends BaseJob {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
         Integer callsCount = (Integer) params.get(ConsulJobLockIT.CALLS_COUNT);
         params.put(ConsulJobLockIT.CALLS_COUNT, callsCount + 1);
         try {
             Thread.sleep(DELAY);
         } catch (InterruptedException e) {
-            return JobResult.failed();
+            return JobOutcome.failed();
         }
-        return JobResult.succeeded();
+        return JobOutcome.succeeded();
     }
 }

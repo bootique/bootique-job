@@ -16,33 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package io.bootique.job;
 
-import org.junit.jupiter.api.Test;
+/**
+ * @since 3.0
+ */
+public enum JobStatus {
 
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-public class JobTest {
-
-    @Test
-    void getMetadata() {
-        assertEquals("my", new MyJob().getMetadata().getName());
-    }
-
-    @Test
-    void getMetadataLambda() {
-        Job j = p -> JobOutcome.succeeded();
-        assertTrue(j.getMetadata().getName().startsWith("jobtest$$lambda"), j.getMetadata().getName());
-    }
-
-    static class MyJob implements Job {
-
-        @Override
-        public JobOutcome run(Map<String, Object> params) {
-            return JobOutcome.succeeded();
-        }
-    }
+	SUCCESS, FAILURE, PARTIAL_SUCCESS, UNKNOWN, SKIPPED
 }

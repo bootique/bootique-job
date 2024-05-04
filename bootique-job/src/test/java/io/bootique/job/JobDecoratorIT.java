@@ -179,7 +179,7 @@ public class JobDecoratorIT {
     public static class Listener1 implements JobDecorator {
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             SharedState.append("_L1_started");
             try {
                 return delegate.run(params);
@@ -192,7 +192,7 @@ public class JobDecoratorIT {
     public static class Listener2 implements JobDecorator {
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             SharedState.append("_L2_started");
             try {
                 return delegate.run(params);
@@ -205,7 +205,7 @@ public class JobDecoratorIT {
     public static class Listener3 implements JobDecorator {
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             SharedState.append("_L3_started");
             try {
                 return delegate.run(params);
@@ -229,9 +229,9 @@ public class JobDecoratorIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             this.actualParam = (String) params.get("LP");
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -243,7 +243,7 @@ public class JobDecoratorIT {
         }
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             params.put("LP", setParam);
             return delegate.run(params);
         }
@@ -267,7 +267,7 @@ public class JobDecoratorIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             try {
                 Thread.sleep(1000L);
             } catch (InterruptedException e) {

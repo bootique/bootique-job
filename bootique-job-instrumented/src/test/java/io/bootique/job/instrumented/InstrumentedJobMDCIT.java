@@ -125,14 +125,14 @@ public class InstrumentedJobMDCIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
 
             LOGGER.info("in job1");
 
             int next = counter.getAndIncrement();
             String id = MDC.get(TransactionIdMDC.MDC_KEY);
             tx.put(next, id != null ? id : NULL_PLACEHOLDER);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -147,12 +147,12 @@ public class InstrumentedJobMDCIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("in job2");
             int next = counter.getAndIncrement();
             String id = MDC.get(TransactionIdMDC.MDC_KEY);
             tx.put(next, id != null ? id : NULL_PLACEHOLDER);
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -163,8 +163,8 @@ public class InstrumentedJobMDCIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.succeeded();
         }
     }
 
@@ -175,8 +175,8 @@ public class InstrumentedJobMDCIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.succeeded();
         }
     }
 }

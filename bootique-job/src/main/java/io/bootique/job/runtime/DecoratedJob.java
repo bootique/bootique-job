@@ -21,7 +21,7 @@ package io.bootique.job.runtime;
 import io.bootique.job.Job;
 import io.bootique.job.JobDecorator;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 
@@ -46,7 +46,7 @@ public class DecoratedJob implements Job {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
         return decorator.run(job, params);
     }
 }

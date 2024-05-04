@@ -75,8 +75,8 @@ public class JobRegistryIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.succeeded();
         }
     }
 
@@ -88,8 +88,8 @@ public class JobRegistryIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.succeeded();
         }
     }
 }

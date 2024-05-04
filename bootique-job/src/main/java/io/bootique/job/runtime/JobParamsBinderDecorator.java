@@ -21,7 +21,7 @@ package io.bootique.job.runtime;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobDecorator;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class JobParamsBinderDecorator implements JobDecorator {
     }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
         throw new UnsupportedOperationException("This decorator is not executable. It delegates to another decorator instead");
     }
 
@@ -56,7 +56,7 @@ public class JobParamsBinderDecorator implements JobDecorator {
         }
 
         @Override
-        public JobResult run(Job delegate, Map<String, Object> params) {
+        public JobOutcome run(Job delegate, Map<String, Object> params) {
             return delegate.run(mergeParams(params));
         }
 

@@ -20,7 +20,7 @@
 package io.bootique.job.runtime;
 
 import io.bootique.job.JobFuture;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.concurrent.*;
 import java.util.function.Supplier;
@@ -29,12 +29,12 @@ public class SimpleJobFuture implements JobFuture {
 
     private String jobName;
     private Future<?> delegate;
-    private Supplier<JobResult> resultSupplier;
+    private Supplier<JobOutcome> resultSupplier;
 
     public SimpleJobFuture(
             String jobName,
             Future<?> delegate,
-            Supplier<JobResult> resultSupplier) {
+            Supplier<JobOutcome> resultSupplier) {
 
         this.jobName = jobName;
         this.delegate = delegate;
@@ -62,7 +62,7 @@ public class SimpleJobFuture implements JobFuture {
     }
 
     @Override
-    public JobResult get() {
+    public JobOutcome get() {
         // wait till the job is done and then return the result
         try {
             delegate.get();
@@ -74,7 +74,7 @@ public class SimpleJobFuture implements JobFuture {
     }
 
     @Override
-    public JobResult get(long timeout, TimeUnit unit) {
+    public JobOutcome get(long timeout, TimeUnit unit) {
 
         // wait till the job is done and then return the result
         try {

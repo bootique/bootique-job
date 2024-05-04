@@ -38,5 +38,5 @@ public abstract class BaseJob implements Job {
 	}
 
 	@Override
-	public abstract JobResult run(Map<String, Object> params);
+	public abstract JobOutcome run(Map<String, Object> params);
 }

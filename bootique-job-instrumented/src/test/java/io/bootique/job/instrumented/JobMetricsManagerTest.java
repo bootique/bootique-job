@@ -21,7 +21,7 @@ package io.bootique.job.instrumented;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,10 +48,10 @@ public class JobMetricsManagerTest {
         JobMeter m2 = manager.onJobStarted("j1");
         assertHasMetrics("j1", metricRegistry, 2, 0, 0, 0);
 
-        m1.stop(JobResult.succeeded());
+        m1.stop(JobOutcome.succeeded());
         assertHasMetrics("j1", metricRegistry, 1, 1, 1, 0);
 
-        m2.stop(JobResult.failed());
+        m2.stop(JobOutcome.failed());
         assertHasMetrics("j1", metricRegistry, 0, 2, 1, 1);
     }
 
@@ -62,7 +62,7 @@ public class JobMetricsManagerTest {
         JobMeter m1 = manager.onJobStarted("j1");
         assertHasMetrics("j1", metricRegistry, 1, 0, 0, 0);
 
-        m1.stop(JobResult.unknown());
+        m1.stop(JobOutcome.unknown());
         assertHasMetrics("j1", metricRegistry, 0, 1, 0, 0);
     }
 
@@ -71,7 +71,7 @@ public class JobMetricsManagerTest {
 
         JobMetricsManager manager = new JobMetricsManager(metricRegistry);
         JobMeter m1 =  manager.onJobStarted("j1");
-        m1.stop(JobResult.unknown());
+        m1.stop(JobOutcome.unknown());
 
         assertHasMetrics("j1", metricRegistry, 0, 1, 0, 0);
     }

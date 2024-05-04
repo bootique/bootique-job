@@ -19,7 +19,7 @@
 package io.bootique.job.runtime;
 
 import io.bootique.job.Job;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -39,11 +39,11 @@ public class GraphExecutor {
         this.pool = pool;
     }
 
-    public Future<JobResult> submit(Job job, Map<String, Object> params) {
+    public Future<JobOutcome> submit(Job job, Map<String, Object> params) {
         return pool.submit(new CallableJob(job, params));
     }
 
-    static class CallableJob implements Callable<JobResult> {
+    static class CallableJob implements Callable<JobOutcome> {
         final Job job;
         final Map<String, Object> params;
 
@@ -53,7 +53,7 @@ public class GraphExecutor {
         }
 
         @Override
-        public JobResult call() {
+        public JobOutcome call() {
             return job.run(params);
         }
     }

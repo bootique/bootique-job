@@ -22,7 +22,7 @@ package io.bootique.job.runtime;
 import io.bootique.job.Job;
 import io.bootique.job.JobDecorator;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,16 +36,16 @@ public class JobLogger implements JobDecorator {
     protected static final Logger LOGGER = LoggerFactory.getLogger(JobLogger.class);
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
 
         JobMetadata metadata = delegate.getMetadata();
         onJobStarted(metadata, params);
 
         try {
-            JobResult result = delegate.run(params);
+            JobOutcome result = delegate.run(params);
             return onJobFinished(metadata, result);
         } catch (Throwable th) {
-            return onJobFinished(metadata, JobResult.failure(metadata, th));
+            return onJobFinished(metadata, JobOutcome.failed(th));
         }
     }
 
@@ -54,29 +54,29 @@ public class JobLogger implements JobDecorator {
         LOGGER.info("{} '{}' started with params {}", label, metadata.getName(), params);
     }
 
-    private JobResult onJobFinished(JobMetadata metadata, JobResult result) {
+    private JobOutcome onJobFinished(JobMetadata metadata, JobOutcome result) {
         String label = metadata.isGroup() ? "group" : "job";
         String name = metadata.getName();
 
-        switch (result.getOutcome()) {
+        switch (result.getStatus()) {
             case SUCCESS:
                 LOGGER.info("{} '{}' finished", label, name);
                 return result;
             default:
                 String message = result.getMessage();
-                if (message == null && result.getThrowable() != null) {
-                    message = result.getThrowable().getMessage();
+                if (message == null && result.getException() != null) {
+                    message = result.getException().getMessage();
                 }
 
                 if (message == null) {
                     message = "";
                 }
 
-                if (result.getThrowable() != null) {
-                    LOGGER.info("job exception", result.getThrowable());
+                if (result.getException() != null) {
+                    LOGGER.info("job exception", result.getException());
                 }
 
-                LOGGER.warn("{} '{}' finished: {} - {} ", label, name, result.getOutcome(), message);
+                LOGGER.warn("{} '{}' finished: {} - {} ", label, name, result.getStatus(), message);
                 return result;
         }
     }

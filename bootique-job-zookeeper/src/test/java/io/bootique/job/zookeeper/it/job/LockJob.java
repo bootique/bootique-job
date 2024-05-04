@@ -21,7 +21,7 @@ package io.bootique.job.zookeeper.it.job;
 import io.bootique.job.BaseJob;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.SerialJob;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import io.bootique.job.zookeeper.it.ZkJobLockIT;
 
 import java.util.Map;
@@ -36,15 +36,15 @@ public class LockJob extends BaseJob {
     }
 
     @Override
-    public JobResult run(Map<String, Object> params) {
+    public JobOutcome run(Map<String, Object> params) {
         Integer callsCount = (Integer) params.get(ZkJobLockIT.CALLS_COUNT);
         params.put(ZkJobLockIT.CALLS_COUNT, callsCount + 1);
         try {
             Thread.sleep(DELAY);
         } catch (InterruptedException e) {
-            return JobResult.failed();
+            return JobOutcome.failed();
         }
-        return JobResult.succeeded();
+        return JobOutcome.succeeded();
     }
 }
 

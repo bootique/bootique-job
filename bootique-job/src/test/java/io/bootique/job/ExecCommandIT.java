@@ -509,7 +509,7 @@ public class ExecCommandIT extends BaseJobExecIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             try {
                 Thread.sleep(600L);
             } catch (InterruptedException e) {
@@ -525,7 +525,7 @@ public class ExecCommandIT extends BaseJobExecIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             try {
                 Thread.sleep(1000L);
             } catch (InterruptedException e) {

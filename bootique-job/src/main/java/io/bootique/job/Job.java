@@ -22,12 +22,12 @@ package io.bootique.job;
 import java.util.Map;
 
 /**
- * Represents a runnable job with metadata.
+ * A runnable job with metadata.
  */
 @FunctionalInterface
 public interface Job {
 
-    JobResult run(Map<String, Object> params);
+    JobOutcome run(Map<String, Object> params);
 
     default JobMetadata getMetadata() {
         return JobMetadata.build(getClass());

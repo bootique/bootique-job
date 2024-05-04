@@ -23,7 +23,7 @@ import com.codahale.metrics.MetricRegistry;
 import io.bootique.BQRuntime;
 import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import io.bootique.job.JobsModule;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
@@ -77,8 +77,8 @@ public class JobInstrumentedModule_MetricsIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> parameters) {
-            return JobResult.succeeded();
+        public JobOutcome run(Map<String, Object> parameters) {
+            return JobOutcome.succeeded();
         }
     }
 }

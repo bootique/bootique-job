@@ -72,8 +72,8 @@ public class Scheduler_NoDeadlockIT {
                 scheduler.runBuilder().jobName("j1").runNonBlocking());
 
         for (JobFuture f : futures) {
-            JobResult r = f.get();
-            assertEquals(JobOutcome.SUCCESS, r.getOutcome());
+            JobOutcome r = f.get();
+            assertEquals(JobStatus.SUCCESS, r.getStatus());
         }
     }
 
@@ -87,8 +87,8 @@ public class Scheduler_NoDeadlockIT {
                 scheduler.runBuilder().jobName("j1").runNonBlocking());
 
         for (JobFuture f : futures) {
-            JobResult r = f.get(1, TimeUnit.SECONDS);
-            assertEquals(JobOutcome.SUCCESS, r.getOutcome());
+            JobOutcome r = f.get(1, TimeUnit.SECONDS);
+            assertEquals(JobStatus.SUCCESS, r.getStatus());
         }
     }
 
@@ -99,9 +99,9 @@ public class Scheduler_NoDeadlockIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("1 in progress");
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -112,9 +112,9 @@ public class Scheduler_NoDeadlockIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("2 in progress");
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -125,9 +125,9 @@ public class Scheduler_NoDeadlockIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("3 in progress");
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -138,9 +138,9 @@ public class Scheduler_NoDeadlockIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("4 in progress");
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 
@@ -151,9 +151,9 @@ public class Scheduler_NoDeadlockIT {
         }
 
         @Override
-        public JobResult run(Map<String, Object> params) {
+        public JobOutcome run(Map<String, Object> params) {
             LOGGER.info("5 in progress");
-            return JobResult.succeeded();
+            return JobOutcome.succeeded();
         }
     }
 }

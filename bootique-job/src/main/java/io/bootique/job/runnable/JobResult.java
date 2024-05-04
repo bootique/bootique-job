@@ -21,42 +21,43 @@ package io.bootique.job.runnable;
 import io.bootique.job.JobFuture;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobOutcome;
+import io.bootique.job.JobStatus;
 
 /**
- * @deprecated since 3.0 in favor of {@link io.bootique.job.JobResult}
+ * @deprecated in favor of {@link JobOutcome}
  */
-@Deprecated
+@Deprecated(since = "3.0", forRemoval = true)
 public class JobResult extends io.bootique.job.JobResult {
 
     public static JobResult success(JobMetadata metadata) {
-        return new JobResult(metadata, JobOutcome.SUCCESS, null, null, null);
+        return new JobResult(metadata, JobStatus.SUCCESS, null, null, null);
     }
 
     public static JobResult failure(JobMetadata metadata) {
-        return new JobResult(metadata, JobOutcome.FAILURE, null, null, null);
+        return new JobResult(metadata, JobStatus.FAILURE, null, null, null);
     }
 
     public static JobResult failure(JobMetadata metadata, String message) {
-        return new JobResult(metadata, JobOutcome.FAILURE, null, message, null);
+        return new JobResult(metadata, JobStatus.FAILURE, null, message, null);
     }
 
     public static JobResult failure(JobMetadata metadata, Throwable th) {
-        return new JobResult(metadata, JobOutcome.FAILURE, th, null, null);
+        return new JobResult(metadata, JobStatus.FAILURE, th, null, null);
     }
 
     public static JobResult unknown(JobMetadata metadata) {
-        return new JobResult(metadata, JobOutcome.UNKNOWN, null, null, null);
+        return new JobResult(metadata, JobStatus.UNKNOWN, null, null, null);
     }
 
-    public static io.bootique.job.JobResult unknown(JobMetadata metadata, Throwable th) {
-        return new JobResult(metadata, JobOutcome.UNKNOWN, th, null, null);
+    public static JobResult unknown(JobMetadata metadata, Throwable th) {
+        return new JobResult(metadata, JobStatus.UNKNOWN, th, null, null);
     }
 
-    public JobResult(JobMetadata metadata, JobOutcome outcome, Throwable throwable, String message) {
+    public JobResult(JobMetadata metadata, JobStatus outcome, Throwable throwable, String message) {
         this(metadata, outcome, throwable, message, null);
     }
 
-    protected JobResult(JobMetadata metadata, JobOutcome outcome, Throwable throwable, String message, JobFuture yieldedTo) {
+    protected JobResult(JobMetadata metadata, JobStatus outcome, Throwable throwable, String message, JobFuture yieldedTo) {
         super(metadata, outcome, throwable, message, null);
     }
 }

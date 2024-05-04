@@ -19,7 +19,7 @@
 package io.bootique.job.runtime;
 
 
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +34,9 @@ public abstract class GraphJobStep {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphJobStep.class);
 
-    public abstract JobResult run(Map<String, Object> params);
+    public abstract JobOutcome run(Map<String, Object> params);
 
-    protected void logResult(String jobName, JobResult result) {
+    protected void logResult(String jobName, JobOutcome result) {
 
         if (!LOGGER.isDebugEnabled()) {
             return;
@@ -48,11 +48,11 @@ public abstract class GraphJobStep {
 
             LOGGER.debug("graph member '{}' finished: {} - {}",
                     jobName,
-                    result.getOutcome(),
+                    result.getStatus(),
                     result.getMessage());
 
-            if (result.getThrowable() != null) {
-                LOGGER.debug("graph member error", result.getThrowable());
+            if (result.getException() != null) {
+                LOGGER.debug("graph member error", result.getException());
             }
         }
     }

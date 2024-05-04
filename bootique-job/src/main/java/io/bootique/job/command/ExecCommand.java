@@ -105,7 +105,7 @@ public class ExecCommand extends CommandWithMetadata {
 
     private CommandOutcome runSerial(List<JobExec> execs, Scheduler scheduler) {
         for (JobExec e : execs) {
-            JobResult result = scheduler.runBuilder().jobName(e.getJobName()).params(e.getParams()).runBlocking();
+            JobOutcome result = scheduler.runBuilder().jobName(e.getJobName()).params(e.getParams()).runBlocking();
             processResult(e.getJobName(), result);
             if (!result.isSuccess()) {
                 return CommandOutcome.failed(1, "One of the jobs failed: " + e.getJobName());
@@ -114,22 +114,22 @@ public class ExecCommand extends CommandWithMetadata {
         return CommandOutcome.succeeded();
     }
 
-    private void processResult(String jobName, JobResult result) {
+    private void processResult(String jobName, JobOutcome result) {
         String message = result.getMessage() != null
 
                 ? String.format("Finished job '%s', result: %s, message: %s",
                 jobName,
-                result.getOutcome(),
+                result.getStatus(),
                 result.getMessage())
 
                 : String.format("Finished job '%s', result: %s",
                 jobName,
-                result.getOutcome());
+                result.getStatus());
 
-        if (result.getThrowable() == null) {
+        if (result.getException() == null) {
             LOGGER.info(message);
         } else {
-            LOGGER.error(message, result.getThrowable());
+            LOGGER.error(message, result.getException());
         }
     }
 }

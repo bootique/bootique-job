@@ -20,7 +20,7 @@ package io.bootique.job.consul.lock;
 
 import io.bootique.job.Job;
 import io.bootique.job.lock.LockHandler;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.Map;
 
@@ -35,7 +35,7 @@ public class CompositeConsulLockHandler implements LockHandler {
     }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
         return localLockHandler.run(consulLockHandler.decorate(delegate, null, params), params);
     }
 }

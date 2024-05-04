@@ -19,15 +19,13 @@
 
 package io.bootique.job;
 
-import io.bootique.job.JobResult;
-
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
  * A specialized future for a single job execution that hides checked exceptions and provides job execution result.
  */
-public interface JobFuture extends Future<JobResult> {
+public interface JobFuture extends Future<JobOutcome> {
 
     String getJobName();
 
@@ -36,7 +34,7 @@ public interface JobFuture extends Future<JobResult> {
      */
     // override super to hide checked exceptions
     @Override
-    JobResult get();
+    JobOutcome get();
 
     /**
      * Waits till the job is done and then returns the result. Throws an exception, if timeout elapses before the job
@@ -44,5 +42,5 @@ public interface JobFuture extends Future<JobResult> {
      */
     // override super to hide checked exceptions
     @Override
-    JobResult get(long timeout, TimeUnit unit);
+    JobOutcome get(long timeout, TimeUnit unit);
 }

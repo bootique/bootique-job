@@ -23,7 +23,7 @@ import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.MappedJobListener;
 import io.bootique.job.JobDecorator;
-import io.bootique.job.JobResult;
+import io.bootique.job.JobOutcome;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -47,23 +47,23 @@ public class JobListenersDispatcherDecorator implements JobDecorator {
     }
 
     @Override
-    public JobResult run(Job delegate, Map<String, Object> params) {
+    public JobOutcome run(Job delegate, Map<String, Object> params) {
 
         String jobName = delegate.getMetadata().getName();
         JobListenerInvoker listenerInvoker = new JobListenerInvoker(jobName);
         listenerInvoker.onStart(listeners, params);
 
-        JobResult result = ExceptionsHandlerDecorator.runWithExceptionHandling(delegate.getMetadata(), delegate, params);
+        JobOutcome result = ExceptionsHandlerDecorator.runWithExceptionHandling(delegate.getMetadata(), delegate, params);
 
         // invoke outside try/catch... Listener exceptions will be processed downstream
         listenerInvoker.onFinish(result);
         return result;
     }
 
-    static class JobListenerInvoker implements Consumer<Consumer<JobResult>> {
+    static class JobListenerInvoker implements Consumer<Consumer<JobOutcome>> {
 
         private final String jobName;
-        private final List<Consumer<JobResult>> callbacks;
+        private final List<Consumer<JobOutcome>> callbacks;
 
         JobListenerInvoker(String jobName) {
             this.jobName = jobName;
@@ -71,7 +71,7 @@ public class JobListenersDispatcherDecorator implements JobDecorator {
         }
 
         @Override
-        public void accept(Consumer<JobResult> callback) {
+        public void accept(Consumer<JobOutcome> callback) {
             callbacks.add(callback);
         }
 
@@ -79,10 +79,10 @@ public class JobListenersDispatcherDecorator implements JobDecorator {
             listeners.stream().map(MappedJobListener::getListener).forEach(l -> l.onJobStarted(jobName, parameters, this));
         }
 
-        public void onFinish(JobResult result) {
+        public void onFinish(JobOutcome result) {
 
             // invoke backwards - last callbacks are notified first
-            ListIterator<Consumer<JobResult>> it = callbacks.listIterator(callbacks.size());
+            ListIterator<Consumer<JobOutcome>> it = callbacks.listIterator(callbacks.size());
             while (it.hasPrevious()) {
                 it.previous().accept(result);
             }
