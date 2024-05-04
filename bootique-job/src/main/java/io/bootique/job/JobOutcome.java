@@ -89,7 +89,7 @@ public class JobOutcome {
     }
 
     /**
-     * @deprecatedto use {@link #getStatus()}
+     * @deprecated use {@link #getStatus()}
      */
     @Deprecated(since = "3.0", forRemoval = true)
     public JobStatus getOutcome() {
@@ -105,7 +105,7 @@ public class JobOutcome {
     }
 
     /**
-     * @deprecatedto use {@link #getException()}
+     * @deprecated use {@link #getException()}
      */
     @Deprecated(since = "3.0", forRemoval = true)
     public Throwable getThrowable() {

@@ -132,7 +132,7 @@ public class JobResult extends JobOutcome {
     }
 
     /**
-     * @deprecatedto make possible job lambdas. Current callers must use {@link Job#getMetadata()} instead.
+     * @deprecated make possible job lambdas. Current callers must use {@link Job#getMetadata()} instead.
      */
     @Deprecated(since = "3.0", forRemoval = true)
     public JobMetadata getMetadata() {
