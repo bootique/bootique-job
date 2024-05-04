@@ -35,7 +35,7 @@ public class JobTest {
     @Test
     void getMetadataLambda() {
         Job j = p -> JobResult.succeeded();
-        assertTrue(j.getMetadata().getName().startsWith("jobtest$$lambda$"), j.getMetadata().getName());
+        assertTrue(j.getMetadata().getName().startsWith("jobtest$$lambda"), j.getMetadata().getName());
     }
 
     static class MyJob implements Job {
