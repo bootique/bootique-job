@@ -1,4 +1,4 @@
-## 3.0-M5
+## 3.0-M6
 
 * #123 Jobs as lambdas
 * #124 Align job result API with Bootique "CommandOutcome"
