@@ -1,3 +1,7 @@
+## 3.0-RC1
+
+* #125 Upgrade to Spring 5.3.39
+
 ## 3.0-M6
 
 * #123 Jobs as lambdas

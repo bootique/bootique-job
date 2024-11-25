@@ -44,7 +44,7 @@
     <properties>
         <!-- TODO: we are bringing the entire huge Spring framework to just use a few scheduling classes, and no injection -->
         <!-- Note that Spring > 5 requires Java 17 -->
-        <spring.version>5.3.34</spring.version>
+        <spring.version>5.3.39</spring.version>
         <consul.client.version>1.5.3</consul.client.version>
         <okhttp.version>4.12.0</okhttp.version>
         <guava.version>33.1.0-jre</guava.version>
