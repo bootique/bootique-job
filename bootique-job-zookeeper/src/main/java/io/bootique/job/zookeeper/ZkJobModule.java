@@ -8,8 +8,8 @@ import io.bootique.job.JobsModule;
 import io.bootique.job.zookeeper.lock.ZkClusterLockHandler;
 import org.apache.curator.framework.CuratorFramework;
 
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 
 public class ZkJobModule implements BQModule {
 

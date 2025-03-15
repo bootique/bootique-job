@@ -30,8 +30,8 @@ import io.bootique.meta.application.OptionMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

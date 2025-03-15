@@ -28,7 +28,7 @@ import io.bootique.job.lock.LocalLockHandler;
 import io.bootique.job.lock.LockHandler;
 import io.bootique.shutdown.ShutdownManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @since 3.0

@@ -38,8 +38,8 @@ import io.bootique.job.trigger.JobExecParser;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
 
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 import java.util.Map;
 
 /**

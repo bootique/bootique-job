@@ -29,8 +29,8 @@ import io.bootique.job.JobRegistry;
 import io.bootique.log.BootLogger;
 import io.bootique.meta.application.CommandMetadata;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.stream.Collectors;

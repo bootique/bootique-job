@@ -31,7 +31,7 @@ import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobLogger;
 import io.bootique.metrics.mdc.TransactionIdGenerator;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 public class JobInstrumentedModule implements BQModule {
 

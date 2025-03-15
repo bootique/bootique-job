@@ -26,7 +26,7 @@ import io.bootique.di.Provides;
 import io.bootique.job.JobsModule;
 import io.bootique.job.consul.lock.CompositeConsulLockHandler;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 
 public class ConsulJobModule implements BQModule {

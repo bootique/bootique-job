@@ -25,7 +25,7 @@ import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.scheduler.SchedulerFactory;
 import io.bootique.shutdown.ShutdownManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @since 3.0
