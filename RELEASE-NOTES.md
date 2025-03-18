@@ -1,6 +1,7 @@
 ## 3.0-RC1
 
 * #125 Upgrade to Spring 5.3.39
+* #126 JobMetadata: add missing methods for typified job parameter declarations
 
 ## 3.0-M6
 

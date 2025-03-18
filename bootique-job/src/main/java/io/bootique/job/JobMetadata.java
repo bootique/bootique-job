@@ -21,6 +21,7 @@ package io.bootique.job;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -168,8 +169,20 @@ public class JobMetadata {
             return value != null ? Long.valueOf(value) : null;
         }
 
+        static Double parseDouble(String value) {
+            return value != null ? Double.valueOf(value) : null;
+        }
+
+        static Boolean parseBool(String value) {
+            return value != null ? Boolean.parseBoolean(value) : null;
+        }
+
         static LocalDate parseDate(String value) {
             return value != null ? LocalDate.parse(value) : null;
+        }
+
+        static LocalTime parseTime(String value) {
+            return value != null ? LocalTime.parse(value) : null;
         }
 
         static LocalDateTime parseDateTime(String value) {
@@ -250,6 +263,10 @@ public class JobMetadata {
         }
 
         /**
+         * Creates a job parameter declaration with an explicit conversion to the desired type from String. Note that
+         * "typeName" method argument is not a Java class, but rather a user-friendly label used in help, such as "date",
+         * "time", "int", etc.
+         *
          * @since 3.0
          */
         public <T> Builder param(String name, String typeName, Function<String, T> parser) {
@@ -257,6 +274,10 @@ public class JobMetadata {
         }
 
         /**
+         * Creates a job parameter declaration with an explicit conversion to the desired type from String. Note that
+         * "typeName" method argument is not a Java class, but rather a user-friendly label used in help, such as "date",
+         * "time", "int", etc.
+         *
          * @since 3.0
          */
         public <T> Builder param(String name, String typeName, Function<String, T> parser, T defaultValue) {
@@ -272,6 +293,27 @@ public class JobMetadata {
             return param(name, "string", v -> v, defaultValue);
         }
 
+        /**
+         * @since 3.0
+         */
+        public Builder boolParam(String name) {
+            return boolParam(name, (Boolean) null);
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder boolParam(String name, String defaultValue) {
+            return boolParam(name, parseBool(defaultValue));
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder boolParam(String name, Boolean defaultValue) {
+            return param(name, "bool", Builder::parseBool, defaultValue);
+        }
+
         public Builder dateParam(String name) {
             return dateParam(name, (LocalDate) null);
         }
@@ -283,6 +325,28 @@ public class JobMetadata {
         public Builder dateParam(String name, LocalDate defaultValue) {
             return param(name, "date", Builder::parseDate, defaultValue);
         }
+
+        /**
+         * @since 3.0
+         */
+        public Builder timeParam(String name) {
+            return timeParam(name, (LocalTime) null);
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder timeParam(String name, String defaultValue) {
+            return timeParam(name, parseTime(defaultValue));
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder timeParam(String name, LocalTime defaultValue) {
+            return param(name, "time", Builder::parseTime, defaultValue);
+        }
+
 
         /**
          * @since 3.0
@@ -337,6 +401,28 @@ public class JobMetadata {
         public Builder longParam(String name, Long defaultValue) {
             return param(name, "long", Builder::parseLong, defaultValue);
         }
+
+        /**
+         * @since 3.0
+         */
+        public Builder doubleParam(String name) {
+            return doubleParam(name, (Double) null);
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder doubleParam(String name, String defaultValue) {
+            return doubleParam(name, parseDouble(defaultValue));
+        }
+
+        /**
+         * @since 3.0
+         */
+        public Builder doubleParam(String name, Double defaultValue) {
+            return param(name, "double", Builder::parseDouble, defaultValue);
+        }
+
 
         public JobMetadata build() {
 

@@ -20,6 +20,7 @@ package io.bootique.job;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,19 +32,24 @@ public class JobMetadataTest {
     void convertParams() {
 
         JobMetadata md = JobMetadata.builder("j")
-                .param("p1", Boolean.class.getName(), Boolean::parseBoolean)
                 .param("p2", Integer.class.getName(), Integer::parseInt)
                 .intParam("p3")
+                .boolParam("p4")
+                .doubleParam("p5")
+                .timeParam("p6")
                 .build();
 
         Map<String, Object> expectedNulls = new HashMap<>();
-        expectedNulls.put("p1", null);
         expectedNulls.put("p2", null);
         expectedNulls.put("p3", null);
+        expectedNulls.put("p4", null);
+        expectedNulls.put("p5", null);
+        expectedNulls.put("p6", null);
 
         assertEquals(expectedNulls, md.convertParameters(Map.of()));
-        assertEquals(Map.of("p1", true, "p2", 88, "p3", 99),
-                md.convertParameters(Map.of("p1", "true", "p2", "88", "p3", "99")));
+
+        assertEquals(Map.of("p2", 88, "p3", 99, "p4", true, "p5", -1.345, "p6", LocalTime.of(10, 0, 1)),
+                md.convertParameters(Map.of("p2", "88", "p3", "99", "p4", "true", "p5", "-1.345", "p6", "10:00:01")));
     }
 
     @Test
