@@ -37,15 +37,7 @@ public class JobDecorators {
     public static final int EXCEPTIONS_HANDLER_ORDER = LOGGER_ORDER + 1000;
     public static final int LOCK_HANDLER_ORDER = EXCEPTIONS_HANDLER_ORDER + 1000;
     public static final int PARAMS_BINDER_ORDER = LOCK_HANDLER_ORDER + 1000;
-
-    /**
-     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator}
-     */
-    // listeners must be handled after default parameters are applied, so that they can have access to them
-    @Deprecated
-    public static final int LISTENERS_DISPATCHER_ORDER = PARAMS_BINDER_ORDER + 1000;
-
-    public static final int RENAMER_ORDER = LISTENERS_DISPATCHER_ORDER + 1000;
+    public static final int RENAMER_ORDER = PARAMS_BINDER_ORDER + 1000;
 
     //  unordered decorators are always inner
     public static final int UNORDERED_ORDER = RENAMER_ORDER + 1000;
@@ -91,7 +83,6 @@ public class JobDecorators {
         private JobDecorator logger;
         private JobDecorator exceptionHandler;
         private JobDecorator lockHandler;
-        private JobDecorator listenerDispatcher;
         private JobDecorator paramsBinder;
         private JobDecorator renamer;
         private final Set<MappedJobDecorator<?>> otherDecorators;
@@ -113,10 +104,6 @@ public class JobDecorators {
             Set<MappedJobDecorator<?>> subDecorators = new HashSet<>(5);
 
             topDecorators.addAll(otherDecorators);
-
-            if (listenerDispatcher != null) {
-                topDecorators.add(new MappedJobDecorator<>(listenerDispatcher, LISTENERS_DISPATCHER_ORDER));
-            }
 
             if (lockHandler != null) {
                 topDecorators.add(new MappedJobDecorator<>(lockHandler, LOCK_HANDLER_ORDER));
@@ -176,15 +163,6 @@ public class JobDecorators {
 
         public Builder lockHandler(JobDecorator lockHandler) {
             this.lockHandler = lockHandler;
-            return this;
-        }
-
-        /**
-         * @deprecated since 3.0 as listeners are deprecated, so the listeners' dispatcher is deprecated too
-         */
-        @Deprecated
-        public Builder listenerDispatcher(JobDecorator listenerDispatcher) {
-            this.listenerDispatcher = listenerDispatcher;
             return this;
         }
 

@@ -24,13 +24,6 @@ import java.util.Set;
 public interface JobRegistry {
 
     /**
-     * @deprecated since 3.0 in favor of {@link #getJobNames()}
-     */
-    default Set<String> getAvailableJobs() {
-        return getJobNames();
-    }
-
-    /**
      * Returns all known job names, including standalone jobs and job groups.
      *
      * @since 3.0
@@ -42,13 +35,4 @@ public interface JobRegistry {
      * matching the name.
      */
     Job getJob(String jobName);
-
-    /**
-     * @see JobMetadata#isSerial()
-     * @deprecated since 3.0, as this information is now available from the job metadata object.
-     */
-    @Deprecated
-    default boolean allowsSimultaneousExecutions(String jobName) {
-        return !getJob(jobName).getMetadata().isSerial();
-    }
 }

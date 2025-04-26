@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Singleton;
+
 import java.util.*;
 
 /**
@@ -80,7 +81,6 @@ public class JobsModule implements BQModule {
     JobDecorators provideDecorators(
             LockHandler lockHandler,
             JobLogger jobLogger,
-            JobListenersDispatcherDecorator listenerDispatcher,
             Set<JobDecorator> decorators,
             Set<MappedJobDecorator<?>> mappedDecorators) {
 
@@ -90,7 +90,6 @@ public class JobsModule implements BQModule {
                 .exceptionHandler(new ExceptionsHandlerDecorator())
                 .logger(jobLogger)
                 .lockHandler(lockHandler)
-                .listenerDispatcher(listenerDispatcher)
                 .renamer(new JobNameDecorator())
                 .paramsBinder(new JobParamsBinderDecorator())
                 .create();
@@ -99,37 +98,21 @@ public class JobsModule implements BQModule {
     @Provides
     @Singleton
     LockHandler provideLockHandler(Set<LockHandler> lockHandlers) {
-        switch (lockHandlers.size()) {
-            case 0:
-                // only use the default lock handler if none is provided by other modules
-                return new LocalLockHandler();
-            case 1:
+        return switch (lockHandlers.size()) {
+            // only use the default lock handler if none is provided by other modules
+            case 0 -> new LocalLockHandler();
+            case 1 -> {
                 LOGGER.info("Using '{}' lock handler", lockHandlers.iterator().next());
-                return lockHandlers.iterator().next();
-            default:
-                throw new RuntimeException("There's more than one LockHandler defined. Can't determine the default: " + lockHandlers);
-        }
+                yield lockHandlers.iterator().next();
+            }
+            default ->
+                    throw new RuntimeException("There's more than one LockHandler defined. Can't determine the default: " + lockHandlers);
+        };
     }
-
-
+    
     @Provides
     @Singleton
     JobLogger provideJobLogger() {
         return new JobLogger();
-    }
-
-    @Deprecated
-    @Provides
-    @Singleton
-    JobListenersDispatcherDecorator provideListenerDecorator(Set<JobListener> listeners, Set<MappedJobListener> mappedListeners) {
-        // not checking for dupes between MappedJobListener and JobListener collections. Is that a problem?
-        List<MappedJobListener> localListeners = new ArrayList<>(mappedListeners.size() + listeners.size());
-        localListeners.addAll(mappedListeners);
-
-        //  Integer.MAX_VALUE means placing bare unordered listeners after (== inside) mapped listeners
-        listeners.forEach(listener -> localListeners.add(new MappedJobListener<>(listener, Integer.MAX_VALUE)));
-        localListeners.sort(Comparator.comparing(MappedJobListener::getOrder));
-
-        return new JobListenersDispatcherDecorator(localListeners);
     }
 }

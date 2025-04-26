@@ -88,28 +88,12 @@ public class JobOutcome {
         this.yieldedTo = yieldedTo;
     }
 
-    /**
-     * @deprecated use {@link #getStatus()}
-     */
-    @Deprecated(since = "3.0", forRemoval = true)
-    public JobStatus getOutcome() {
-        return status;
-    }
-
     public JobStatus getStatus() {
         return status;
     }
 
     public boolean isSuccess() {
         return status == JobStatus.SUCCESS;
-    }
-
-    /**
-     * @deprecated use {@link #getException()}
-     */
-    @Deprecated(since = "3.0", forRemoval = true)
-    public Throwable getThrowable() {
-        return exception;
     }
 
     public Throwable getException() {

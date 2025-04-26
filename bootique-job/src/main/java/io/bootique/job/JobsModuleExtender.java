@@ -31,9 +31,6 @@ import java.util.function.Consumer;
 public class JobsModuleExtender extends ModuleExtender<JobsModuleExtender> {
 
     private SetBuilder<Job> jobs;
-    @Deprecated
-    private SetBuilder<JobListener> listeners;
-    private SetBuilder<MappedJobListener> mappedListeners;
     private SetBuilder<JobDecorator> decorators;
     private SetBuilder<MappedJobDecorator<?>> mappedDecorators;
     private SetBuilder<LockHandler> lockHandlers;
@@ -44,8 +41,6 @@ public class JobsModuleExtender extends ModuleExtender<JobsModuleExtender> {
 
     @Override
     public JobsModuleExtender initAllExtensions() {
-        contributeListeners();
-        contributeMappedListeners();
         contributeDecorators();
         contributeMappedDecorators();
         contributeJobs();
@@ -89,57 +84,6 @@ public class JobsModuleExtender extends ModuleExtender<JobsModuleExtender> {
      */
     public JobsModuleExtender setLockHandler(Class<? extends LockHandler> handlerType) {
         contributeLockHandlers().add(handlerType);
-        return this;
-    }
-
-    /**
-     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
-     * {@link #addMappedDecorator(MappedJobDecorator)}
-     */
-    @Deprecated
-    public <T extends JobListener> JobsModuleExtender addMappedListener(MappedJobListener<T> mappedJobListener) {
-        contributeMappedListeners().addInstance(mappedJobListener);
-        return this;
-    }
-
-    /**
-     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
-     * {@link #addMappedDecorator(Key)}
-     */
-    @Deprecated
-    public <T extends JobListener> JobsModuleExtender addMappedListener(Key<MappedJobListener<T>> mappedJobListenerKey) {
-        contributeMappedListeners().add(mappedJobListenerKey);
-        return this;
-    }
-
-    /**
-     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
-     * {@link #addMappedDecorator(TypeLiteral)}
-     */
-    @Deprecated
-    public <T extends JobListener> JobsModuleExtender addMappedListener(TypeLiteral<MappedJobListener<T>> mappedJobListenerType) {
-        contributeMappedListeners().add(Key.get(mappedJobListenerType));
-        return this;
-    }
-
-    /**
-     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
-     * {@link #addDecorator(Class)}
-     */
-    @Deprecated
-    public JobsModuleExtender addListener(Class<? extends JobListener> listenerType) {
-        // TODO: what does singleton scope means when adding to collection?
-        contributeListeners().add(listenerType);
-        return this;
-    }
-
-    /**
-     * @deprecated since 3.0 we suggest implementing {@link io.bootique.job.JobListener} as {@link JobDecorator} and use
-     * {@link #addDecorator(JobDecorator)}.
-     */
-    @Deprecated
-    public JobsModuleExtender addListener(JobListener listener) {
-        contributeListeners().addInstance(listener);
         return this;
     }
 
@@ -191,20 +135,6 @@ public class JobsModuleExtender extends ModuleExtender<JobsModuleExtender> {
 
     protected SetBuilder<Job> contributeJobs() {
         return jobs != null ? jobs : (jobs = newSet(Job.class));
-    }
-
-    protected SetBuilder<JobListener> contributeListeners() {
-        if (listeners == null) {
-            listeners = newSet(JobListener.class);
-        }
-        return listeners;
-    }
-
-    protected SetBuilder<MappedJobListener> contributeMappedListeners() {
-        if (mappedListeners == null) {
-            mappedListeners = newSet(MappedJobListener.class);
-        }
-        return mappedListeners;
     }
 
     protected SetBuilder<JobDecorator> contributeDecorators() {
