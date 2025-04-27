@@ -1,6 +1,7 @@
 ## 4.0-M1
 
 * #127 Remove APIs deprecated in 3.0
+* #128 Upgrade to Spring 6
 
 ## 3.0-RC1
 
