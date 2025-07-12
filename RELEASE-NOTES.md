@@ -1,3 +1,7 @@
+## 3.0-RC2
+
+* #130 Bump org.apache.commons:commons-lang3 from 3.17.0 to 3.18.0
+
 ## 3.0-RC1
 
 * #125 Upgrade to Spring 5.3.39
