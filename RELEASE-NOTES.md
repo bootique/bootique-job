@@ -1,3 +1,7 @@
+## 4.0-M2
+
+* #131 Bump org.springframework:spring-core from 6.2.7 to 6.2.11
+
 ## 4.0-M1
 
 * #127 Remove APIs deprecated in 3.0
