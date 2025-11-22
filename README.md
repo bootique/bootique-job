@@ -20,6 +20,7 @@
 [![build test deploy](https://github.com/bootique/bootique-job/actions/workflows/maven.yml/badge.svg)](https://github.com/bootique/bootique-job/actions/workflows/maven.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.bootique.job/bootique-job.svg?colorB=brightgreen)](https://search.maven.org/artifact/io.bootique.job/bootique-job/)
 
+
 # bootique-job
 Provides a job execution framework with [Bootique](http://bootique.io) integration. The framework includes a basic 
 runnable job definition with metadata and parameters, a job scheduler. It contains Bootique commands to list jobs, 
