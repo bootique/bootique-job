@@ -64,36 +64,22 @@ class InstrumentedJobLogger extends JobLogger {
 
     private JobOutcome onMeteredJobFinished(JobMetadata metadata, JobOutcome result, JobMeter meter) {
         long timeMs = meter.stop(result);
-        logJobFinished(metadata, result, timeMs);
-        mdcManager.onJobFinished();
-        return result;
-    }
-
-    private void logJobFinished(JobMetadata metadata, JobOutcome result, long timeMs) {
 
         String label = metadata.isGroup() ? "group" : "job";
         String name = metadata.getName();
 
-        switch (result.getStatus()) {
-            case SUCCESS:
-                LOGGER.info("{} '{}' finished in {} ms", label, name, timeMs);
-                return;
-
-            default:
-                String message = result.getMessage();
-                if (message == null && result.getException() != null) {
-                    message = result.getException().getMessage();
-                }
-
-                if (message == null) {
-                    message = "";
-                }
-
-                if (result.getException() != null) {
-                    LOGGER.info("job exception", result.getException());
-                }
-
-                LOGGER.warn("{} '{}' finished in {} ms: {} - {} ", label, name, timeMs, result.getStatus(), message);
+        if (result.getException() != null) {
+            LOGGER.info("job exception", result.getException());
         }
+
+        switch (result.getStatus()) {
+            case SUCCESS -> LOGGER.info("{} '{}' finished in {} ms", label, name, timeMs);
+            case FAILURE ->
+                    LOGGER.error("{} '{}' finished in {} ms: FAILURE - {} ", label, name, timeMs, failureMessage(result));
+            default ->
+                    LOGGER.warn("{} '{}' finished in {} ms: {} - {} ", label, name, timeMs, result.getStatus(), failureMessage(result));
+        }
+
+        return result;
     }
 }

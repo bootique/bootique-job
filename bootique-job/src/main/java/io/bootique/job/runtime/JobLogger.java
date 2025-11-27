@@ -58,26 +58,30 @@ public class JobLogger implements JobDecorator {
         String label = metadata.isGroup() ? "group" : "job";
         String name = metadata.getName();
 
-        switch (result.getStatus()) {
-            case SUCCESS:
-                LOGGER.info("{} '{}' finished", label, name);
-                return result;
-            default:
-                String message = result.getMessage();
-                if (message == null && result.getException() != null) {
-                    message = result.getException().getMessage();
-                }
-
-                if (message == null) {
-                    message = "";
-                }
-
-                if (result.getException() != null) {
-                    LOGGER.info("job exception", result.getException());
-                }
-
-                LOGGER.warn("{} '{}' finished: {} - {} ", label, name, result.getStatus(), message);
-                return result;
+        if (result.getException() != null) {
+            LOGGER.info("job exception", result.getException());
         }
+
+        switch (result.getStatus()) {
+            case SUCCESS -> LOGGER.info("{} '{}' finished", label, name);
+            case FAILURE -> LOGGER.error("{} '{}' finished: FAILURE - {} ", label, name, failureMessage(result));
+            default ->
+                    LOGGER.warn("{} '{}' finished: {} - {} ", label, name, result.getStatus(), failureMessage(result));
+        }
+        return result;
+    }
+
+
+    protected static String failureMessage(JobOutcome result) {
+        String message = result.getMessage();
+        if (message == null && result.getException() != null) {
+            message = result.getException().getMessage();
+        }
+
+        if (message == null) {
+            message = "";
+        }
+
+        return message;
     }
 }

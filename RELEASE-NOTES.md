@@ -1,6 +1,7 @@
 ## 4.0-M2
 
 * #131 Bump org.springframework:spring-core from 6.2.7 to 6.2.11
+* #132 Log job failures at the ERROR log level
 
 ## 4.0-M1
 

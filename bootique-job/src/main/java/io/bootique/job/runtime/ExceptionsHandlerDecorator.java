@@ -42,7 +42,7 @@ public class ExceptionsHandlerDecorator implements JobDecorator {
             JobOutcome result = delegate.run(params);
             return result != null ? result : JobOutcome.unknown("Job returned null result");
         } catch (Exception e) {
-            // not logging the failure here... JobLogDecorator will do the logging
+            // not logging the failure here... JobLogger will do the logging
             return JobOutcome.failed(e);
         }
     }
