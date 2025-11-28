@@ -18,23 +18,15 @@
  */
 package io.bootique.job.scheduler;
 
-import io.bootique.job.JobRegistry;
-import io.bootique.job.runtime.JobDecorators;
-import io.bootique.shutdown.ShutdownManager;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 public class SchedulerFactoryTest {
 
     private SchedulerFactory testFactory() {
-        return new SchedulerFactory(
-                mock(JobRegistry.class),
-                mock(JobDecorators.class),
-                mock(ShutdownManager.class)
-        );
+        return new SchedulerFactory(null, null, null);
     }
 
     @Test
