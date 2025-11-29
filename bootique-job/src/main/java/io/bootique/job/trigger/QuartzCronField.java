@@ -247,13 +247,10 @@ class QuartzCronField extends CronField {
     }
 
     private static Temporal rollbackToMidnight(Temporal current, Temporal result) {
-        if (result.get(ChronoField.DAY_OF_MONTH) == current.get(ChronoField.DAY_OF_MONTH)) {
-            return current;
-        } else {
-            return atMidnight().adjustInto(result);
-        }
+        return result.get(ChronoField.DAY_OF_MONTH) == current.get(ChronoField.DAY_OF_MONTH)
+                ? current
+                : atMidnight().adjustInto(result);
     }
-
 
     @Override
     public <T extends Temporal & Comparable<? super T>> T nextOrSame(T temporal) {
@@ -261,10 +258,10 @@ class QuartzCronField extends CronField {
         if (result != null) {
             if (result.compareTo(temporal) < 0) {
                 // We ended up before the start, roll forward and try again
-                temporal = this.rollForwardType.rollForward(temporal);
+                temporal = rollForwardType.rollForward(temporal);
                 result = adjust(temporal);
                 if (result != null) {
-                    result = type().reset(result);
+                    result = type.reset(result);
                 }
             }
         }
@@ -278,17 +275,17 @@ class QuartzCronField extends CronField {
     @Override
     public boolean equals(Object other) {
         return (this == other || (other instanceof QuartzCronField that &&
-                type() == that.type() && this.value.equals(that.value)));
+                type == that.type && value.equals(that.value)));
     }
 
     @Override
     public int hashCode() {
-        return this.value.hashCode();
+        return value.hashCode();
     }
 
     @Override
     public String toString() {
-        return type() + " '" + this.value + "'";
+        return type + " '" + this.value + "'";
     }
 
 }

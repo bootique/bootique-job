@@ -154,30 +154,30 @@ class BitsCronField extends CronField {
 
     @Override
     public <T extends Temporal & Comparable<? super T>> T nextOrSame(T temporal) {
-        int current = type().get(temporal);
+        int current = type.get(temporal);
         int next = nextSetBit(current);
         if (next == -1) {
-            temporal = type().rollForward(temporal);
+            temporal = type.rollForward(temporal);
             next = nextSetBit(0);
         }
         if (next == current) {
             return temporal;
         } else {
             int count = 0;
-            current = type().get(temporal);
+            current = type.get(temporal);
             while (current != next && count++ < CronExpression.MAX_ATTEMPTS) {
-                temporal = type().elapseUntil(temporal, next);
-                current = type().get(temporal);
+                temporal = type.elapseUntil(temporal, next);
+                current = type.get(temporal);
                 next = nextSetBit(current);
                 if (next == -1) {
-                    temporal = type().rollForward(temporal);
+                    temporal = type.rollForward(temporal);
                     next = nextSetBit(0);
                 }
             }
             if (count >= CronExpression.MAX_ATTEMPTS) {
                 return null;
             }
-            return type().reset(temporal);
+            return type.reset(temporal);
         }
     }
 
@@ -225,8 +225,8 @@ class BitsCronField extends CronField {
 
     @Override
     public boolean equals(Object other) {
-        return (this == other || (other instanceof BitsCronField that &&
-                type() == that.type() && this.bits == that.bits));
+        return this == other
+                || (other instanceof BitsCronField that && type == that.type && this.bits == that.bits);
     }
 
     @Override
@@ -236,7 +236,7 @@ class BitsCronField extends CronField {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(type().toString());
+        StringBuilder builder = new StringBuilder(type.toString());
         builder.append(" {");
         int i = nextSetBit(0);
         if (i != -1) {

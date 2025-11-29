@@ -76,11 +76,11 @@ class CompositeCronField extends CronField {
         if (!(o instanceof CompositeCronField other)) {
             return false;
         }
-        return type() == other.type() && value.equals(other.value);
+        return type == other.type && value.equals(other.value);
     }
 
     @Override
     public String toString() {
-        return type() + " '" + this.value + "'";
+        return type + " '" + this.value + "'";
     }
 }

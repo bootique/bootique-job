@@ -33,9 +33,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/**
- * @since 4.0
- */
 class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
 
     private final Runnable delegate;

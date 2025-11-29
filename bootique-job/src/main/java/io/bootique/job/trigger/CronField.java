@@ -35,8 +35,7 @@ abstract class CronField {
     private static final String[] DAYS = new String[]
             {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"};
 
-    private final Type type;
-
+    protected final Type type;
 
     protected CronField(Type type) {
         this.type = type;
@@ -98,7 +97,6 @@ abstract class CronField {
         }
     }
 
-
     private static CronField parseList(String value, Type type, BiFunction<String, Type, CronField> parseFieldFunction) {
         Objects.requireNonNull(value);
         if (value.isEmpty()) {
@@ -124,10 +122,6 @@ abstract class CronField {
 
     public abstract <T extends Temporal & Comparable<? super T>> T nextOrSame(T temporal);
 
-    protected Type type() {
-        return this.type;
-    }
-
     protected static <T extends Temporal & Comparable<? super T>> T cast(Temporal temporal) {
         return (T) temporal;
     }
@@ -143,9 +137,7 @@ abstract class CronField {
         DAY_OF_WEEK(ChronoField.DAY_OF_WEEK, ChronoUnit.WEEKS, ChronoField.HOUR_OF_DAY, ChronoField.MINUTE_OF_HOUR, ChronoField.SECOND_OF_MINUTE, ChronoField.NANO_OF_SECOND);
 
         private final ChronoField field;
-
         private final ChronoUnit higherOrder;
-
         private final ChronoField[] lowerOrders;
 
         Type(ChronoField field, ChronoUnit higherOrder, ChronoField... lowerOrders) {
@@ -155,39 +147,39 @@ abstract class CronField {
         }
 
         public int get(Temporal date) {
-            return date.get(this.field);
+            return date.get(field);
         }
 
         public ValueRange range() {
-            return this.field.range();
+            return field.range();
         }
 
         public int checkValidValue(int value) {
             if (this == DAY_OF_WEEK && value == 0) {
                 return value;
-            } else {
-                try {
-                    return this.field.checkValidIntValue(value);
-                } catch (DateTimeException ex) {
-                    throw new IllegalArgumentException(ex.getMessage(), ex);
-                }
+            }
+
+            try {
+                return field.checkValidIntValue(value);
+            } catch (DateTimeException ex) {
+                throw new IllegalArgumentException(ex.getMessage(), ex);
             }
         }
 
         public <T extends Temporal & Comparable<? super T>> T elapseUntil(T temporal, int goal) {
             int current = get(temporal);
-            ValueRange range = temporal.range(this.field);
+            ValueRange range = temporal.range(field);
             if (current < goal) {
                 if (range.isValidIntValue(goal)) {
-                    return cast(temporal.with(this.field, goal));
+                    return cast(temporal.with(field, goal));
                 } else {
                     // goal is invalid, eg. 29th Feb, so roll forward
                     long amount = range.getMaximum() - current + 1;
-                    return this.field.getBaseUnit().addTo(temporal, amount);
+                    return field.getBaseUnit().addTo(temporal, amount);
                 }
             } else {
                 long amount = goal + range.getMaximum() - current + 1 - range.getMinimum();
-                return this.field.getBaseUnit().addTo(temporal, amount);
+                return field.getBaseUnit().addTo(temporal, amount);
             }
         }
 
@@ -202,9 +194,9 @@ abstract class CronField {
          * @return the rolled forward temporal
          */
         public <T extends Temporal & Comparable<? super T>> T rollForward(T temporal) {
-            T result = this.higherOrder.addTo(temporal, 1);
-            ValueRange range = result.range(this.field);
-            return this.field.adjustInto(result, range.getMinimum());
+            T result = higherOrder.addTo(temporal, 1);
+            ValueRange range = result.range(field);
+            return field.adjustInto(result, range.getMinimum());
         }
 
         /**
@@ -227,9 +219,7 @@ abstract class CronField {
 
         @Override
         public String toString() {
-            return this.field.toString();
+            return field.toString();
         }
     }
-
-
 }

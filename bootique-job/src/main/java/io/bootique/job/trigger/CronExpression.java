@@ -20,11 +20,8 @@ package io.bootique.job.trigger;
 
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.StringTokenizer;
 
 /**
  * A cron expression. The cron pattern is a list of six single space-separated fields representing
@@ -43,7 +40,7 @@ import java.util.StringTokenizer;
  *
  * @since 4.0
  */
-public final class CronExpression {
+public class CronExpression {
 
     static final int MAX_ATTEMPTS = 366;
 
@@ -57,10 +54,37 @@ public final class CronExpression {
             "@hourly", "0 0 * * * *"
     };
 
+    public static CronExpression parse(String exp) {
+        Objects.requireNonNull(exp);
+        if (exp.isEmpty()) {
+            throw new IllegalArgumentException("Expression must not be empty");
+        }
+
+        String exp1 = resolveMacros(exp);
+
+        String[] fields = exp1.split(" ");
+        if (fields.length != 6) {
+            throw new IllegalArgumentException(
+                    String.format("Cron expression must consist of 6 fields (found %d in \"%s\")", fields.length, exp1));
+        }
+
+        try {
+            CronField seconds = CronField.parseSeconds(fields[0]);
+            CronField minutes = CronField.parseMinutes(fields[1]);
+            CronField hours = CronField.parseHours(fields[2]);
+            CronField daysOfMonth = CronField.parseDaysOfMonth(fields[3]);
+            CronField months = CronField.parseMonth(fields[4]);
+            CronField daysOfWeek = CronField.parseDaysOfWeek(fields[5]);
+
+            return new CronExpression(seconds, minutes, hours, daysOfMonth, months, daysOfWeek, exp);
+        } catch (IllegalArgumentException ex) {
+            String msg = ex.getMessage() + " in cron expression \"" + exp + "\"";
+            throw new IllegalArgumentException(msg, ex);
+        }
+    }
+
     private final CronField[] fields;
-
     private final String expression;
-
 
     private CronExpression(
             CronField seconds,
@@ -75,34 +99,6 @@ public final class CronExpression {
         // To make sure we end up at 0 nanos, we add an extra field.
         this.fields = new CronField[]{daysOfWeek, months, daysOfMonth, hours, minutes, seconds, CronField.zeroNanos()};
         this.expression = expression;
-    }
-
-    public static CronExpression parse(String expression) {
-        Objects.requireNonNull(expression);
-        if (expression.isEmpty()) {
-            throw new IllegalArgumentException("Expression must not be empty");
-        }
-
-        expression = resolveMacros(expression);
-
-        String[] fields = tokenizeToStringArray(expression, " ");
-        if (fields.length != 6) {
-            throw new IllegalArgumentException(String.format(
-                    "Cron expression must consist of 6 fields (found %d in \"%s\")", fields.length, expression));
-        }
-        try {
-            CronField seconds = CronField.parseSeconds(fields[0]);
-            CronField minutes = CronField.parseMinutes(fields[1]);
-            CronField hours = CronField.parseHours(fields[2]);
-            CronField daysOfMonth = CronField.parseDaysOfMonth(fields[3]);
-            CronField months = CronField.parseMonth(fields[4]);
-            CronField daysOfWeek = CronField.parseDaysOfWeek(fields[5]);
-
-            return new CronExpression(seconds, minutes, hours, daysOfMonth, months, daysOfWeek, expression);
-        } catch (IllegalArgumentException ex) {
-            String msg = ex.getMessage() + " in cron expression \"" + expression + "\"";
-            throw new IllegalArgumentException(msg, ex);
-        }
     }
 
     private static String resolveMacros(String expression) {
@@ -154,23 +150,5 @@ public final class CronExpression {
     @Override
     public String toString() {
         return expression;
-    }
-
-    private static String[] tokenizeToStringArray(String str, String delimiters) {
-
-        if (str == null) {
-            return new String[0];
-        }
-
-        StringTokenizer st = new StringTokenizer(str, delimiters);
-        List<String> tokens = new ArrayList<>();
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken().trim();
-            if (!token.isEmpty()) {
-                tokens.add(token);
-            }
-        }
-
-        return tokens.toArray(new String[0]);
     }
 }
