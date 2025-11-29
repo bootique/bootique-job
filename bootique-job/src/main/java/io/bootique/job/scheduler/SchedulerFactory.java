@@ -28,11 +28,8 @@ import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.trigger.Trigger;
 import io.bootique.job.trigger.TriggerFactory;
 import io.bootique.shutdown.ShutdownManager;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ExecutorConfigurationSupport;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-
 import jakarta.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,12 +82,8 @@ public class SchedulerFactory {
     }
 
     protected TaskScheduler createTaskScheduler() {
-        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(createThreadPoolSize());
-        taskScheduler.setThreadNamePrefix("bootique-job-");
-        taskScheduler.initialize();
-
-        return shutdownManager.onShutdown(taskScheduler, ExecutorConfigurationSupport::shutdown);
+        TaskScheduler taskScheduler = new TaskScheduler(createThreadPoolSize(), "bootique-job-");
+        return shutdownManager.onShutdown(taskScheduler);
     }
 
     protected int createThreadPoolSize() {

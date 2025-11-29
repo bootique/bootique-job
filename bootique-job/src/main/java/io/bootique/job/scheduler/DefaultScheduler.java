@@ -25,7 +25,6 @@ import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.trigger.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.TaskScheduler;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -20,10 +20,10 @@ package io.bootique.job;
 
 import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.runtime.SimpleJobFuture;
-import org.springframework.scheduling.TaskScheduler;
+import io.bootique.job.scheduler.TaskScheduler;
 
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -85,9 +85,7 @@ public class JobRunBuilder {
         Map<String, Object> params = resolveParams();
 
         JobOutcome[] result = new JobOutcome[1];
-        Future<?> future = taskScheduler.schedule(
-                () -> result[0] = job.run(params),
-                new Date());
+        Future<?> future = taskScheduler.schedule(() -> result[0] = job.run(params), Instant.now());
 
         return new SimpleJobFuture(
                 job.getMetadata().getName(),

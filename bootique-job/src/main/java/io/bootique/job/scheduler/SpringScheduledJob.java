@@ -23,7 +23,6 @@ import io.bootique.job.Job;
 import io.bootique.job.trigger.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.PeriodicTrigger;
 
 import java.util.concurrent.ScheduledFuture;
