@@ -50,18 +50,15 @@ public class TriggerFactory {
 
         String triggerName = this.trigger != null ? this.trigger : generateTriggerName();
         Map<String, Object> params = this.params != null ? this.params : Collections.emptyMap();
-        long fixedDelayMs = fixedDelay != null && fixedDelay.getDuration() != null ? fixedDelay.getDuration().toMillis() : 0;
-        long fixedRateMs = fixedRate != null && fixedRate.getDuration() != null ? fixedRate.getDuration().toMillis() : 0;
-        long initialDelayMs = initialDelay != null && initialDelay.getDuration() != null ? initialDelay.getDuration().toMillis() : 0;
-
+        java.time.Duration initialDelay = this.initialDelay != null ? this.initialDelay.getDuration() : java.time.Duration.ZERO;
 
         // TODO: use a polymorphic factory
         if (cron != null) {
-            return new CronTrigger(new JobExec(job, params), triggerName, cron);
-        } else if (fixedDelayMs > 0) {
-            return new FixedDelayTrigger(new JobExec(job, params), triggerName, fixedDelayMs, initialDelayMs);
-        } else if (fixedRateMs > 0) {
-            return new FixedRateTrigger(new JobExec(job, params), triggerName, fixedRateMs, initialDelayMs);
+            return new CronTrigger(new JobExec(job, params), triggerName, cron.getCronExpression());
+        } else if (fixedDelay != null) {
+            return new FixedDelayTrigger(new JobExec(job, params), triggerName, fixedDelay.getDuration(), initialDelay);
+        } else if (fixedRate != null) {
+            return new FixedRateTrigger(new JobExec(job, params), triggerName, fixedRate.getDuration(), initialDelay);
         }
 
         throw new IllegalStateException("Trigger must have either cron or fixed rate or fixed delay configured");

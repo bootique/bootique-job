@@ -156,7 +156,7 @@ public class DefaultScheduler implements Scheduler {
         String jobName = trigger.getExec().getJobName();
         Job job = jobRegistry.getJob(jobName);
 
-        ScheduledJob scheduledJob = new SpringScheduledJob(job, taskScheduler);
+        ScheduledJob scheduledJob = new DefaultScheduledJob(job, taskScheduler);
         scheduledJob.schedule(trigger);
         return scheduledJob;
     }

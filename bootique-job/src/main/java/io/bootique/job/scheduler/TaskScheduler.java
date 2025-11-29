@@ -18,7 +18,7 @@
  */
 package io.bootique.job.scheduler;
 
-import org.springframework.scheduling.Trigger;
+import io.bootique.job.trigger.Trigger;
 
 import java.time.Clock;
 import java.time.Duration;

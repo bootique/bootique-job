@@ -20,6 +20,9 @@ package io.bootique.job.trigger;
 
 import io.bootique.job.value.Cron;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
@@ -27,28 +30,60 @@ import java.util.Objects;
  */
 public class CronTrigger extends Trigger {
 
-    private final Cron cron;
+    private final CronExpression expression;
 
     public CronTrigger(
             JobExec exec,
             String triggerName,
-            Cron cron) {
+            CronExpression expression) {
 
         super(exec, triggerName);
-        this.cron = Objects.requireNonNull(cron);
+        this.expression = Objects.requireNonNull(expression);
+    }
+
+    /**
+     * @deprecated in favor of {@link #getExpression()}
+     */
+    @Deprecated(since = "4.0", forRemoval = true)
+    public Cron getCron() {
+        return new Cron(expression.toString());
+    }
+
+    /**
+     * @since 4.0
+     */
+    public CronExpression getExpression() {
+        return expression;
     }
 
     @Override
-    public <T> T accept(TriggerVisitor<T> visitor) {
-        return visitor.visitCron(this);
+    public Instant nextExecution(TriggerContext context) {
+        Instant timestamp = latestTimestamp(context);
+        ZoneId zone = context.getClock().getZone();
+        ZonedDateTime zonedTimestamp = ZonedDateTime.ofInstant(timestamp, zone);
+        ZonedDateTime nextTimestamp = expression.next(zonedTimestamp);
+        return (nextTimestamp != null ? nextTimestamp.toInstant() : null);
     }
 
-    public Cron getCron() {
-        return cron;
+    Instant latestTimestamp(TriggerContext context) {
+        Instant timestamp = context.lastCompletion();
+        if (timestamp != null) {
+            Instant scheduled = context.lastScheduledExecution();
+            if (scheduled != null && timestamp.isBefore(scheduled)) {
+                // Previous task apparently executed too early...
+                // Let's simply use the last calculated execution time then,
+                // in order to prevent accidental re-fires in the same second.
+                timestamp = scheduled;
+            }
+        } else {
+            timestamp = context.getClock().instant();
+        }
+
+        return timestamp;
     }
 
     @Override
     public String toString() {
-        return "cron trigger " + cron.getExpression();
+        return "cron trigger " + expression;
     }
 }

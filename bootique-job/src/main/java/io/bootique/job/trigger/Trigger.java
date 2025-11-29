@@ -19,6 +19,7 @@
 
 package io.bootique.job.trigger;
 
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -36,7 +37,12 @@ public abstract class Trigger {
         this.name = Objects.requireNonNull(name);
     }
 
-    public abstract <T> T accept(TriggerVisitor<T> visitor);
+    /**
+     * Determine the next execution time according to the given trigger context.
+     *
+     * @since 4.0
+     */
+    public abstract Instant nextExecution(TriggerContext context);
 
     public String getName() {
         return name;

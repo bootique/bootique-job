@@ -23,17 +23,28 @@ import io.bootique.job.Job;
 import io.bootique.job.ScheduledJob;
 import io.bootique.job.trigger.*;
 import io.bootique.job.value.Cron;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.util.Objects;
+import java.util.concurrent.ScheduledFuture;
 
 /**
- * @since 3.0
+ * @since 4.0
  */
-public abstract class BaseScheduledJob implements ScheduledJob {
+public class DefaultScheduledJob implements ScheduledJob {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScheduledJob.class);
 
     private final Job job;
+    private final TaskScheduler taskScheduler;
+
     private volatile ScheduledJobState state;
 
-    public BaseScheduledJob(Job job) {
-        this.job = job;
+    public DefaultScheduledJob(Job job, TaskScheduler taskScheduler) {
+        this.job = Objects.requireNonNull(job);
+        this.taskScheduler = Objects.requireNonNull(taskScheduler);
         this.state = ScheduledJobState.unscheduled(false);
     }
 
@@ -55,7 +66,7 @@ public abstract class BaseScheduledJob implements ScheduledJob {
                 ? oldTrigger.getExec()
                 : new JobExec(getJobName());
 
-        return schedule(new CronTrigger(exec, TriggerFactory.generateTriggerName(), cron));
+        return schedule(new CronTrigger(exec, TriggerFactory.generateTriggerName(), CronExpression.parse(cron.getExpression())));
     }
 
     @Override
@@ -65,7 +76,11 @@ public abstract class BaseScheduledJob implements ScheduledJob {
                 ? oldTrigger.getExec()
                 : new JobExec(getJobName());
 
-        return schedule(new FixedRateTrigger(exec, TriggerFactory.generateTriggerName(), fixedRateMs, initialDelayMs));
+        return schedule(new FixedRateTrigger(
+                exec,
+                TriggerFactory.generateTriggerName(),
+                Duration.ofMillis(fixedRateMs),
+                Duration.ofMillis(initialDelayMs)));
     }
 
     @Override
@@ -74,7 +89,11 @@ public abstract class BaseScheduledJob implements ScheduledJob {
         JobExec exec = oldTrigger != null
                 ? oldTrigger.getExec()
                 : new JobExec(getJobName());
-        return schedule(new FixedDelayTrigger(exec, TriggerFactory.generateTriggerName(), fixedDelayMs, initialDelayMs));
+        return schedule(new FixedDelayTrigger(
+                exec,
+                TriggerFactory.generateTriggerName(),
+                Duration.ofMillis(fixedDelayMs),
+                Duration.ofMillis(initialDelayMs)));
     }
 
     @Override
@@ -92,7 +111,11 @@ public abstract class BaseScheduledJob implements ScheduledJob {
         return false;
     }
 
-    protected abstract ScheduledJobState doSchedule(Job job, Trigger trigger);
+    protected ScheduledJobState doSchedule(Job job, Trigger trigger) {
+        LOGGER.info("Will schedule '{}'.. ({})", getJobName(), trigger);
+        ScheduledFuture<?> future = taskScheduler.schedule(() -> job.run(trigger.getExec().getParams()), trigger);
+        return ScheduledJobState.scheduled(trigger, future);
+    }
 
     @Override
     public boolean isScheduled() {

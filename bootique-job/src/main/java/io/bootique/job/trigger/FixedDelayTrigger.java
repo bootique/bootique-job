@@ -18,40 +18,78 @@
  */
 package io.bootique.job.trigger;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Objects;
+
 /**
  * @since 3.0
  */
 public class FixedDelayTrigger extends Trigger {
 
-    private final long fixedDelayMs;
-    private final long initialDelayMs;
+    private final Duration period;
+    private final Duration initialDelay;
 
     public FixedDelayTrigger(
             JobExec exec,
             String triggerName,
-            long fixedDelayMs,
-            long initialDelayMs) {
+            Duration period,
+            Duration initialDelay) {
 
         super(exec, triggerName);
-        this.fixedDelayMs = fixedDelayMs;
-        this.initialDelayMs = initialDelayMs;
+        this.period = Objects.requireNonNull(period);
+        this.initialDelay = initialDelay != null ? initialDelay : Duration.ZERO;
     }
 
     @Override
-    public <T> T accept(TriggerVisitor<T> visitor) {
-        return visitor.visitFixedDelay(this);
+    public Instant nextExecution(TriggerContext context) {
+        Instant lastExecution = context.lastScheduledExecution();
+        Instant lastCompletion = context.lastCompletion();
+        if (lastExecution == null || lastCompletion == null) {
+            Instant instant = context.getClock().instant();
+            Duration initialDelay = this.initialDelay;
+            if (initialDelay == null) {
+                return instant;
+            } else {
+                return instant.plus(initialDelay);
+            }
+        }
+
+        return lastCompletion.plus(period);
     }
 
+    /**
+     * @since 4.0
+     */
+    public Duration getPeriod() {
+        return period;
+    }
+
+    /**
+     * @since 4.0
+     */
+    public Duration getInitialDelay() {
+        return initialDelay;
+    }
+
+    /**
+     * @deprecated in favor of {@link #getInitialDelay()}
+     */
+    @Deprecated(since = "4.0", forRemoval = true)
     public long getInitialDelayMs() {
-        return initialDelayMs;
+        return initialDelay.toMillis();
     }
 
+    /**
+     * @deprecated in favor of {@link #getPeriod()}
+     */
+    @Deprecated(since = "4.0", forRemoval = true)
     public long getFixedDelayMs() {
-        return fixedDelayMs;
+        return period.toMillis();
     }
 
     @Override
     public String toString() {
-        return "fixed delay trigger " + fixedDelayMs + " ms";
+        return "fixed delay trigger - delay: " + period + ", initial delay " + initialDelay;
     }
 }

@@ -18,40 +18,75 @@
  */
 package io.bootique.job.trigger;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Objects;
+
 /**
  * @since 3.0
  */
 public class FixedRateTrigger extends Trigger {
 
-    private final long fixedRateMs;
-    private final long initialDelayMs;
+    private final Duration period;
+    private final Duration initialDelay;
 
     public FixedRateTrigger(
             JobExec exec,
             String triggerName,
-            long fixedRateMs,
-            long initialDelayMs) {
+            Duration period,
+            Duration initialDelay) {
 
         super(exec, triggerName);
-        this.fixedRateMs = fixedRateMs;
-        this.initialDelayMs = initialDelayMs;
+
+        this.period = Objects.requireNonNull(period);
+        this.initialDelay = initialDelay != null ? initialDelay : Duration.ZERO;
     }
 
     @Override
-    public <T> T accept(TriggerVisitor<T> visitor) {
-        return visitor.visitFixedRate(this);
+    public Instant nextExecution(TriggerContext context) {
+
+        Instant lastExecution = context.lastScheduledExecution();
+        Instant lastCompletion = context.lastCompletion();
+        if (lastExecution == null || lastCompletion == null) {
+            Instant instant = context.getClock().instant();
+            return initialDelay != null ? instant.plus(initialDelay) : instant;
+        }
+
+        return lastExecution.plus(period);
     }
 
+    /**
+     * @since 4.0
+     */
+    public Duration getPeriod() {
+        return period;
+    }
+
+    /**
+     * @since 4.0
+     */
+    public Duration getInitialDelay() {
+        return initialDelay;
+    }
+
+    /**
+     * @deprecated in favor of {@link #getPeriod()}
+     */
+    @Deprecated(since = "4.0", forRemoval = true)
     public long getFixedRateMs() {
-        return fixedRateMs;
+        return period.toMillis();
     }
 
+    /**
+     * @deprecated in favor of {@link #getInitialDelay()}
+     */
+    @Deprecated(since = "4.0", forRemoval = true)
     public long getInitialDelayMs() {
-        return initialDelayMs;
+        return initialDelay.toMillis();
     }
 
     @Override
     public String toString() {
-        return "fixed rate trigger " + fixedRateMs + " ms";
+        return "fixed rate trigger - reate: " + period + ", initial delay " + initialDelay;
     }
 }

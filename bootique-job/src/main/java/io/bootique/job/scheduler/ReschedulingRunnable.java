@@ -18,8 +18,8 @@
  */
 package io.bootique.job.scheduler;
 
-import org.springframework.scheduling.Trigger;
-import org.springframework.scheduling.support.SimpleTriggerContext;
+import io.bootique.job.trigger.Trigger;
+import io.bootique.job.trigger.TriggerContext;
 
 import java.lang.reflect.UndeclaredThrowableException;
 import java.time.Clock;
@@ -40,12 +40,12 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
 
     private final Runnable delegate;
     private final Trigger trigger;
-    private final SimpleTriggerContext triggerContext;
+    private final TriggerContext triggerContext;
     private final ScheduledExecutorService executor;
     private final Object triggerContextMonitor;
 
-    private ScheduledFuture<?> currentFuture;
-    private Instant scheduledExecutionTime;
+    private volatile ScheduledFuture<?> currentFuture;
+    private volatile Instant scheduledExecutionTime;
 
     public ReschedulingRunnable(
             Runnable delegate,
@@ -55,11 +55,10 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
 
         this.delegate = delegate;
         this.trigger = trigger;
-        this.triggerContext = new SimpleTriggerContext(clock);
+        this.triggerContext = new TriggerContext(clock);
         this.executor = executor;
         this.triggerContextMonitor = new Object();
     }
-
 
     public ScheduledFuture<?> schedule() {
         synchronized (triggerContextMonitor) {
