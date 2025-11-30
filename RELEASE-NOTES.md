@@ -4,6 +4,7 @@
 * #132 Log job failures at the ERROR log level
 * #133 Reimplement TaskScheduler without Spring
 * #134 Scheduler workers as virtual threads
+* #135 New trigger scheduling API
 
 ## 4.0-M1
 
