@@ -62,7 +62,7 @@ public class CronTrigger extends Trigger {
     }
 
     @Override
-    public Instant nextExecution(TriggerContext context) {
+    protected Instant nextExecution(TriggerContext context) {
         Instant timestamp = latestTimestamp(context);
         ZonedDateTime zonedTimestamp = ZonedDateTime.ofInstant(timestamp, context.timeZone());
         ZonedDateTime nextTimestamp = expression.next(zonedTimestamp);

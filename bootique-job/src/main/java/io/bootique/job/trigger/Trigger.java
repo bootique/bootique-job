@@ -83,7 +83,7 @@ public abstract class Trigger {
 
                     Job job = jobRegistry.getJob(jobName);
 
-                    this.future = taskScheduler.schedule(() -> job.run(params), this);
+                    this.future = taskScheduler.schedule(() -> job.run(params), this::nextExecution);
                     this.state = TriggerSchedulingState.scheduled;
                     return true;
                 }
@@ -113,10 +113,8 @@ public abstract class Trigger {
 
     /**
      * Determines the next execution time based on the internal trigger logic and provided context.
-     *
-     * @since 4.0
      */
-    public abstract Instant nextExecution(TriggerContext context);
+    protected abstract Instant nextExecution(TriggerContext context);
 
     /**
      * @deprecated in favor of {@link #getTriggerName()}

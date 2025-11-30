@@ -50,7 +50,7 @@ public class FixedRateTrigger extends Trigger {
     }
 
     @Override
-    public Instant nextExecution(TriggerContext context) {
+    protected Instant nextExecution(TriggerContext context) {
 
         Instant lastExecution = context.lastScheduledExecution();
         Instant lastCompletion = context.lastCompletion();

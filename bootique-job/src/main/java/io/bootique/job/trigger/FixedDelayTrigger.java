@@ -49,7 +49,7 @@ public class FixedDelayTrigger extends Trigger {
     }
 
     @Override
-    public Instant nextExecution(TriggerContext context) {
+    protected Instant nextExecution(TriggerContext context) {
         Instant lastExecution = context.lastScheduledExecution();
         Instant lastCompletion = context.lastCompletion();
         if (lastExecution == null || lastCompletion == null) {
