@@ -45,7 +45,7 @@ public class TaskScheduler implements AutoCloseable {
 
         ThreadFactory threadFactory = createThreadFactory(threadNamePrefix);
         this.executor = createExecutor(poolSize, threadFactory);
-        
+
         if (this.executor instanceof ThreadPoolExecutor e) {
             e.setCorePoolSize(poolSize);
         }
@@ -67,6 +67,7 @@ public class TaskScheduler implements AutoCloseable {
     }
 
     private void cancelRemainingTask(Runnable task) {
+        // tasks are expected to be of ReschedulingRunnable type, which is a Future
         if (task instanceof Future<?> future) {
             future.cancel(true);
         }
