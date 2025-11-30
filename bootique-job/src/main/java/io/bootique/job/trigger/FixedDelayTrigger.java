@@ -53,7 +53,7 @@ public class FixedDelayTrigger extends Trigger {
         Instant lastExecution = context.lastScheduledExecution();
         Instant lastCompletion = context.lastCompletion();
         if (lastExecution == null || lastCompletion == null) {
-            Instant instant = context.getClock().instant();
+            Instant instant = context.now();
             Duration initialDelay = this.initialDelay;
             if (initialDelay == null) {
                 return instant;

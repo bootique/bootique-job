@@ -55,7 +55,7 @@ public class FixedRateTrigger extends Trigger {
         Instant lastExecution = context.lastScheduledExecution();
         Instant lastCompletion = context.lastCompletion();
         if (lastExecution == null || lastCompletion == null) {
-            Instant instant = context.getClock().instant();
+            Instant instant = context.now();
             return initialDelay != null ? instant.plus(initialDelay) : instant;
         }
 

@@ -20,6 +20,8 @@ package io.bootique.job.trigger;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Objects;
 
 /**
  * @since 4.0
@@ -28,29 +30,27 @@ public class TriggerContext {
 
     private final Clock clock;
     private volatile Instant lastScheduledExecution;
-    private volatile Instant lastActualExecution;
     private volatile Instant lastCompletion;
 
     public TriggerContext(Clock clock) {
-        this.clock = clock;
+        this.clock = Objects.requireNonNull(clock);
     }
 
-    public Clock getClock() {
-        return clock;
-    }
-
-    public void update(Instant lastScheduledExecution, Instant lastActualExecution, Instant lastCompletion) {
+    public void update(Instant lastScheduledExecution, Instant lastCompletion) {
         this.lastScheduledExecution = lastScheduledExecution;
-        this.lastActualExecution = lastActualExecution;
         this.lastCompletion = lastCompletion;
+    }
+
+    public Instant now() {
+        return clock.instant();
+    }
+
+    public ZoneId timeZone() {
+        return clock.getZone();
     }
 
     public Instant lastScheduledExecution() {
         return this.lastScheduledExecution;
-    }
-
-    public Instant lastActualExecution() {
-        return this.lastActualExecution;
     }
 
     public Instant lastCompletion() {

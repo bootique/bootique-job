@@ -61,7 +61,7 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
         synchronized (triggerContextMonitor) {
             this.scheduledExecutionTime = trigger.nextExecution(triggerContext);
             if (scheduledExecutionTime != null) {
-                Duration delay = Duration.between(triggerContext.getClock().instant(), scheduledExecutionTime);
+                Duration delay = Duration.between(triggerContext.now(), scheduledExecutionTime);
                 currentFuture = executor.schedule(this, delay.toNanos(), TimeUnit.NANOSECONDS);
             }
         }
@@ -73,7 +73,6 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
 
     @Override
     public void run() {
-        Instant actualExecutionTime = triggerContext.getClock().instant();
         try {
             delegate.run();
         } catch (UndeclaredThrowableException ex) {
@@ -82,11 +81,11 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
             throw new RuntimeException(ex);
         }
 
-        Instant completionTime = triggerContext.getClock().instant();
+        Instant completionTime = triggerContext.now();
 
         synchronized (triggerContextMonitor) {
             Objects.requireNonNull(scheduledExecutionTime, "No scheduled execution");
-            triggerContext.update(scheduledExecutionTime, actualExecutionTime, completionTime);
+            triggerContext.update(scheduledExecutionTime, completionTime);
             if (!obtainCurrentFuture().isCancelled()) {
                 schedule();
             }

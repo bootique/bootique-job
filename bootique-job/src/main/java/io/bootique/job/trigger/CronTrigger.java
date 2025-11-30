@@ -23,7 +23,6 @@ import io.bootique.job.scheduler.TaskScheduler;
 import io.bootique.job.value.Cron;
 
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -65,8 +64,7 @@ public class CronTrigger extends Trigger {
     @Override
     public Instant nextExecution(TriggerContext context) {
         Instant timestamp = latestTimestamp(context);
-        ZoneId zone = context.getClock().getZone();
-        ZonedDateTime zonedTimestamp = ZonedDateTime.ofInstant(timestamp, zone);
+        ZonedDateTime zonedTimestamp = ZonedDateTime.ofInstant(timestamp, context.timeZone());
         ZonedDateTime nextTimestamp = expression.next(zonedTimestamp);
         return (nextTimestamp != null ? nextTimestamp.toInstant() : null);
     }
@@ -82,7 +80,7 @@ public class CronTrigger extends Trigger {
                 timestamp = scheduled;
             }
         } else {
-            timestamp = context.getClock().instant();
+            timestamp = context.now();
         }
 
         return timestamp;
