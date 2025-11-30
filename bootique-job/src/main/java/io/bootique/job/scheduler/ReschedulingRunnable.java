@@ -18,9 +18,6 @@
  */
 package io.bootique.job.scheduler;
 
-import io.bootique.job.trigger.TriggerContext;
-import io.bootique.job.trigger.TriggerSchedule;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -39,8 +36,8 @@ import java.util.concurrent.TimeoutException;
 class ReschedulingRunnable implements Runnable, Future<Object> {
 
     private final Runnable delegate;
-    private final TriggerSchedule schedule;
-    private final TriggerContext context;
+    private final Schedule schedule;
+    private final SchedulingContext context;
     private final ScheduledExecutorService executor;
     private final Object triggerContextMonitor;
 
@@ -49,13 +46,13 @@ class ReschedulingRunnable implements Runnable, Future<Object> {
 
     public ReschedulingRunnable(
             Runnable delegate,
-            TriggerSchedule schedule,
+            Schedule schedule,
             Clock clock,
             ScheduledExecutorService executor) {
 
         this.delegate = delegate;
         this.schedule = schedule;
-        this.context = new TriggerContext(clock);
+        this.context = new SchedulingContext(clock);
         this.executor = executor;
         this.triggerContextMonitor = new Object();
     }

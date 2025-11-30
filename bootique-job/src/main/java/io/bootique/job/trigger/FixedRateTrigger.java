@@ -20,6 +20,7 @@ package io.bootique.job.trigger;
 
 import io.bootique.job.JobRegistry;
 import io.bootique.job.scheduler.TaskScheduler;
+import io.bootique.job.scheduler.SchedulingContext;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -50,7 +51,7 @@ public class FixedRateTrigger extends Trigger {
     }
 
     @Override
-    protected Instant nextExecution(TriggerContext context) {
+    protected Instant nextExecution(SchedulingContext context) {
 
         Instant lastExecution = context.lastScheduledExecution();
         Instant lastCompletion = context.lastCompletion();

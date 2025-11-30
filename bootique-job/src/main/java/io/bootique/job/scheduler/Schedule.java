@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.trigger;
+package io.bootique.job.scheduler;
 
 import java.time.Instant;
 
 /**
- * A scheduling aspect of a {@link Trigger}.
+ * A scheduling rule.
  *
  * @since 4.0
  */
-public interface TriggerSchedule {
+public interface Schedule {
 
     /**
      * Determines the next execution time based on the internal trigger logic and provided context.
      */
-    Instant nextExecution(TriggerContext context);
+    Instant nextExecution(SchedulingContext context);
 }

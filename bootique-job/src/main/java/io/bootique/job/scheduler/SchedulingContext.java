@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.bootique.job.trigger;
+package io.bootique.job.scheduler;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -24,15 +24,17 @@ import java.time.ZoneId;
 import java.util.Objects;
 
 /**
+ * A mutable scheduling state operated upon by {@link Schedule}
+ *
  * @since 4.0
  */
-public class TriggerContext {
+public class SchedulingContext {
 
     private final Clock clock;
     private volatile Instant lastScheduledExecution;
     private volatile Instant lastCompletion;
 
-    public TriggerContext(Clock clock) {
+    public SchedulingContext(Clock clock) {
         this.clock = Objects.requireNonNull(clock);
     }
 

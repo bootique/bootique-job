@@ -18,8 +18,6 @@
  */
 package io.bootique.job.scheduler;
 
-import io.bootique.job.trigger.TriggerSchedule;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -72,7 +70,7 @@ public class TaskScheduler implements AutoCloseable {
         }
     }
 
-    public Future<?> schedule(Runnable task, TriggerSchedule schedule) {
+    public Future<?> schedule(Runnable task, Schedule schedule) {
         ReschedulingRunnable runnable = new ReschedulingRunnable(task, schedule, clock, executor);
         runnable.schedule();
         return runnable;

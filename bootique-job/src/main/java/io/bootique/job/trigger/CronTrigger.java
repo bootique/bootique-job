@@ -20,6 +20,7 @@ package io.bootique.job.trigger;
 
 import io.bootique.job.JobRegistry;
 import io.bootique.job.scheduler.TaskScheduler;
+import io.bootique.job.scheduler.SchedulingContext;
 import io.bootique.job.value.Cron;
 
 import java.time.Instant;
@@ -62,14 +63,14 @@ public class CronTrigger extends Trigger {
     }
 
     @Override
-    protected Instant nextExecution(TriggerContext context) {
+    protected Instant nextExecution(SchedulingContext context) {
         Instant timestamp = latestTimestamp(context);
         ZonedDateTime zonedTimestamp = ZonedDateTime.ofInstant(timestamp, context.timeZone());
         ZonedDateTime nextTimestamp = expression.next(zonedTimestamp);
         return (nextTimestamp != null ? nextTimestamp.toInstant() : null);
     }
 
-    Instant latestTimestamp(TriggerContext context) {
+    Instant latestTimestamp(SchedulingContext context) {
         Instant timestamp = context.lastCompletion();
         if (timestamp != null) {
             Instant scheduled = context.lastScheduledExecution();

@@ -22,6 +22,7 @@ package io.bootique.job.trigger;
 import io.bootique.job.Job;
 import io.bootique.job.JobRegistry;
 import io.bootique.job.scheduler.TaskScheduler;
+import io.bootique.job.scheduler.SchedulingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,7 +115,7 @@ public abstract class Trigger {
     /**
      * Determines the next execution time based on the internal trigger logic and provided context.
      */
-    protected abstract Instant nextExecution(TriggerContext context);
+    protected abstract Instant nextExecution(SchedulingContext context);
 
     /**
      * @deprecated in favor of {@link #getTriggerName()}
