@@ -39,15 +39,15 @@ public class TaskScheduler implements AutoCloseable {
     private final Clock clock;
     private final ScheduledExecutorService executor;
 
-    public TaskScheduler(int poolSize, String threadNamePrefix) {
+    public TaskScheduler(Clock clock, int poolSize, String threadNamePrefix) {
 
-        this.clock = java.time.Clock.systemDefaultZone();
+        this.clock = clock;
 
         ThreadFactory threadFactory = createThreadFactory(threadNamePrefix);
         this.executor = createExecutor(poolSize, threadFactory);
-
-        if (this.executor instanceof ScheduledThreadPoolExecutor threadPoolExecutor) {
-            threadPoolExecutor.setCorePoolSize(poolSize);
+        
+        if (this.executor instanceof ThreadPoolExecutor e) {
+            e.setCorePoolSize(poolSize);
         }
     }
 

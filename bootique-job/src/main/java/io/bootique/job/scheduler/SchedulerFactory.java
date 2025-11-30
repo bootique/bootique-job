@@ -30,6 +30,7 @@ import io.bootique.job.trigger.TriggerFactory;
 import io.bootique.shutdown.ShutdownManager;
 import jakarta.inject.Inject;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,7 +70,11 @@ public class SchedulerFactory {
     }
 
     public TaskScheduler createTaskScheduler() {
-        TaskScheduler taskScheduler = new TaskScheduler(createThreadPoolSize(), "bootique-job-");
+        TaskScheduler taskScheduler = new TaskScheduler(
+                Clock.systemDefaultZone(),
+                createThreadPoolSize(),
+                "bootique-job-");
+
         return shutdownManager.onShutdown(taskScheduler);
     }
 
