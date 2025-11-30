@@ -92,8 +92,7 @@ class ReschedulingRunnable implements Runnable, Future<Object> {
             synchronized (triggerContextMonitor) {
                 Objects.requireNonNull(scheduledExecutionTime, "No scheduled execution");
 
-                Instant completionTime = context.now();
-                context.update(scheduledExecutionTime, completionTime);
+                context.update(scheduledExecutionTime, context.now());
                 if (!obtainCurrentFuture().isCancelled()) {
                     schedule();
                 }
@@ -134,7 +133,7 @@ class ReschedulingRunnable implements Runnable, Future<Object> {
     @Override
     public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         ScheduledFuture<?> curr;
-        synchronized (this.triggerContextMonitor) {
+        synchronized (triggerContextMonitor) {
             curr = obtainCurrentFuture();
         }
         return curr.get(timeout, unit);
