@@ -52,40 +52,43 @@ public class SchedulerFactory {
     private Integer graphExecutorThreadPoolSize;
 
     @Inject
-    public SchedulerFactory(JobRegistry jobRegistry, JobDecorators decorators, ShutdownManager shutdownManager) {
+    public SchedulerFactory(
+            JobRegistry jobRegistry,
+            JobDecorators decorators,
+            ShutdownManager shutdownManager) {
+
         this.jobRegistry = jobRegistry;
         this.decorators = decorators;
         this.shutdownManager = shutdownManager;
     }
 
     // TODO: GraphExecutor kinda exists outside of the Scheduler, so probably warrants its own factory
-    // TODO: GraphExecutor will become obsolete once project Loom becomes mainstream, and we can use virtual
-    //  threads in the main Scheduler pool
+    // TODO: GraphExecutor is probably obsolete as we are using virtual threads in the main Scheduler pool
     public GraphExecutor createGraphExecutor() {
         return new GraphExecutor(createGraphExecutorService());
     }
 
-    public Scheduler createScheduler() {
-        TaskScheduler taskScheduler = createTaskScheduler();
-        return new DefaultScheduler(createTriggers(), taskScheduler, jobRegistry, decorators);
+    public TaskScheduler createTaskScheduler() {
+        TaskScheduler taskScheduler = new TaskScheduler(createThreadPoolSize(), "bootique-job-");
+        return shutdownManager.onShutdown(taskScheduler);
     }
 
-    protected Collection<Trigger> createTriggers() {
+    public Scheduler createScheduler(TaskScheduler taskScheduler) {
+        return new DefaultScheduler(jobRegistry, decorators, taskScheduler, createTriggers(taskScheduler));
+    }
+
+    protected List<Trigger> createTriggers(TaskScheduler taskScheduler) {
 
         if (this.triggers == null) {
             return Collections.emptyList();
         }
 
         List<Trigger> triggers = new ArrayList<>();
-        this.triggers.forEach(t -> triggers.add(t.createTrigger()));
+        this.triggers.forEach(t -> triggers.add(t.createTrigger(jobRegistry, taskScheduler)));
         return triggers;
     }
 
-    protected TaskScheduler createTaskScheduler() {
-        TaskScheduler taskScheduler = new TaskScheduler(createThreadPoolSize(), "bootique-job-");
-        return shutdownManager.onShutdown(taskScheduler);
-    }
-
+    // TODO: is this cap still relevant with virtual threads?
     protected int createThreadPoolSize() {
         // TODO: make the default to be equal to the number of CPUs on the system?
         return threadPoolSize != null ? threadPoolSize : 4;

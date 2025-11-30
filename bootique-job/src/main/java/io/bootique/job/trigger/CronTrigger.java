@@ -18,11 +18,14 @@
  */
 package io.bootique.job.trigger;
 
+import io.bootique.job.JobRegistry;
+import io.bootique.job.scheduler.TaskScheduler;
 import io.bootique.job.value.Cron;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -33,11 +36,14 @@ public class CronTrigger extends Trigger {
     private final CronExpression expression;
 
     public CronTrigger(
-            JobExec exec,
+            JobRegistry jobRegistry,
+            TaskScheduler taskScheduler,
+            String jobName,
             String triggerName,
+            Map<String, Object> params,
             CronExpression expression) {
 
-        super(exec, triggerName);
+        super(jobRegistry, taskScheduler, jobName, triggerName, params);
         this.expression = Objects.requireNonNull(expression);
     }
 

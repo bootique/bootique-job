@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,34 +60,43 @@ public class ScheduleCommand extends CommandWithMetadata {
     @Override
     public CommandOutcome run(Cli cli) {
 
-        int jobCount;
         Scheduler scheduler = schedulerProvider.get();
-
         List<String> jobStrings = cli.optionStrings(SchedulerModule.JOB_OPTION);
-        if (jobStrings == null || jobStrings.isEmpty()) {
-            LOGGER.info("Starting scheduler");
-            jobCount = scheduler.start();
-        } else {
-            
-            JobExecParser parser = jobExecParser.get();
-            List<String> jobNames = jobStrings.stream()
-                    .map(parser::parse)
-                    // TODO: allow parameters to be passed to the scheduler the same way we allow it for individual
-                    //  executions
-                    .peek(e -> {
-                        if (!e.getParams().isEmpty()) {
-                            LOGGER.warn("Ignoring CLI parameters of job {} for scheduling: {}", e.getJobName(), e.getParams());
-                        }
-                    })
-                    .map(JobExec::getJobName)
-                    .collect(Collectors.toList());
 
-            LOGGER.info("Starting scheduler for jobs: {}", jobNames);
-            jobCount = scheduler.start(jobNames);
+        int c = jobStrings == null || jobStrings.isEmpty()
+                ? startAllJobs(scheduler)
+                : startSelectJobs(scheduler, jobStrings);
+
+        LOGGER.info("Started scheduler with {} trigger(s).", c);
+        return CommandOutcome.succeededAndForkedToBackground();
+    }
+
+    private int startAllJobs(Scheduler scheduler) {
+        LOGGER.info("Starting scheduler");
+        return scheduler.scheduleAllTriggers();
+    }
+
+    private int startSelectJobs(Scheduler scheduler, List<String> jobStrings) {
+        JobExecParser parser = jobExecParser.get();
+        List<String> jobNames = jobStrings.stream()
+                .map(parser::parse)
+                // TODO: allow parameters to be passed to the scheduler the same way we allow it for individual
+                //  executions
+                .peek(e -> {
+                    if (!e.getParams().isEmpty()) {
+                        LOGGER.warn("Ignoring CLI parameters of job {} for scheduling: {}", e.getJobName(), e.getParams());
+                    }
+                })
+                .map(JobExec::getJobName)
+                .collect(Collectors.toList());
+
+        LOGGER.info("Starting scheduler for jobs: {}", jobNames);
+        int c = 0;
+        for (String n : jobNames) {
+            c += scheduler.scheduleTriggers(n);
         }
 
-        LOGGER.info("Started scheduler with {} trigger(s).", jobCount);
-        return CommandOutcome.succeededAndForkedToBackground();
+        return c;
     }
 
 }

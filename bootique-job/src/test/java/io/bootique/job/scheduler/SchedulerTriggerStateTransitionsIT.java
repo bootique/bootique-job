@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package io.bootique.job.scheduler;
 
+import io.bootique.BQCoreModule;
 import io.bootique.BQRuntime;
 import io.bootique.Bootique;
-import io.bootique.BootiqueException;
-import io.bootique.job.*;
-import io.bootique.job.fixture.ScheduledJob1;
+import io.bootique.job.Job;
+import io.bootique.job.JobDecorator;
+import io.bootique.job.JobOutcome;
+import io.bootique.job.JobsModule;
+import io.bootique.job.Scheduler;
+import io.bootique.job.SchedulerModule;
 import io.bootique.job.runtime.JobDecorators;
+import io.bootique.job.trigger.Trigger;
 import io.bootique.junit5.BQApp;
 import io.bootique.junit5.BQTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -40,104 +40,52 @@ import java.util.concurrent.LinkedBlockingDeque;
 import static org.junit.jupiter.api.Assertions.*;
 
 @BQTest
-public class SchedulerIT {
+public class SchedulerTriggerStateTransitionsIT {
 
     final ExecutionRateListener listener = new ExecutionRateListener();
 
     @BQApp(skipRun = true)
-    final BQRuntime app = Bootique.app("-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
+    final BQRuntime app = Bootique.app()
             .modules(new JobsModule(), new SchedulerModule())
-            .module(b -> JobsModule.extend(b).addJob(ScheduledJob1.class).addDecorator(listener, JobDecorators.EXCEPTIONS_HANDLER_ORDER + 1))
+            .module(b -> BQCoreModule.extend(b)
+                    .setProperty("bq.scheduler.triggers[0].job", "j1")
+                    .setProperty("bq.scheduler.triggers[0].trigger", "jt1")
+                    .setProperty("bq.scheduler.triggers[0].fixedRate", "100ms"))
+            .module(b -> JobsModule.extend(b)
+                    .addJob(J1.class)
+                    .addDecorator(listener, JobDecorators.EXCEPTIONS_HANDLER_ORDER + 1))
             .createRuntime();
 
-
-    @BeforeEach
-    public void before() {
-        listener.reset();
-    }
-
-    @AfterEach
-    public void after() {
-        getScheduler().getScheduledJobs().forEach(sj -> sj.cancel(true));
-    }
-
     @Test
-    public void scheduler_StartWithNoJobs() {
-        Scheduler scheduler = getScheduler();
-        assertEquals(0, scheduler.start(Collections.emptyList()));
-    }
+    public void schedule_cancel_schedule() throws InterruptedException {
+        Scheduler scheduler = app.getInstance(Scheduler.class);
 
-    @Test
-    public void scheduler_StartWithUnknownJob_Exception() {
-        Scheduler scheduler = getScheduler();
+        Trigger t = scheduler.getTrigger("j1", "jt1");
+        assertTrue(t.isUnscheduled());
 
-        try {
-            scheduler.start(Collections.singletonList("bogusjob123"));
-            fail("Exception excepted on invalid job name");
-        } catch (BootiqueException e) {
-            assertEquals("Unknown job: bogusjob123", e.getMessage());
-        }
-    }
-
-    @Test
-    public void scheduler_StartAfterPreviousCallToStartFailed() {
-        Scheduler scheduler = getScheduler();
-        scheduler.start(Collections.emptyList());
-        scheduler.start(Collections.singletonList("scheduledjob1"));
-        assertTrue(scheduler.isStarted());
-    }
-
-    @Test
-    public void scheduler_Reschedule() throws InterruptedException {
-        Scheduler scheduler = getScheduler();
-
-        int jobCount = scheduler.start();
-        assertEquals(1, jobCount);
-
-        Collection<ScheduledJob> scheduledJobs = scheduler.getScheduledJobs();
-        assertEquals(1, scheduledJobs.size());
-
-        ScheduledJob scheduledJob = scheduledJobs.iterator().next();
-        assertEquals("scheduledjob1", scheduledJob.getJobName());
-        assertTrue(scheduledJob.isScheduled());
-
-        JobRegistry jobRegistry = app.getInstance(JobRegistry.class);
-        Job job = jobRegistry.getJob(scheduledJob.getJobName());
-        assertNotNull(job);
+        assertEquals(1, scheduler.scheduleAllTriggers());
+        assertTrue(t.isScheduled());
 
         Thread.sleep(1000);
+        listener.assertRateWithinRange(85, 115);
 
-        assertWithinRange(85, 115, listener.getAverageRate());
-
-        assertTrue(scheduledJob.cancel(false));
-        assertFalse(scheduledJob.isScheduled());
+        assertTrue(t.cancel(false));
+        assertTrue(t.isCanceled());
 
         // allow for remaining jobs to complete gracefully
-        // (Future.cancel() does not wait for actual completion)
         Thread.sleep(1000);
-
         listener.reset();
 
-        // wait for a bit to ensure that no jobs are running in the background
+        // measure the rate after everything was stopped
         Thread.sleep(1000);
+        listener.assertRateWithinRange(0, 0);
+        listener.reset();
 
-        assertEquals(0, listener.getAverageRate());
-
-        assertTrue(scheduledJob.scheduleAtFixedRate(50, 0));
-        assertTrue(scheduledJob.isScheduled());
+        assertTrue(t.schedule());
+        assertTrue(t.isScheduled());
 
         Thread.sleep(1000);
-
-        assertWithinRange(40, 60, listener.getAverageRate());
-    }
-
-    private Scheduler getScheduler() {
-        return app.getInstance(Scheduler.class);
-    }
-
-    private void assertWithinRange(long lower, long upper, long actual) {
-        assertTrue(lower <= actual, () -> "Lower than expected rate: " + actual);
-        assertTrue(upper >= actual, () -> "Higher than expected rate: " + actual);
+        listener.assertRateWithinRange(85, 115);
     }
 
     static class ExecutionRateListener implements JobDecorator {
@@ -148,6 +96,12 @@ public class SchedulerIT {
 
         public ExecutionRateListener() {
             this.executions = new LinkedBlockingDeque<>();
+        }
+
+        public void assertRateWithinRange(long lower, long upper) {
+            long actual = (long) this.averageRate;
+            assertTrue(lower <= actual, () -> "Lower than expected rate: " + actual);
+            assertTrue(upper >= actual, () -> "Higher than expected rate: " + actual);
         }
 
         @Override
@@ -180,10 +134,6 @@ public class SchedulerIT {
             this.averageRate = 0;
         }
 
-        public long getAverageRate() {
-            return (long) averageRate;
-        }
-
         private static class Execution {
             private final long finishedAt;
 
@@ -194,6 +144,13 @@ public class SchedulerIT {
             public long getFinishedAt() {
                 return finishedAt;
             }
+        }
+    }
+
+    static class J1 implements Job {
+        @Override
+        public JobOutcome run(Map<String, Object> params) {
+            return JobOutcome.succeeded();
         }
     }
 }

@@ -20,131 +20,173 @@
 package io.bootique.job.scheduler;
 
 import io.bootique.BootiqueException;
-import io.bootique.job.*;
+import io.bootique.job.JobRegistry;
+import io.bootique.job.JobRunBuilder;
+import io.bootique.job.Scheduler;
+import io.bootique.job.TriggerBuilder;
 import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.trigger.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultScheduler implements Scheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScheduler.class);
 
-    private final TaskScheduler taskScheduler;
-    private final JobRegistry jobRegistry;
+    final JobRegistry jobRegistry;
     private final JobDecorators decorators;
-    private final Collection<Trigger> triggers;
-    private final Map<String, Collection<Trigger>> triggersByJob;
-    private final Map<String, Collection<ScheduledJob>> scheduledJobsByName;
-    private final AtomicBoolean started;
-
-    private static Map<String, Collection<Trigger>> mapTriggers(Collection<Trigger> triggers) {
-        Map<String, Collection<Trigger>> map = new HashMap<>();
-
-        for (Trigger t : triggers) {
-            map.computeIfAbsent(t.getExec().getJobName(), tn -> new ArrayList<>()).add(t);
-        }
-
-        return map;
-    }
+    final TaskScheduler taskScheduler;
+    private final Map<String, Map<String, Trigger>> triggersByJob;
 
     public DefaultScheduler(
-            Collection<Trigger> triggers,
-            TaskScheduler taskScheduler,
             JobRegistry jobRegistry,
-            JobDecorators decorators) {
+            JobDecorators decorators,
+            TaskScheduler taskScheduler,
+            List<Trigger> initialTriggers) {
 
         this.taskScheduler = taskScheduler;
         this.jobRegistry = jobRegistry;
         this.decorators = decorators;
-        this.triggers = triggers;
-        this.triggersByJob = mapTriggers(triggers);
-        this.scheduledJobsByName = new HashMap<>();
+        this.triggersByJob = new ConcurrentHashMap<>();
 
-        this.started = new AtomicBoolean(false);
+        mapTriggersByJob(initialTriggers);
+    }
+
+    private void mapTriggersByJob(List<Trigger> triggers) {
+
+        List<String> orphans = triggers.stream()
+                .map(this::addTrigger)
+                .filter(o -> !o.validJob)
+                .map(o -> o.trigger.getJobName() + ":" + o.trigger.getTriggerName())
+                .distinct()
+                .sorted()
+                .toList();
+
+        if (!orphans.isEmpty()) {
+            throw new BootiqueException(1, "Trigger(s) with missing or invalid jobs: " + String.join(", ", orphans));
+        }
     }
 
     @Override
-    public int start() {
-        return scheduleTriggers(triggers);
+    public int scheduleAllTriggers() {
+        int i = 0;
+
+        for (String n : jobRegistry.getJobNames()) {
+            i += scheduleTriggers(n);
+        }
+
+        return i;
     }
 
     @Override
-    public int start(List<String> jobNames) {
+    public int scheduleTriggers(String jobName) {
+        Objects.requireNonNull(jobName);
 
-        Objects.requireNonNull(jobNames);
-
-        if (jobNames.isEmpty()) {
-            return 0;
+        if (!jobRegistry.getJobNames().contains(jobName)) {
+            throw new BootiqueException(1, "Unknown job: " + jobName);
         }
 
-        Set<String> uniqueJobNames = new TreeSet<>(jobNames);
-
-        List<Trigger> toSchedule = new ArrayList<>(uniqueJobNames.size());
-        for (String jobName : uniqueJobNames) {
-            if (!jobRegistry.getJobNames().contains(jobName)) {
-                throw new BootiqueException(1, "Unknown job: " + jobName);
-            }
-
-            Collection<Trigger> jobTriggers = triggersByJob.get(jobName);
-
-            if (jobTriggers == null || jobTriggers.isEmpty()) {
-                LOGGER.warn("No triggers configured for job: {}. Skipping...", jobName);
-                continue;
-            }
-
-            toSchedule.addAll(jobTriggers);
-        }
-
-        return scheduleTriggers(toSchedule);
-    }
-
-    private int scheduleTriggers(Collection<Trigger> triggers) {
-
-        String badTriggers = triggers
+        List<Trigger> triggers = triggersByJob.getOrDefault(jobName, Map.of())
+                .values()
                 .stream()
-                .filter(t -> !jobRegistry.getJobNames().contains(t.getExec().getJobName()))
-                .map(t -> t.getExec().getJobName() + ":" + t.getName())
-                .collect(Collectors.joining(", "));
-
-        if (badTriggers.length() > 0) {
-            throw new BootiqueException(1, "Trigger(s) without a job object: " + badTriggers);
-        }
-
-        tryStart();
-        triggers.forEach(this::scheduleTrigger);
+                .filter(Trigger::schedule)
+                .toList();
 
         return triggers.size();
     }
 
-    private void scheduleTrigger(Trigger trigger) {
-        ScheduledJob scheduled = schedule(trigger);
-        scheduledJobsByName.computeIfAbsent(trigger.getExec().getJobName(), k -> new ArrayList<>()).add(scheduled);
+    @Override
+    public boolean scheduleTrigger(String jobName, String triggerName) {
+        return getTrigger(jobName, triggerName).schedule();
     }
 
-    private void tryStart() {
-        if (!started.compareAndSet(false, true)) {
-            throw new IllegalStateException("Already started");
+    @Override
+    public int cancelAllTriggers(boolean mayInterruptIfRunning) {
+        int i = 0;
+
+        for (String n : jobRegistry.getJobNames()) {
+            i += cancelTriggers(n, mayInterruptIfRunning);
         }
+
+        return i;
     }
 
     @Override
-    public boolean isStarted() {
-        return started.get();
+    public int cancelTriggers(String jobName, boolean mayInterruptIfRunning) {
+        Objects.requireNonNull(jobName);
+
+        if (!jobRegistry.getJobNames().contains(jobName)) {
+            throw new BootiqueException(1, "Unknown job: " + jobName);
+        }
+
+        List<Trigger> triggers = triggersByJob.getOrDefault(jobName, Map.of())
+                .values()
+                .stream()
+                .filter(t -> t.cancel(mayInterruptIfRunning))
+                .toList();
+
+        return triggers.size();
     }
 
     @Override
-    public Collection<ScheduledJob> getScheduledJobs() {
-        return scheduledJobsByName.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+    public boolean cancelTrigger(String jobName, String triggerName, boolean mayInterruptIfRunning) {
+        return getTrigger(jobName, triggerName).cancel(mayInterruptIfRunning);
     }
 
     @Override
-    public Collection<ScheduledJob> getScheduledJobs(String jobName) {
-        return scheduledJobsByName.getOrDefault(jobName, Collections.emptyList());
+    public int removeAllTriggers() {
+        int i = 0;
+
+        for (String n : jobRegistry.getJobNames()) {
+            i += removeTriggers(n);
+        }
+
+        return i;
+    }
+
+    @Override
+    public int removeTriggers(String jobName) {
+        Objects.requireNonNull(jobName);
+
+        if (!jobRegistry.getJobNames().contains(jobName)) {
+            throw new BootiqueException(1, "Unknown job: " + jobName);
+        }
+
+        Map<String, Trigger> jobTriggers = triggersByJob.get(jobName);
+        if (jobTriggers == null) {
+            return 0;
+        }
+
+        List<String> triggerNames = List.copyOf(jobTriggers.keySet());
+        int removed = 0;
+        for (String triggerName : triggerNames) {
+            if (removeTrigger(jobName, triggerName)) {
+                removed++;
+            }
+        }
+
+        return removed;
+    }
+
+    @Override
+    public boolean removeTrigger(String jobName, String triggerName) {
+        Map<String, Trigger> jobTriggers = triggersByJob.get(jobName);
+        if (jobTriggers == null) {
+            return false;
+        }
+
+        Trigger trigger = jobTriggers.remove(triggerName);
+        if (trigger != null && trigger.isScheduled()) {
+            trigger.cancel(true);
+        }
+
+        return trigger != null;
     }
 
     @Override
@@ -152,12 +194,102 @@ public class DefaultScheduler implements Scheduler {
         return new JobRunBuilder(jobRegistry, taskScheduler, decorators);
     }
 
-    protected ScheduledJob schedule(Trigger trigger) {
-        String jobName = trigger.getExec().getJobName();
-        Job job = jobRegistry.getJob(jobName);
+    @Override
+    public TriggerBuilder newCronTrigger(String cron) {
+        return new CronTriggerBuilder(this::addTriggerThrowOnBadJob, jobRegistry, taskScheduler, cron);
+    }
 
-        ScheduledJob scheduledJob = new DefaultScheduledJob(job, taskScheduler);
-        scheduledJob.schedule(trigger);
-        return scheduledJob;
+    @Override
+    public TriggerBuilder newFixedRateTrigger(Duration period, Duration initialDelay) {
+        return new FixedRateTriggerBuilder(
+                this::addTriggerThrowOnBadJob,
+                jobRegistry,
+                taskScheduler,
+                period,
+                initialDelay != null ? initialDelay : Duration.ZERO);
+    }
+
+    @Override
+    public TriggerBuilder newFixedDelayTrigger(Duration period, Duration initialDelay) {
+        return new FixedDelayTriggerBuilder(
+                this::addTriggerThrowOnBadJob,
+                jobRegistry,
+                taskScheduler,
+                period,
+                initialDelay != null ? initialDelay : Duration.ZERO);
+    }
+
+    @Override
+    public List<Trigger> getAllTriggers() {
+        return triggersByJob
+                .entrySet()
+                .stream()
+                .flatMap(e -> e.getValue().values().stream())
+                .toList();
+    }
+
+    @Override
+    public List<Trigger> getTriggers(String jobName) {
+        Map<String, Trigger> jobTriggers = triggersByJob.get(jobName);
+        if (jobTriggers == null) {
+            if (jobRegistry.getJobNames().contains(jobName)) {
+                return List.of();
+            } else {
+                throw new IllegalArgumentException("Invalid job name: " + jobName);
+            }
+        }
+
+        return List.copyOf(jobTriggers.values());
+    }
+
+    @Override
+    public Trigger getTrigger(String jobName, String triggerName) {
+        Map<String, Trigger> jobTriggers = triggersByJob.get(jobName);
+        if (jobTriggers == null) {
+            if (jobRegistry.getJobNames().contains(jobName)) {
+                throw new IllegalArgumentException("No such trigger: " + jobName + ":" + triggerName);
+            } else {
+                throw new IllegalArgumentException("Invalid job name: " + jobName);
+            }
+        }
+
+        Trigger trigger = jobTriggers.get(triggerName);
+        if (trigger == null) {
+            throw new IllegalArgumentException("No such trigger: " + jobName + ":" + triggerName);
+        }
+
+        return trigger;
+    }
+
+    TriggerRegistrationOutcome addTrigger(Trigger trigger) {
+
+        if (!jobRegistry.getJobNames().contains(trigger.getJobName())) {
+            return new TriggerRegistrationOutcome(trigger, false, true);
+        }
+
+        Map<String, Trigger> jobTriggers = triggersByJob.computeIfAbsent(trigger.getJobName(), n -> new ConcurrentHashMap<>());
+        Trigger old = jobTriggers.put(trigger.getTriggerName(), trigger);
+        if (old != null && old != trigger) {
+            if (old.isScheduled()) {
+                LOGGER.info("Cancelling and replacing an existing trigger: {}:{}...", old.getJobName(), old.getTriggerName());
+                old.cancel(true);
+            } else {
+                LOGGER.info("Replacing an existing trigger: {}:{}...", old.getJobName(), old.getTriggerName());
+            }
+
+            return new TriggerRegistrationOutcome(trigger, true, false);
+        }
+
+        return new TriggerRegistrationOutcome(trigger, true, true);
+    }
+
+    void addTriggerThrowOnBadJob(Trigger trigger) {
+        DefaultScheduler.TriggerRegistrationOutcome outcome = addTrigger(trigger);
+        if (!outcome.validJob()) {
+            throw new IllegalStateException("Missing or invalid job: " + trigger.getJobName());
+        }
+    }
+
+    record TriggerRegistrationOutcome(Trigger trigger, boolean validJob, boolean unique) {
     }
 }

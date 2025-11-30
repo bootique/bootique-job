@@ -73,7 +73,9 @@ public class TaskScheduler implements AutoCloseable {
     }
 
     public ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
-        return new ReschedulingRunnable(task, trigger, clock, executor).schedule();
+        ReschedulingRunnable runnable = new ReschedulingRunnable(task, trigger, clock, executor);
+        runnable.schedule();
+        return runnable;
     }
 
     public ScheduledFuture<?> schedule(Runnable task, Instant startTime) {

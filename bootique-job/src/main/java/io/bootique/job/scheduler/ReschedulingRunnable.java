@@ -57,17 +57,13 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
         this.triggerContextMonitor = new Object();
     }
 
-    public ScheduledFuture<?> schedule() {
+    public void schedule() {
         synchronized (triggerContextMonitor) {
-
             this.scheduledExecutionTime = trigger.nextExecution(triggerContext);
-            if (scheduledExecutionTime == null) {
-                return null;
+            if (scheduledExecutionTime != null) {
+                Duration delay = Duration.between(triggerContext.getClock().instant(), scheduledExecutionTime);
+                currentFuture = executor.schedule(this, delay.toNanos(), TimeUnit.NANOSECONDS);
             }
-
-            Duration delay = Duration.between(triggerContext.getClock().instant(), scheduledExecutionTime);
-            currentFuture = executor.schedule(this, delay.toNanos(), TimeUnit.NANOSECONDS);
-            return this;
         }
     }
 
@@ -80,9 +76,7 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
         Instant actualExecutionTime = triggerContext.getClock().instant();
         try {
             delegate.run();
-        }
-        // TODO: the original never rethrew exceptions, how did they get to us?
-        catch (UndeclaredThrowableException ex) {
+        } catch (UndeclaredThrowableException ex) {
             throw new RuntimeException(ex.getUndeclaredThrowable());
         } catch (Throwable ex) {
             throw new RuntimeException(ex);

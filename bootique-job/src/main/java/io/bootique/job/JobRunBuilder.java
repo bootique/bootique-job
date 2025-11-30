@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
- * A builder for customizing job execution
+ * A builder for a customized job execution.
  *
  * @since 3.0
  */

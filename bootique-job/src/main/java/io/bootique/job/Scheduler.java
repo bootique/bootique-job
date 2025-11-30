@@ -19,12 +19,33 @@
 
 package io.bootique.job;
 
-import io.bootique.BootiqueException;
+import io.bootique.job.trigger.Trigger;
 
-import java.util.Collection;
+import java.time.Duration;
 import java.util.List;
 
 public interface Scheduler {
+
+    /**
+     * Returns a builder object for a new cron trigger associated with this scheduler.
+     *
+     * @since 4.0
+     */
+    TriggerBuilder newCronTrigger(String cron);
+
+    /**
+     * Returns a builder object for a new fixed delay trigger associated with this scheduler.
+     *
+     * @since 4.0
+     */
+    TriggerBuilder newFixedDelayTrigger(Duration period, Duration initialDelay);
+
+    /**
+     * Returns a builder object for a new fixed rate trigger associated with this scheduler.
+     *
+     * @since 4.0
+     */
+    TriggerBuilder newFixedRateTrigger(Duration period, Duration initialDelay);
 
     /**
      * Returns a builder object that can be used to build a custom job execution.
@@ -34,36 +55,127 @@ public interface Scheduler {
     JobRunBuilder runBuilder();
 
     /**
-     * Schedule execution of jobs based on configured triggers. Throws an exception if the scheduler has already been started
-     *
-     * @return Number of scheduled jobs, possibly zero
+     * @deprecated in favor of {@link #scheduleAllTriggers()}
      */
-    int start();
+    @Deprecated(since = "4.0", forRemoval = true)
+    default int start() {
+        return scheduleAllTriggers();
+    }
 
     /**
-     * Schedule execution of jobs based on configured triggers.
-     * Throws an exception, if the scheduler has already been started
-     *
-     * @param jobNames Jobs to schedule
-     * @return Number of scheduled jobs, possibly zero
-     * @throws BootiqueException if {@code jobNames} is null or empty or some of the jobs are unknown
+     * @deprecated in favor of {@link #scheduleTriggers(String)}
      */
-    int start(List<String> jobNames);
+    @Deprecated(since = "4.0", forRemoval = true)
+    default int start(List<String> jobNames) {
+        int i = 0;
+        for (String j : jobNames) {
+            i += scheduleTriggers(j);
+        }
+
+        return i;
+    }
+
+    /**
+     * Schedules all existing preconfigured triggers. Can be called multiple times, and will only schedule the triggers
+     * that are either unscheduled or canceled.
+     *
+     * @return the number of newly scheduled triggers
+     * @since 4.0
+     */
+    int scheduleAllTriggers();
+
+    /**
+     * Schedules preconfigured triggers associated with the specified job. Can be called multiple times, and will
+     * only schedule the triggers that are either unscheduled or canceled.
+     *
+     * @return the number of newly scheduled triggers
+     * @since 4.0
+     */
+    int scheduleTriggers(String jobName);
+
+    /**
+     * Tries to schedule an existing preconfigured trigger.
+     *
+     * @since 4.0
+     */
+    boolean scheduleTrigger(String jobName, String triggerName);
+
+    /**
+     * Cancels all existing preconfigured triggers. Can be called multiple times, and will only cancel the triggers
+     * that are scheduled.
+     *
+     * @return the number of newly scheduled triggers
+     * @since 4.0
+     */
+    int cancelAllTriggers(boolean mayInterruptIfRunning);
+
+    /**
+     * Schedules preconfigured triggers associated with the specified job. Can be called multiple times, and will
+     * only cancel the triggers that are scheduled.
+     *
+     * @return the number of newly scheduled triggers
+     * @since 4.0
+     */
+    int cancelTriggers(String jobName, boolean mayInterruptIfRunning);
+
+    /**
+     * Tries to cancel an existing preconfigured trigger.
+     *
+     * @since 4.0
+     */
+    boolean cancelTrigger(String jobName, String triggerName, boolean mayInterruptIfRunning);
+
+    /**
+     * Removes all existing preconfigured triggers. Scheduled triggers will be canceled before removal.
+     *
+     * @return the number of removed triggers
+     * @since 4.0
+     */
+    int removeAllTriggers();
+
+    /**
+     * Removes preconfigured triggers associated with the specified job. Scheduled triggers will be canceled before removal.
+     *
+     * @return the number of removed triggers
+     * @since 4.0
+     */
+    int removeTriggers(String jobName);
+
+    /**
+     * Tries to remove an existing preconfigured trigger. Scheduled triggers will be canceled before removal.
+     *
+     * @since 4.0
+     */
+    boolean removeTrigger(String jobName, String triggerName);
 
     /**
      * @return true, if the scheduler has been started
+     * @deprecated started state is no longer meaningful
      */
-    boolean isStarted();
+    @Deprecated(since = "4.0", forRemoval = true)
+    default boolean isStarted() {
+        return true;
+    }
 
     /**
-     * @return Collection of scheduled job executions for all known jobs
+     * Returns all triggers for all jobs.
+     *
+     * @since 4.0
      */
-    Collection<ScheduledJob> getScheduledJobs();
+    List<Trigger> getAllTriggers();
 
     /**
-     * @param jobName Job name
-     * @return Scheduled job executions for a given job, or an empty collection, if the job is unknown,
-     * triggers are not configured for this job or the scheduler has not been started yet
+     * Returns all triggers for a given job.
+     *
+     * @since 4.0
      */
-    Collection<ScheduledJob> getScheduledJobs(String jobName);
+    List<Trigger> getTriggers(String jobName);
+
+    /**
+     * Returns a non-null Trigger object for the provided job and trigger name. Throws an exception if there's no
+     * trigger matching the name.
+     *
+     * @since 4.0
+     */
+    Trigger getTrigger(String jobName, String triggerName);
 }

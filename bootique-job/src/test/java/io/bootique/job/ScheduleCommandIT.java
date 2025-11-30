@@ -22,6 +22,7 @@ package io.bootique.job;
 import io.bootique.BQRuntime;
 import io.bootique.job.fixture.ScheduledJob1;
 import io.bootique.job.fixture.ScheduledJob2;
+import io.bootique.job.trigger.Trigger;
 import io.bootique.junit5.BQTest;
 import io.bootique.junit5.BQTestFactory;
 import io.bootique.junit5.BQTestTool;
@@ -38,34 +39,38 @@ public class ScheduleCommandIT {
     @Test
     public void scheduleCommand_AllJobs() {
         BQRuntime runtime = testFactory.app()
-                .args("--schedule", "-c", "classpath:io/bootique/job/fixture/scheduler_test_command.yml")
+                .args("--schedule", "-c", "classpath:io/bootique/job/scheduler_command.yml")
                 .modules(new JobsModule(), new SchedulerModule())
                 .module(b -> JobsModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
                 .createRuntime();
 
         Scheduler scheduler = runtime.getInstance(Scheduler.class);
-        assertFalse(scheduler.isStarted());
+        assertEquals(2, scheduler.getAllTriggers().size());
+        assertEquals(2, scheduler.getAllTriggers().stream().filter(Trigger::isUnscheduled).count());
 
         runtime.run();
 
-        assertTrue(scheduler.isStarted());
-        assertEquals(2, scheduler.getScheduledJobs().size());
+        assertEquals(2, scheduler.getAllTriggers().stream().filter(Trigger::isScheduled).count());
     }
 
     @Test
-    public void scheduleCommand_SelectedJobs() {
+    public void scheduleCommand_SelectJobs() {
         BQRuntime runtime = testFactory.app()
-                .args("--schedule", "--job=scheduledjob1", "-c", "classpath:io/bootique/job/fixture/scheduler_test_triggers.yml")
+                .args("--schedule", "--job=scheduledjob1", "-c", "classpath:io/bootique/job/scheduler_command.yml")
                 .modules(new JobsModule(), new SchedulerModule())
                 .module(b -> JobsModule.extend(b).addJob(ScheduledJob1.class).addJob(ScheduledJob2.class))
                 .createRuntime();
 
         Scheduler scheduler = runtime.getInstance(Scheduler.class);
+        assertEquals(2, scheduler.getAllTriggers().size());
+        assertEquals(2, scheduler.getAllTriggers().stream().filter(Trigger::isUnscheduled).count());
 
         runtime.run();
 
-        assertTrue(scheduler.isStarted());
-        assertEquals(1, scheduler.getScheduledJobs().size());
-        assertEquals("scheduledjob1", scheduler.getScheduledJobs().iterator().next().getJobName());
+        assertEquals(1, scheduler.getAllTriggers().stream().filter(Trigger::isUnscheduled).count());
+        assertEquals(1, scheduler.getAllTriggers().stream().filter(Trigger::isScheduled).count());
+
+        Trigger t = scheduler.getTriggers("scheduledjob1").get(0);
+        assertTrue(t.isScheduled());
     }
 }

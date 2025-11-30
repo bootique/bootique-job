@@ -21,11 +21,14 @@ package io.bootique.job.trigger;
 
 import io.bootique.annotation.BQConfig;
 import io.bootique.annotation.BQConfigProperty;
+import io.bootique.job.JobRegistry;
+import io.bootique.job.scheduler.TaskScheduler;
 import io.bootique.job.value.Cron;
 import io.bootique.value.Duration;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -46,19 +49,20 @@ public class TriggerFactory {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    public Trigger createTrigger() {
+    public Trigger createTrigger(JobRegistry jobRegistry, TaskScheduler taskScheduler) {
 
+        Objects.requireNonNull(job);
         String triggerName = this.trigger != null ? this.trigger : generateTriggerName();
         Map<String, Object> params = this.params != null ? this.params : Collections.emptyMap();
         java.time.Duration initialDelay = this.initialDelay != null ? this.initialDelay.getDuration() : java.time.Duration.ZERO;
 
         // TODO: use a polymorphic factory
         if (cron != null) {
-            return new CronTrigger(new JobExec(job, params), triggerName, cron.getCronExpression());
+            return new CronTrigger(jobRegistry, taskScheduler, job, triggerName, params, cron.getCronExpression());
         } else if (fixedDelay != null) {
-            return new FixedDelayTrigger(new JobExec(job, params), triggerName, fixedDelay.getDuration(), initialDelay);
+            return new FixedDelayTrigger(jobRegistry, taskScheduler, job, triggerName, params, fixedDelay.getDuration(), initialDelay);
         } else if (fixedRate != null) {
-            return new FixedRateTrigger(new JobExec(job, params), triggerName, fixedRate.getDuration(), initialDelay);
+            return new FixedRateTrigger(jobRegistry, taskScheduler, job, triggerName, params, fixedRate.getDuration(), initialDelay);
         }
 
         throw new IllegalStateException("Trigger must have either cron or fixed rate or fixed delay configured");

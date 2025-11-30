@@ -18,8 +18,12 @@
  */
 package io.bootique.job.trigger;
 
+import io.bootique.job.JobRegistry;
+import io.bootique.job.scheduler.TaskScheduler;
+
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -31,12 +35,15 @@ public class FixedRateTrigger extends Trigger {
     private final Duration initialDelay;
 
     public FixedRateTrigger(
-            JobExec exec,
+            JobRegistry jobRegistry,
+            TaskScheduler taskScheduler,
+            String jobName,
             String triggerName,
+            Map<String, Object> params,
             Duration period,
             Duration initialDelay) {
 
-        super(exec, triggerName);
+        super(jobRegistry, taskScheduler, jobName, triggerName, params);
 
         this.period = Objects.requireNonNull(period);
         this.initialDelay = initialDelay != null ? initialDelay : Duration.ZERO;

@@ -34,12 +34,13 @@ import io.bootique.job.runtime.DefaultJobRegistry;
 import io.bootique.job.runtime.GraphExecutor;
 import io.bootique.job.runtime.JobDecorators;
 import io.bootique.job.scheduler.SchedulerFactory;
+import io.bootique.job.scheduler.TaskScheduler;
 import io.bootique.job.trigger.JobExecParser;
 import io.bootique.job.value.Cron;
 import io.bootique.meta.application.OptionMetadata;
-
 import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
+
 import java.util.Map;
 
 /**
@@ -98,8 +99,14 @@ public class SchedulerModule implements BQModule {
 
     @Provides
     @Singleton
-    Scheduler provideScheduler(ConfigurationFactory configFactory) {
-        return configFactory.config(SchedulerFactory.class, CONFIG_PREFIX).createScheduler();
+    TaskScheduler provideTaskScheduler(ConfigurationFactory configFactory) {
+        return configFactory.config(SchedulerFactory.class, CONFIG_PREFIX).createTaskScheduler();
+    }
+
+    @Provides
+    @Singleton
+    Scheduler provideScheduler(TaskScheduler taskScheduler, ConfigurationFactory configFactory) {
+        return configFactory.config(SchedulerFactory.class, CONFIG_PREFIX).createScheduler(taskScheduler);
     }
 
     // this is a secondary thread pool used for graph execution
