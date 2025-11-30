@@ -21,7 +21,7 @@ package io.bootique.job.scheduler;
 
 import io.bootique.BootiqueException;
 import io.bootique.job.JobRegistry;
-import io.bootique.job.JobRunBuilder;
+import io.bootique.job.ExecBuilder;
 import io.bootique.job.Scheduler;
 import io.bootique.job.TriggerBuilder;
 import io.bootique.job.runtime.JobDecorators;
@@ -190,8 +190,8 @@ public class DefaultScheduler implements Scheduler {
     }
 
     @Override
-    public JobRunBuilder runBuilder() {
-        return new JobRunBuilder(jobRegistry, taskScheduler, decorators);
+    public ExecBuilder newExecution() {
+        return new ExecBuilder(jobRegistry, taskScheduler, decorators);
     }
 
     @Override

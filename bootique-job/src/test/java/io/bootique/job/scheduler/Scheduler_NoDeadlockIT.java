@@ -66,10 +66,10 @@ public class Scheduler_NoDeadlockIT {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         List<JobFuture> futures = List.of(
-                scheduler.runBuilder().jobName("j1").runNonBlocking(),
-                scheduler.runBuilder().jobName("j1").runNonBlocking(),
-                scheduler.runBuilder().jobName("j1").runNonBlocking(),
-                scheduler.runBuilder().jobName("j1").runNonBlocking());
+                scheduler.newExecution().jobName("j1").runNonBlocking(),
+                scheduler.newExecution().jobName("j1").runNonBlocking(),
+                scheduler.newExecution().jobName("j1").runNonBlocking(),
+                scheduler.newExecution().jobName("j1").runNonBlocking());
 
         for (JobFuture f : futures) {
             JobOutcome r = f.get();
@@ -83,8 +83,8 @@ public class Scheduler_NoDeadlockIT {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
         List<JobFuture> futures = List.of(
-                scheduler.runBuilder().jobName("j1").runNonBlocking(),
-                scheduler.runBuilder().jobName("j1").runNonBlocking());
+                scheduler.newExecution().jobName("j1").runNonBlocking(),
+                scheduler.newExecution().jobName("j1").runNonBlocking());
 
         for (JobFuture f : futures) {
             JobOutcome r = f.get(1, TimeUnit.SECONDS);

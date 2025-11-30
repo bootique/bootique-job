@@ -48,7 +48,7 @@ public class JobDecorator_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addDecorator(listener, JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
-        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("failure").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).newExecution().jobName("failure").runNonBlocking().get();
         assertSame(result, listener.result);
         assertEquals(JobStatus.FAILURE, result.getStatus());
         assertNull(result.getException());
@@ -65,7 +65,7 @@ public class JobDecorator_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addDecorator(new StartException(), JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
-        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).newExecution().jobName("x").runNonBlocking().get();
         job.assertNotExecuted();
 
         assertEquals(JobStatus.FAILURE, result.getStatus());
@@ -82,7 +82,7 @@ public class JobDecorator_FailuresIT {
                 .module(b -> JobsModule.extend(b).addJob(job).addDecorator(new EndException(), JobDecorators.PARAMS_BINDER_ORDER + 1))
                 .createRuntime();
 
-        JobOutcome result = runtime.getInstance(Scheduler.class).runBuilder().jobName("x").runNonBlocking().get();
+        JobOutcome result = runtime.getInstance(Scheduler.class).newExecution().jobName("x").runNonBlocking().get();
         job.assertExecuted();
 
         assertEquals(JobStatus.FAILURE, result.getStatus());

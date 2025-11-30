@@ -90,7 +90,7 @@ public class ExecCommand extends CommandWithMetadata {
         // to ensure parallel execution, must collect futures in an explicit collection,
         // and then "get" them in a separate stream
         List<JobFuture> futures = execs.stream()
-                .map(e -> scheduler.runBuilder().jobName(e.getJobName()).params(e.getParams()).runNonBlocking())
+                .map(e -> scheduler.newExecution().jobName(e.getJobName()).params(e.getParams()).runNonBlocking())
                 .collect(Collectors.toList());
 
         String failed = futures.stream()
@@ -105,7 +105,7 @@ public class ExecCommand extends CommandWithMetadata {
 
     private CommandOutcome runSerial(List<JobExec> execs, Scheduler scheduler) {
         for (JobExec e : execs) {
-            JobOutcome result = scheduler.runBuilder().jobName(e.getJobName()).params(e.getParams()).runBlocking();
+            JobOutcome result = scheduler.newExecution().jobName(e.getJobName()).params(e.getParams()).run();
             processResult(e.getJobName(), result);
             if (!result.isSuccess()) {
                 return CommandOutcome.failed(1, "One of the jobs failed: " + e.getJobName());

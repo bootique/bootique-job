@@ -31,9 +31,9 @@ import java.util.concurrent.Future;
 /**
  * A builder for a customized job execution.
  *
- * @since 3.0
+ * @since 4.0
  */
-public class JobRunBuilder {
+public class ExecBuilder {
 
     private final JobRegistry registry;
     private final TaskScheduler taskScheduler;
@@ -44,7 +44,7 @@ public class JobRunBuilder {
     private Map<String, Object> params;
     private boolean noDecorators;
 
-    public JobRunBuilder(
+    public ExecBuilder(
             JobRegistry registry,
             TaskScheduler taskScheduler,
             JobDecorators decorators) {
@@ -53,32 +53,47 @@ public class JobRunBuilder {
         this.decorators = decorators;
     }
 
-    public JobRunBuilder job(Job job) {
+    public ExecBuilder job(Job job) {
         this.job = job;
         this.jobName = null;
         return this;
     }
 
-    public JobRunBuilder jobName(String jobName) {
+    public ExecBuilder jobName(String jobName) {
         this.job = null;
         this.jobName = jobName;
         return this;
     }
 
-    public JobRunBuilder params(Map<String, Object> params) {
+    public ExecBuilder params(Map<String, Object> params) {
         this.params = params;
         return this;
     }
 
-    public JobRunBuilder noDecorators() {
+    public ExecBuilder noDecorators() {
         this.noDecorators = true;
         return this;
     }
 
-    public JobOutcome runBlocking() {
+    /**
+     * Runs the specified job, blocking until it finishes.
+     */
+    public JobOutcome run() {
         return resolveJob().run(resolveParams());
     }
 
+    /**
+     * @deprecated in favor of {@link #run()}
+     */
+    @Deprecated(since = "4.0", forRemoval = true)
+    public JobOutcome runBlocking() {
+        return run();
+    }
+
+    /**
+     * Schedules a single run the specified job, returning immediately with a Future object that can be used
+     * by the caller to see the job through to completion.
+     */
     public JobFuture runNonBlocking() {
 
         Job job = resolveJob();

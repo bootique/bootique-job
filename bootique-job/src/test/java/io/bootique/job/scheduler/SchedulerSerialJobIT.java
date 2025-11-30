@@ -69,7 +69,7 @@ public class SchedulerSerialJobIT {
             Integer id = i;
             executor.submit(() -> {
                 try {
-                    JobOutcome r = scheduler.runBuilder().jobName("serialjob2").runNonBlocking().get();
+                    JobOutcome r = scheduler.newExecution().jobName("serialjob2").runNonBlocking().get();
                     results.put(id, r);
                 } finally {
                     latch.countDown();

@@ -48,11 +48,20 @@ public interface Scheduler {
     TriggerBuilder newFixedRateTrigger(Duration period, Duration initialDelay);
 
     /**
-     * Returns a builder object that can be used to build a custom job execution.
+     * Creates a builder for a custom job execution.
      *
-     * @since 3.0
+     * @since 4.0
      */
-    JobRunBuilder runBuilder();
+    ExecBuilder newExecution();
+
+    /**
+     * @since 3.0
+     * @deprecated in favor of {@link #newExecution()}
+     */
+    @Deprecated(since = "4.0", forRemoval = true)
+    default ExecBuilder runBuilder() {
+        return newExecution();
+    }
 
     /**
      * @deprecated in favor of {@link #scheduleAllTriggers()}

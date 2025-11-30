@@ -52,7 +52,7 @@ public class Scheduler_GraphJobIT {
         parameters.put("param1", "value1");
         parameters.put("param2", 2);
 
-        JobFuture future = scheduler.runBuilder().jobName("group1").params(parameters).runNonBlocking();
+        JobFuture future = scheduler.newExecution().jobName("group1").params(parameters).runNonBlocking();
         JobOutcome result = future.get(5L, TimeUnit.SECONDS);
         assertEquals(JobStatus.SUCCESS, result.getStatus());
     }
@@ -61,7 +61,7 @@ public class Scheduler_GraphJobIT {
     public void runOnce_EmptyGroup() {
         Scheduler scheduler = app.getInstance(Scheduler.class);
 
-        JobFuture future = scheduler.runBuilder().jobName("group2").runNonBlocking();
+        JobFuture future = scheduler.newExecution().jobName("group2").runNonBlocking();
         JobOutcome result = future.get(5L, TimeUnit.SECONDS);
         assertEquals(JobStatus.SUCCESS, result.getStatus());
     }

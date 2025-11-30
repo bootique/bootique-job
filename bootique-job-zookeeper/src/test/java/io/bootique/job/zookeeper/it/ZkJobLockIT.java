@@ -45,8 +45,8 @@ public class ZkJobLockIT extends AbstractZkIT {
     public void zkClusterLock() throws InterruptedException {
         Scheduler scheduler_1 = getSchedulerFromRuntime();
         Scheduler scheduler_2 = getSchedulerFromRuntime();
-        scheduler_1.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
-        scheduler_2.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
+        scheduler_1.newExecution().job(new LockJob()).params(callsCount).runNonBlocking();
+        scheduler_2.newExecution().job(new LockJob()).params(callsCount).runNonBlocking();
         Thread.sleep(WAIT_TIME);
         assertEquals(1, callsCount.get(CALLS_COUNT));
     }
@@ -54,8 +54,8 @@ public class ZkJobLockIT extends AbstractZkIT {
     @Test
     public void zkLocalLock() throws InterruptedException {
         Scheduler scheduler = getSchedulerFromRuntime();
-        scheduler.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
-        scheduler.runBuilder().job(new LockJob()).params(callsCount).runNonBlocking();
+        scheduler.newExecution().job(new LockJob()).params(callsCount).runNonBlocking();
+        scheduler.newExecution().job(new LockJob()).params(callsCount).runNonBlocking();
         Thread.sleep(WAIT_TIME);
         assertEquals(1, callsCount.get(CALLS_COUNT));
     }
