@@ -26,14 +26,14 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
+class ReschedulingRunnable implements Runnable, Future<Object> {
 
     private final Runnable delegate;
     private final Trigger trigger;
@@ -129,23 +129,5 @@ class ReschedulingRunnable implements Runnable, ScheduledFuture<Object> {
             curr = obtainCurrentFuture();
         }
         return curr.get(timeout, unit);
-    }
-
-    @Override
-    public long getDelay(TimeUnit unit) {
-        ScheduledFuture<?> curr;
-        synchronized (this.triggerContextMonitor) {
-            curr = obtainCurrentFuture();
-        }
-        return curr.getDelay(unit);
-    }
-
-    @Override
-    public int compareTo(Delayed other) {
-        if (this == other) {
-            return 0;
-        }
-        long diff = getDelay(TimeUnit.NANOSECONDS) - other.getDelay(TimeUnit.NANOSECONDS);
-        return diff == 0 ? 0 : (diff < 0 ? -1 : 1);
     }
 }

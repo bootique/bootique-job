@@ -25,7 +25,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -73,13 +72,13 @@ public class TaskScheduler implements AutoCloseable {
         }
     }
 
-    public ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
+    public Future<?> schedule(Runnable task, Trigger trigger) {
         ReschedulingRunnable runnable = new ReschedulingRunnable(task, trigger, clock, executor);
         runnable.schedule();
         return runnable;
     }
 
-    public ScheduledFuture<?> schedule(Runnable task, Instant startTime) {
+    public Future<?> schedule(Runnable task, Instant startTime) {
         Duration delay = Duration.between(clock.instant(), startTime);
         return executor.schedule(task, TimeUnit.NANOSECONDS.convert(delay), TimeUnit.NANOSECONDS);
     }

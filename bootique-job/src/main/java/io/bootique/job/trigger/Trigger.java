@@ -29,7 +29,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Future;
 
 /**
  * Defines execution schedule for a given job.
@@ -52,7 +52,7 @@ public abstract class Trigger {
     private final Map<String, Object> params;
 
     private volatile TriggerSchedulingState state;
-    private volatile ScheduledFuture<?> future;
+    private volatile Future<?> future;
 
     public Trigger(
             JobRegistry jobRegistry,
