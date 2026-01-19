@@ -1,4 +1,4 @@
-## 3.0-RC2
+## 3.0
 
 * #130 Bump org.apache.commons:commons-lang3 from 3.17.0 to 3.18.0
 
