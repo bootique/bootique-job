@@ -12,7 +12,7 @@
 * #128 Upgrade to Spring 6
 * #129 Bump org.springframework:spring-context from 6.2.6 to 6.2.7 
 
-## 3.0-RC2
+## 3.0
 
 * #130 Bump org.apache.commons:commons-lang3 from 3.17.0 to 3.18.0
 
