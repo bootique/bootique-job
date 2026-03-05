@@ -19,8 +19,8 @@
 
 package io.bootique.job.instrumented;
 
-import io.bootique.junit5.BQModuleTester;
-import io.bootique.junit5.BQTest;
+import io.bootique.junit.BQModuleTester;
+import io.bootique.junit.BQTest;
 import org.junit.jupiter.api.Test;
 
 @BQTest

@@ -30,8 +30,8 @@ import io.bootique.job.trigger.CronTrigger;
 import io.bootique.job.trigger.FixedDelayTrigger;
 import io.bootique.job.trigger.FixedRateTrigger;
 import io.bootique.job.trigger.Trigger;
-import io.bootique.junit5.BQApp;
-import io.bootique.junit5.BQTest;
+import io.bootique.junit.BQApp;
+import io.bootique.junit.BQTest;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;

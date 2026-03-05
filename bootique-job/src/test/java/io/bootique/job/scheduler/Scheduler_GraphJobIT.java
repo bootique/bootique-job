@@ -24,8 +24,8 @@ import io.bootique.Bootique;
 import io.bootique.job.*;
 import io.bootique.job.fixture.ParameterizedJob3;
 import io.bootique.job.fixture.SerialJob1;
-import io.bootique.junit5.BQApp;
-import io.bootique.junit5.BQTest;
+import io.bootique.junit.BQApp;
+import io.bootique.junit.BQTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;

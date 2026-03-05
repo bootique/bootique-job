@@ -24,8 +24,8 @@ import io.bootique.job.Job;
 import io.bootique.job.JobMetadata;
 import io.bootique.job.JobOutcome;
 import io.bootique.job.JobsModule;
-import io.bootique.junit5.BQApp;
-import io.bootique.junit5.BQTest;
+import io.bootique.junit.BQApp;
+import io.bootique.junit.BQTest;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

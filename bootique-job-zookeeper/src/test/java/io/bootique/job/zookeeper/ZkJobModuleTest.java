@@ -18,7 +18,7 @@
  */
 package io.bootique.job.zookeeper;
 
-import io.bootique.junit5.BQModuleTester;
+import io.bootique.junit.BQModuleTester;
 import org.junit.jupiter.api.Test;
 
 public class ZkJobModuleTest {

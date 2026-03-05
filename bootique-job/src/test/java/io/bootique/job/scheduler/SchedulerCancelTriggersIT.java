@@ -28,8 +28,8 @@ import io.bootique.job.JobsModule;
 import io.bootique.job.Scheduler;
 import io.bootique.job.SchedulerModule;
 import io.bootique.job.trigger.Trigger;
-import io.bootique.junit5.BQApp;
-import io.bootique.junit5.BQTest;
+import io.bootique.junit.BQApp;
+import io.bootique.junit.BQTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
