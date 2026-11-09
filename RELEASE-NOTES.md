@@ -1,3 +1,7 @@
+## 4.0-M7
+
+* #137 Upgrade Guava to 33.7.2
+
 ## 4.0-M2
 
 * #131 Bump org.springframework:spring-core from 6.2.7 to 6.2.11
